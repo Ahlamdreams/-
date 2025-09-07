@@ -1,22 +1,466 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-    <title>مدرسة أم مالك الأنصارية للبنات</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام سجل الاحتياط الذكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden; /* لمنع ظهور شريط التمرير */
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap');
+        * { font-family: 'Tajawal', sans-serif; }
+        .gradient-bg-vibrant { background: linear-gradient(135deg, #14c6ff, #ff66a1); }
+        .card-bg { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-bg:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25), 0 0 20px rgba(255, 255, 255, 0.4); }
+        .button-effect { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+        .button-effect:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); }
+        .button-effect:active { transform: scale(0.95); }
+        .svg-icon { transform-origin: center; transition: transform 0.3s ease-in-out; }
+        .card-bg:hover .svg-icon { transform: scale(1.1) rotate(10deg); }
+        @keyframes pulse-slogan { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .slogan-content { display: inline-block; animation: pulse-slogan 2s infinite alternate; }
+        
+        /* Print-specific styles */
+        @media print {
+            body > *:not(#printable-report) { display: none; }
+            #printable-report { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; margin: 0; padding: 1rem; box-sizing: border-box; }
         }
-        iframe {
-            border: none;
+        
+        /* Styles for select dropdown colors */
+        select, input[type="text"] {
+            color: #333; /* Darker text for readability */
+            background-color: white;
+            border: 1px solid #ccc;
+        }
+        select option {
+            background-color: white;
+            color: #333;
+        }
+
+        /* Signature Pad specific styling */
+        .signature-pad-container {
+            width: 100%;
+            height: 200px; /* Increased height for better drawing space */
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            overflow: hidden; /* Ensure drawing stays within bounds */
+            display: flex; /* Use flexbox to center canvas */
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.1); /* Slight background for contrast */
+        }
+        #signature-pad {
             width: 100%;
             height: 100%;
+            touch-action: none; /* Prevent scrolling/zooming while drawing */
+            background-color: transparent; /* Canvas background set in JS */
         }
     </style>
 </head>
-<body>
-    <iframe src="https://script.google.com/macros/s/AKfycbxhWZtPf5oUuTHnL-ueWbdv5g6iNtNLYHFyqHAIJZvlGlKHDbhlTfkvBG8TxHGB_s-3/exec"></iframe>
+<body class="gradient-bg-vibrant min-h-screen text-white">
+
+    <header class="p-6">
+        <div class="container mx-auto">
+            <div class="flex items-center space-x-4 space-x-reverse mb-4">
+                <div class="bg-white rounded-full p-1 shadow-lg"><img id="logo-image" src="" alt="شعار" style="display:none;"></div>
+                <div>
+                    <h1 class="text-3xl font-bold">نظام سجل الاحتياط الذكي 🤖</h1>
+                    <p class="opacity-90">لوحة تحكم لإدارة وتتبع حصص الاحتياط</p>
+                </div>
+            </div>
+            <div class="w-full p-3 text-center font-bold bg-gray-800/50 rounded-md">
+                 <marquee behavior="scroll" direction="right" scrollamount="8">
+                    <span>مدرسة أم مالك الأنصارية للبنات (5-6) &nbsp;&nbsp;&nbsp; مدرسة أم مالك الأنصارية للبنات (5-6) &nbsp;&nbsp;&nbsp; مدرسة أم مالك الأنصارية للبنات (5-6) &nbsp;&nbsp;&nbsp;</span>
+                 </marquee>
+            </div>
+            <div class="w-full p-3 text-center font-bold bg-orange-600/80 rounded-md mt-2"><span class="slogan-content">يدٌ تغيب، وأخرى تضيء ✨</span></div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-6" id="main-content">
+    </main>
+    
+    <div id="form-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center p-4"></div>
+    <div id="report-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center p-4"></div>
+    <div id="signature-view-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center p-4"></div>
+
+    <script>
+        // --- GLOBAL STATE ---
+        let allSubstitutes = [], dropdownData = {}, monthlyStats = {};
+        let selectedPeriod = '', selectedClass = '';
+        let signaturePad;
+        const mainContentEl = document.getElementById('main-content');
+        const REPORTS_FOLDER_ID = '1ZWeBdHUCbOpbmyYFYwb3U7IFP8lRuvCh';
+        let topSubstituteOfMonth = ''; 
+        
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+
+        function initializeDashboard() {
+            mainContentEl.innerHTML = `<div class="text-center p-10 text-xl">... 🔄 جاري تحميل البيانات ...</div>`;
+            google.script.run
+                .withSuccessHandler(data => {
+                    if (data.error) {
+                        mainContentEl.innerHTML = `<div class="card-bg rounded-2xl p-6 text-red-100 bg-red-500/50"><b>❌ فشل تحميل البيانات:</b><br>${data.error}</div>`;
+                        return;
+                    }
+                    allSubstitutes = data.allSubstitutes || [];
+                    dropdownData = data.dropdowns || {};
+                    monthlyStats = data.monthlyStats || {};
+                    const thisMonth = new Date().toISOString().slice(0, 7);
+                    const monthSubs = allSubstitutes.filter(s => s.date && s.date.startsWith(thisMonth));
+                    const substituteCounts = monthSubs.reduce((acc, sub) => { if (sub.substituteTeacher) acc[sub.substituteTeacher] = (acc[sub.substituteTeacher] || 0) + 1; return acc; }, {});
+                    const topSubstitute = Object.entries(substituteCounts).sort((a, b) => b[1] - a[1])[0];
+                    topSubstituteOfMonth = topSubstitute ? topSubstitute[0] : 'لم تحدد بعد';
+
+                    renderFullUI();
+                    buildModals();
+                })
+                .withFailureHandler(err => {
+                    mainContentEl.innerHTML = `<div class="card-bg rounded-2xl p-6 text-red-100 bg-red-500/50"><b>❌ فشل حاد في الاتصال بالخادم:</b><br>${err.message}</div>`;
+                })
+                .getInitialData();
+            
+            google.script.run.withSuccessHandler(displayLogo).getImageAsBase64();
+        }
+
+        function displayLogo(base64Image) {
+            if (base64Image) { document.getElementById('logo-image').src = base64Image; document.getElementById('logo-image').style.display = 'block'; }
+        }
+        
+        function renderFullUI() {
+            const today = new Date();
+            const dayName = today.toLocaleDateString('ar-EG', { weekday: 'long' });
+            const dateText = today.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            mainContentEl.innerHTML = `
+                <section id="dashboard-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"></section>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 space-y-6">
+                         <div class="flex justify-between items-center card-bg p-4 rounded-t-2xl">
+                            <h2 class="text-2xl font-bold">حصص الاحتياط لليوم 📆</h2>
+                            <p class="text-sm">${dayName} | ${dateText}</p>
+                         </div>
+                         <div id="today-substitutes-container" class="card-bg rounded-b-2xl p-4"></div>
+                    </div>
+                    <div class="lg:col-span-1 space-y-6">
+                         <div class="card-bg rounded-2xl p-6">
+                            <h2 class="text-xl font-bold mb-4">إجراءات سريعة ⚡</h2>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="openFormModal()" class="bg-blue-500/80 p-3 rounded-xl hover:bg-blue-400/80 flex flex-col items-center shadow-lg button-effect">
+                                    <svg class="w-8 h-8 svg-icon mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    <span class="font-semibold text-xs">إضافة احتياط</span>
+                                </button>
+                                <button onclick="saveReportToDrive('today')" class="bg-green-500/80 p-3 rounded-xl hover:bg-green-400/80 flex flex-col items-center shadow-lg button-effect">
+                                    <svg class="w-8 h-8 svg-icon mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    <span class="font-semibold text-xs">💾 حفظ تقرير اليوم</span>
+                                </button>
+                                <button onclick="saveReportToDrive('month')" class="bg-yellow-500/80 p-3 rounded-xl hover:bg-yellow-400/80 flex flex-col items-center shadow-lg button-effect">
+                                    <svg class="w-8 h-8 svg-icon mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                    </svg>
+                                    <span class="font-semibold text-xs">📊 حفظ التقرير الشهري</span>
+                                </button>
+                                <button onclick="openTeacherStatsModal()" class="bg-purple-500/80 p-3 rounded-xl hover:bg-purple-400/80 flex flex-col items-center shadow-lg button-effect">
+                                    <svg class="w-8 h-8 svg-icon mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 5.74"></path>
+                                    </svg>
+                                    <span class="font-semibold text-xs">👩‍🏫 إحصاءات المعلمات</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-bg rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4">نجوم الشهر ⭐</h3>
+                            <div class="space-y-4" id="monthly-stats-container"></div>
+                        </div>
+                    </div>
+                </div>`;
+            renderDashboardCards();
+            displayTodaysSubstitutes();
+            displayMonthlyStats();
+        }
+        
+        function renderDashboardCards() {
+            const container = document.getElementById("dashboard-cards");
+            const today = new Date().toISOString().slice(0, 10);
+            const totalSubs = allSubstitutes.length;
+            const todaySubs = allSubstitutes.filter(s => s.date === today);
+            const educationalLoss = todaySubs.length * 45;
+            
+            container.innerHTML = `
+                <div class="card-bg text-white rounded-2xl p-5 flex items-center justify-between hover-effect">
+                    <div><p class="text-4xl font-black text-pink-300">${totalSubs}</p><p class="font-medium">إجمالي الاحتياط</p></div>
+                    <svg class="w-12 h-12 text-pink-400 opacity-60 svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 11 12 14 22 4"></polyline>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                </div>
+                <div class="card-bg text-white rounded-2xl p-5 flex items-center justify-between hover-effect">
+                    <div><p class="text-4xl font-black text-blue-300">${educationalLoss}</p><p class="font-medium">دقيقة فاقد تعليمي</p></div>
+                     <button onclick="initializeDashboard()" class="text-white hover:text-blue-200 transition">
+                         <svg class="w-10 h-10 svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6"></path>
+                            <path d="M2.5 16a9 9 0 0 1 18.2-2M21.5 8a9 9 0 0 1-18.2 2"></path>
+                         </svg>
+                    </button>
+                </div>
+                 <div class="card-bg text-white rounded-2xl p-5 flex items-center justify-between hover-effect">
+                    <div><p class="text-4xl font-black text-yellow-300">${topSubstituteOfMonth.split(' ')[0]}</p><p class="font-medium">معلمة الشهر 🏆</p></div>
+                    <svg class="w-12 h-12 text-yellow-400 opacity-60 svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                </div>`;
+        }
+        
+        function displayTodaysSubstitutes() {
+            const container = document.getElementById("today-substitutes-container");
+            const today = new Date().toISOString().slice(0, 10);
+            const todaySubs = allSubstitutes.filter(s => s.date === today);
+            
+            if (todaySubs.length === 0) {
+                container.innerHTML = `<div class="card-bg rounded-b-2xl p-8 text-center mt-4"><p class="text-white opacity-80">لا توجد حصص احتياط مسجلة لليوم. 🎉</p></div>`;
+                return;
+            }
+
+            let html = '<div id="printable-today">';
+            todaySubs.forEach(sub => {
+                const signatureData = sub.signatureData;
+                const signatureBlock = signatureData ? `<img src="${signatureData}" alt="توقيع" class="w-24 h-12 object-contain border bg-white/30 rounded-md cursor-pointer" onclick="showSignatureModal('${signatureData}')">` : `<div class="w-24 h-12 flex items-center justify-center text-xs text-red-300">(لم توقع ✍️)</div>`;
+                
+                html += `
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 items-center card-bg rounded-2xl p-4 mt-4">
+                        <div class="md:col-span-1"><p class="text-sm">المعلمة الغائبة</p><p class="font-bold">${sub.absentTeacher}</p></div>
+                        <div class="md:col-span-1"><p class="text-sm">الحصة</p><p class="font-bold">${sub.period}</p></div>
+                        <div class="md:col-span-1"><p class="text-sm">الصف</p><p class="font-bold">${sub.class}</p></div>
+                        <div class="md:col-span-1"><p class="text-sm">المعلمة البديلة</p><p class="font-bold">${sub.substituteTeacher}</p></div>
+                        <div class="flex flex-col items-center md:col-span-1"><p class="text-sm">التوقيع</p>${signatureBlock}</div>
+                    </div>`;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function displayMonthlyStats() {
+            const container = document.getElementById("monthly-stats-container");
+            const thisMonth = new Date().toISOString().slice(0, 7);
+            const monthSubs = allSubstitutes.filter(s => s.date && s.date.startsWith(thisMonth));
+            if (monthSubs.length === 0) {
+                container.innerHTML = '<p class="text-center p-4 opacity-80 text-white">لا توجد بيانات لهذا الشهر. 🗓️</p>';
+                return;
+            }
+            const substituteCounts = monthSubs.reduce((acc, sub) => { if (sub.substituteTeacher) acc[sub.substituteTeacher] = (acc[sub.substituteTeacher] || 0) + 1; return acc; }, {});
+            const topSubstitute = Object.entries(substituteCounts).sort((a, b) => b[1] - a[1])[0];
+            
+            let html = `<div class="card-bg rounded-xl p-3 flex items-center border border-yellow-400"><span class="text-2xl ml-3">🥇</span><div><p class="font-bold">${topSubstitute ? topSubstitute[0] : 'لا يوجد'}</p><p class="text-sm opacity-80">أكثر معلمة احتياط (${topSubstitute ? topSubstitute[1] : 0})</p></div></div>`;
+            if (monthlyStats && monthlyStats.mostFrequentPeriod7Teacher) {
+                html += `<div class="card-bg rounded-xl p-3 flex items-center mt-2 border border-purple-400"><span class="text-2xl ml-3">⭐</span><div><p class="font-bold">${monthlyStats.mostFrequentPeriod7Teacher}</p><p class="text-sm opacity-80">أكثر معلمة تأخذ الحصة السابعة (${monthlyStats.period7Count})</p></div></div>`;
+            }
+            container.innerHTML = html;
+        }
+        
+        function saveReportToDrive(reportType) {
+            const originalBodyHTML = document.body.innerHTML;
+            document.body.innerHTML = `
+                <div id="loading-spinner" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-50">
+                    <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+                    <p class="text-xl text-white ml-4">... جاري حفظ التقرير</p>
+                </div>
+            `;
+            google.script.run
+                .withSuccessHandler(response => {
+                    document.body.innerHTML = originalBodyHTML;
+                    if (response.status === 'success') {
+                        alert('تم حفظ التقرير بنجاح في مجلد جوجل درايف!');
+                        window.open(response.url, '_blank');
+                    } else {
+                        alert(response.message);
+                    }
+                })
+                .withFailureHandler(err => {
+                    document.body.innerHTML = originalBodyHTML;
+                    alert('فشل حفظ التقرير: ' + err.message);
+                })
+                .generateAndSavePdfReport(reportType, REPORTS_FOLDER_ID);
+        }
+
+        function openTeacherStatsModal() {
+            google.script.run
+                .withSuccessHandler(response => {
+                    const modal = document.getElementById("report-modal");
+                    let content = `<div class="glass-effect text-white rounded-2xl max-w-2xl w-full max-h-[95vh] flex flex-col shadow-2xl"><div class="p-4 border-b border-white/20 flex justify-between items-center"><h2 class="text-2xl font-bold">👩‍🏫 إحصاءات المعلمات</h2><button onclick="closeModal('report-modal')" class="hover:text-pink-500"><i class="fa-solid fa-times-circle fa-2x"></i></button></div><div class="p-6 overflow-y-auto">`;
+                    if (response.error) {
+                        content += `<p class="text-center text-red-300">${response.error}</p>`;
+                    } else {
+                        content += `<ul class="divide-y divide-gray-300/30">`;
+                        response.stats.forEach(item => {
+                            content += `<li class="flex justify-between items-center py-2"><span class="font-bold">${item.teacher}</span><span>${item.count} حصة</span></li>`;
+                        });
+                        content += `</ul>`;
+                    }
+                    content += `</div></div>`;
+                    modal.innerHTML = content;
+                    modal.classList.remove('hidden');
+                })
+                .withFailureHandler(err => {
+                    alert('فشل تحميل الإحصائيات: ' + err.message);
+                })
+                .getTeachersStats();
+        }
+
+        function buildModals() {
+            document.getElementById("form-modal").innerHTML = `<div class="glass-effect text-white rounded-2xl max-w-2xl w-full max-h-[95vh] flex flex-col shadow-2xl"><div class="p-4 border-b border-white/20 flex justify-between items-center"><h2 class="text-2xl font-bold">📝 تسجيل حصة احتياط جديدة</h2><button onclick="closeModal('form-modal')" class="hover:text-pink-500"><i class="fa-solid fa-times-circle fa-2x"></i></button></div><div class="p-6 overflow-y-auto" id="form-content"></div></div>`;
+            document.getElementById("signature-view-modal").innerHTML = `<div class="glass-effect rounded-2xl p-4 w-full max-w-lg shadow-2xl relative"><button onclick="closeModal('signature-view-modal')" class="absolute top-2 left-2 text-white hover:text-pink-500"><i class="fa-solid fa-times-circle fa-2x"></i></button><div id="signature-view-content" class="mt-8"></div></div>`;
+        }
+        
+        function openFormModal() {
+            document.getElementById('form-modal').classList.remove('hidden');
+            setupForm();
+        }
+
+        function setupForm() {
+            const formContent = document.getElementById("form-content");
+            formContent.innerHTML = `
+                <form id="substitutionForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div><label class="block text-sm font-medium mb-1">التاريخ</label><div id="date-display" class="bg-white/20 p-3 rounded-lg text-white"></div></div>
+                        <div><label class="block text-sm font-medium mb-1">اليوم</label><div id="day-display" class="bg-white/20 p-3 rounded-lg text-white"></div></div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">اختر الحصة</label>
+                        <div id="period-buttons" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">اختر الصف</label>
+                        <div id="class-buttons" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="absentTeacher" class="block text-sm font-medium mb-1">المعلمة الغائبة</label>
+                            <select id="absentTeacher" required class="w-full p-3 rounded-lg border text-gray-700"></select>
+                        </div>
+                        <div>
+                            <label for="subject" class="block text-sm font-medium mb-1">المادة</label>
+                            <input type="text" id="subject" readonly class="w-full p-3 rounded-lg bg-gray-200 text-gray-700 cursor-not-allowed">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="substituteTeacher" class="block text-sm font-medium mb-1">المعلمة البديلة</label>
+                            <select id="substituteTeacher" required class="w-full p-3 rounded-lg border text-gray-700"></select>
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium mb-1">رقم هاتف المعلمة البديلة</label>
+                            <input type="text" id="phone" readonly class="w-full p-3 rounded-lg bg-gray-200 text-gray-700 cursor-not-allowed">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">توقيع المعلمة البديلة</label>
+                        <div class="signature-pad-container">
+                            <canvas id="signature-pad"></canvas>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-4 gap-4">
+                        <button type="submit" id="submit-btn" class="bg-green-500/80 hover:bg-green-400/80 text-white font-bold py-3 px-6 rounded-lg flex-grow button-effect">إرسال وحفظ ✅</button>
+                        <button type="button" id="clear-btn" class="bg-red-500/80 hover:bg-red-400/80 text-white font-bold py-3 px-6 rounded-lg button-effect">مسح 🗑️</button>
+                    </div>
+                </form>
+                <div id="message" class="mt-4 text-center p-3 rounded-lg hidden"></div>`;
+
+            if (!dropdownData || !dropdownData.absentTeachers || dropdownData.absentTeachers.length === 0) {
+                formContent.innerHTML = `<div class="text-center p-6 bg-red-500/50 text-white rounded-lg"><b>❌ خطأ:</b> لم يتم العثور على أسماء المعلمات.</div>`;
+                return;
+            }
+            setAutoDateAndDay();
+            populateSelect("absentTeacher", dropdownData.absentTeachers);
+            populateSelect("substituteTeacher", dropdownData.substituteTeachers);
+            createButtons("period-buttons", dropdownData.periods, "period");
+            createButtons("class-buttons", dropdownData.classes, "class");
+            
+            document.getElementById("absentTeacher").addEventListener("change", function(){ 
+                document.getElementById("subject").value = dropdownData.teacherSubjectMap[this.value] || ""; 
+            });
+            document.getElementById("substituteTeacher").addEventListener("change", function(){ 
+                document.getElementById("phone").value = dropdownData.teacherPhoneMap[this.value] || ""; 
+            });
+
+            const canvas = document.getElementById("signature-pad");
+            
+            function resizeCanvas() {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                signaturePad.clear();
+            }
+
+            signaturePad = new SignaturePad(canvas, { 
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                penColor: 'black' 
+            });
+
+            resizeCanvas();
+            window.addEventListener("resize", resizeCanvas);
+
+            document.getElementById("clear-btn").addEventListener("click", () => signaturePad.clear());
+            document.getElementById("substitutionForm").addEventListener("submit", handleFormSubmit);
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            if (signaturePad.isEmpty()) return alert("الرجاء إضافة التوقيع.");
+            if (!selectedPeriod) return alert("الرجاء اختيار الحصة.");
+            if (!selectedClass) return alert("الرجاء اختيار الصف.");
+            const submitBtn = document.getElementById("submit-btn");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "جاري الحفظ...";
+            const formData = { 
+                date: new Date().toISOString().slice(0, 10), 
+                day: document.getElementById("day-display").textContent, 
+                period: selectedPeriod, 
+                class: selectedClass, 
+                subject: document.getElementById("subject").value, 
+                absentTeacher: document.getElementById("absentTeacher").value, 
+                substituteTeacher: document.getElementById("substituteTeacher").value, 
+                phone: document.getElementById("phone").value, 
+                signature: signaturePad.toDataURL("image/png") 
+            };
+            google.script.run.withSuccessHandler(response => onFormSubmitSuccess(response, formData)).processForm(formData);
+        }
+
+        function onFormSubmitSuccess(response, formData) {
+            const messageDiv = document.getElementById("message");
+            messageDiv.className = `p-3 rounded-lg ${response.status === "success" ? "bg-green-500/50 text-white" : "bg-red-500/50 text-white"}`;
+            messageDiv.textContent = response.message;
+            messageDiv.style.display = "block";
+            if (response.status === "success") {
+                const newSub = { ...formData, signatureUrl: `https://drive.google.com/uc?export=view&id=${response.signatureFileId}` };
+                allSubstitutes.push(newSub);
+                renderFullUI();
+                setTimeout(() => closeModal('form-modal'), 1500);
+            }
+            const submitBtn = document.getElementById("submit-btn");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "إرسال وحفظ ✅";
+        }
+        
+        function setAutoDateAndDay(){const e=new Date,t=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];document.getElementById("date-display").textContent=e.toLocaleDateString("ar-EG-u-nu-latn",{year:"numeric",month:"long",day:"numeric"}),document.getElementById("day-display").textContent=t[e.getDay()]}
+        function populateSelect(e,t){const o=document.getElementById(e);o.innerHTML='<option value="">اختر المعلمة...</option>',t&&t.forEach(e=>{const t=document.createElement("option");t.value=e,t.textContent=e,o.appendChild(t)})}
+        function createButtons(e,t,o){const n=document.getElementById(e);n.innerHTML="",t&&t.forEach(e=>{const t=document.createElement("button");t.type="button",t.className="flex-grow p-2 rounded-md cursor-pointer bg-white/20 hover:bg-white/40 border border-transparent hover:border-white/50 transition",t.textContent=e,t.dataset.value=e,t.onclick=()=>{n.querySelectorAll("button").forEach(e=>e.classList.remove("bg-pink-500/80","border-pink-500","text-white")),t.classList.add("bg-pink-500/80","border-pink-500","text-white"),"period"===o?selectedPeriod=e:"class"===o&&(selectedClass=e)},n.appendChild(t)})}
+        function closeModal(e){document.getElementById(e).classList.add("hidden")}
+        function showSignatureModal(t){document.getElementById("signature-view-modal").classList.remove("hidden"),document.getElementById("modal-signature-image").src=t;}
+    </script>
 </body>
 </html>

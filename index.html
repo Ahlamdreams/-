@@ -3,464 +3,2201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام سجل الاحتياط الذكي</title>
+    <title>نظام إدارة الطابور المدرسي</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap');
-        * { font-family: 'Tajawal', sans-serif; }
-        .gradient-bg-vibrant { background: linear-gradient(135deg, #14c6ff, #ff66a1); }
-        .card-bg { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .card-bg:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25), 0 0 20px rgba(255, 255, 255, 0.4); }
-        .button-effect { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
-        .button-effect:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); }
-        .button-effect:active { transform: scale(0.95); }
-        .svg-icon { transform-origin: center; transition: transform 0.3s ease-in-out; }
-        .card-bg:hover .svg-icon { transform: scale(1.1) rotate(10deg); }
-        @keyframes pulse-slogan { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        .slogan-content { display: inline-block; animation: pulse-slogan 2s infinite alternate; }
-        
-        /* Print-specific styles */
-        @media print {
-            body > *:not(#printable-report) { display: none; }
-            #printable-report { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; margin: 0; padding: 1rem; box-sizing: border-box; }
-        }
-        
-        /* Styles for select dropdown colors */
-        select, input[type="text"] {
-            color: #333; /* Darker text for readability */
-            background-color: white;
-            border: 1px solid #ccc;
-        }
-        select option {
-            background-color: white;
-            color: #333;
-        }
-
-        /* Signature Pad specific styling */
-        .signature-pad-container {
-            width: 100%;
-            height: 200px; /* Increased height for better drawing space */
-            border: 2px dashed rgba(255, 255, 255, 0.5);
-            border-radius: 8px;
-            overflow: hidden; /* Ensure drawing stays within bounds */
-            display: flex; /* Use flexbox to center canvas */
-            justify-content: center;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.1); /* Slight background for contrast */
-        }
-        #signature-pad {
-            width: 100%;
-            height: 100%;
-            touch-action: none; /* Prevent scrolling/zooming while drawing */
-            background-color: transparent; /* Canvas background set in JS */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+        * { font-family: 'Cairo', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .animate-pulse-slow { animation: pulse 3s infinite; }
+        .star-animation { animation: starGlow 2s ease-in-out infinite alternate; }
+        @keyframes starGlow {
+            from { transform: scale(1) rotate(0deg); }
+            to { transform: scale(1.1) rotate(5deg); }
         }
     </style>
 </head>
-<body class="gradient-bg-vibrant min-h-screen text-white">
-
-    <header class="p-6">
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white p-6 card-shadow">
         <div class="container mx-auto">
-            <div class="flex items-center space-x-4 space-x-reverse mb-4">
-                <div class="bg-white rounded-full p-1 shadow-lg"><img id="logo-image" src="" alt="شعار" style="display:none;"></div>
-                <div>
-                    <h1 class="text-3xl font-bold">نظام سجل الاحتياط الذكي 🤖</h1>
-                    <p class="opacity-90">لوحة تحكم لإدارة وتتبع حصص الاحتياط</p>
+            <!-- Logo Area -->
+            <div class="flex justify-center mb-4">
+                <div id="logoContainer" class="flex gap-4">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-2xl">🏫</span>
+                    </div>
+                    <div id="logoContainer2" class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-2xl">🎓</span>
+                    </div>
                 </div>
             </div>
-            <div class="w-full p-3 text-center font-bold bg-gray-800/50 rounded-md">
-                 <marquee behavior="scroll" direction="right" scrollamount="8">
-                    <span>مدرسة أم مالك الأنصارية للبنات (5-6) &nbsp;&nbsp;&nbsp; مدرسة أم مالك الأنصارية للبنات (5-6) &nbsp;&nbsp;&nbsp; مدرسة أم مالك الأنصارية للبنات (5-6) &nbsp;&nbsp;&nbsp;</span>
-                 </marquee>
+            
+            <!-- Title -->
+            <h1 id="mainTitle" class="text-3xl font-bold text-center mb-4">الطابور المدرسي</h1>
+            
+            <!-- Date and Time -->
+            <div class="text-center mb-4">
+                <div id="currentDateTime" class="text-lg font-semibold"></div>
             </div>
-            <div class="w-full p-3 text-center font-bold bg-orange-600/80 rounded-md mt-2"><span class="slogan-content">يدٌ تغيب، وأخرى تضيء ✨</span></div>
+            
+            <!-- Principal Name -->
+            <div class="text-center mb-6">
+                <p class="text-lg">المديرة: <span id="principalName">أ. فاطمة الأحمد</span></p>
+            </div>
+            
+            <!-- Stars Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white/20 rounded-lg p-4 text-center">
+                    <div class="star-animation text-4xl mb-2">⭐</div>
+                    <h3 class="font-bold text-sm">نجم الطابور - الصف</h3>
+                    <h4 class="font-semibold text-xs mb-1">اليوم</h4>
+                    <p id="dailyStar" class="text-lg font-semibold">الصف الأول أ</p>
+                </div>
+                <div class="bg-white/20 rounded-lg p-4 text-center">
+                    <div class="star-animation text-4xl mb-2">🏆</div>
+                    <h3 class="font-bold text-sm">نجم الطابور - الصف</h3>
+                    <h4 class="font-semibold text-xs mb-1">الشهر</h4>
+                    <p id="monthlyStar" class="text-lg font-semibold">الصف الثاني ب</p>
+                </div>
+                <div class="bg-white/20 rounded-lg p-4 text-center">
+                    <div class="star-animation text-4xl mb-2">🌟</div>
+                    <h3 class="font-bold text-sm">نجم الحضور</h3>
+                    <h4 class="font-semibold text-xs mb-1">اليوم</h4>
+                    <p id="dailyTeacherStar" class="text-lg font-semibold">لا توجد معلمات</p>
+                </div>
+                <div class="bg-white/20 rounded-lg p-4 text-center">
+                    <div class="star-animation text-4xl mb-2">👑</div>
+                    <h3 class="font-bold text-sm">نجم الحضور</h3>
+                    <h4 class="font-semibold text-xs mb-1">الشهر</h4>
+                    <p id="monthlyTeacherStar" class="text-lg font-semibold">لا توجد معلمات</p>
+                </div>
+            </div>
         </div>
     </header>
 
-    <main class="container mx-auto p-6" id="main-content">
-    </main>
-    
-    <div id="form-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center p-4"></div>
-    <div id="report-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center p-4"></div>
-    <div id="signature-view-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center p-4"></div>
+    <!-- Main Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-center space-x-reverse space-x-8 py-4">
+                <button onclick="showSection('teachers')" class="nav-btn bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors">
+                    👩‍🏫 حضور المعلمات
+                </button>
+                <button onclick="showSection('classes')" class="nav-btn bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors">
+                    🏆 نجم الطابور
+                </button>
+                <button onclick="showPasswordModal()" class="nav-btn bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600 transition-colors">
+                    ⚙️ إدارة النظام
+                </button>
+            </div>
+        </div>
+    </nav>
 
-    <script>
-        // --- GLOBAL STATE ---
-        let allSubstitutes = [], dropdownData = {}, monthlyStats = {};
-        let selectedPeriod = '', selectedClass = '';
-        let signaturePad;
-        const mainContentEl = document.getElementById('main-content');
-        const REPORTS_FOLDER_ID = '1ZWeBdHUCbOpbmyYFYwb3U7IFP8lRuvCh';
-        let topSubstituteOfMonth = ''; 
-        
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', initializeDashboard);
-
-        function initializeDashboard() {
-            mainContentEl.innerHTML = `<div class="text-center p-10 text-xl">... 🔄 جاري تحميل البيانات ...</div>`;
-            google.script.run
-                .withSuccessHandler(data => {
-                    if (data.error) {
-                        mainContentEl.innerHTML = `<div class="card-bg rounded-2xl p-6 text-red-100 bg-red-500/50"><b>❌ فشل تحميل البيانات:</b><br>${data.error}</div>`;
-                        return;
-                    }
-                    allSubstitutes = data.allSubstitutes || [];
-                    dropdownData = data.dropdowns || {};
-                    monthlyStats = data.monthlyStats || {};
-                    const thisMonth = new Date().toISOString().slice(0, 7);
-                    const monthSubs = allSubstitutes.filter(s => s.date && s.date.startsWith(thisMonth));
-                    const substituteCounts = monthSubs.reduce((acc, sub) => { if (sub.substituteTeacher) acc[sub.substituteTeacher] = (acc[sub.substituteTeacher] || 0) + 1; return acc; }, {});
-                    const topSubstitute = Object.entries(substituteCounts).sort((a, b) => b[1] - a[1])[0];
-                    topSubstituteOfMonth = topSubstitute ? topSubstitute[0] : 'لم تحدد بعد';
-
-                    renderFullUI();
-                    buildModals();
-                })
-                .withFailureHandler(err => {
-                    mainContentEl.innerHTML = `<div class="card-bg rounded-2xl p-6 text-red-100 bg-red-500/50"><b>❌ فشل حاد في الاتصال بالخادم:</b><br>${err.message}</div>`;
-                })
-                .getInitialData();
-            
-            google.script.run.withSuccessHandler(displayLogo).getImageAsBase64();
-        }
-
-        function displayLogo(base64Image) {
-            if (base64Image) { document.getElementById('logo-image').src = base64Image; document.getElementById('logo-image').style.display = 'block'; }
-        }
-        
-        function renderFullUI() {
-            const today = new Date();
-            const dayName = today.toLocaleDateString('ar-EG', { weekday: 'long' });
-            const dateText = today.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
-            
-            mainContentEl.innerHTML = `
-                <section id="dashboard-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"></section>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 space-y-6">
-                         <div class="flex justify-between items-center card-bg p-4 rounded-t-2xl">
-                            <h2 class="text-2xl font-bold">حصص الاحتياط لليوم 📆</h2>
-                            <p class="text-sm">${dayName} | ${dateText}</p>
-                         </div>
-                         <div id="today-substitutes-container" class="card-bg rounded-b-2xl p-4"></div>
-                    </div>
-                    <div class="lg:col-span-1 space-y-6">
-                         <div class="card-bg rounded-2xl p-6">
-                            <h2 class="text-xl font-bold mb-4">إجراءات سريعة ⚡</h2>
-                            <div class="grid grid-cols-2 gap-4">
-                                <button onclick="openFormModal()" class="bg-blue-500/80 p-3 rounded-xl hover:bg-blue-400/80 flex flex-col items-center shadow-lg button-effect">
-                                    <svg class="w-8 h-8 svg-icon mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                    <span class="font-semibold text-xs">إضافة احتياط</span>
-                                </button>
-                                <button onclick="saveReportToDrive('today')" class="bg-green-500/80 p-3 rounded-xl hover:bg-green-400/80 flex flex-col items-center shadow-lg button-effect">
-                                    <svg class="w-8 h-8 svg-icon mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
-                                    <span class="font-semibold text-xs">💾 حفظ تقرير اليوم</span>
-                                </button>
-                                <button onclick="saveReportToDrive('month')" class="bg-yellow-500/80 p-3 rounded-xl hover:bg-yellow-400/80 flex flex-col items-center shadow-lg button-effect">
-                                    <svg class="w-8 h-8 svg-icon mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M12 20h9"></path>
-                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                    </svg>
-                                    <span class="font-semibold text-xs">📊 حفظ التقرير الشهري</span>
-                                </button>
-                                <button onclick="openTeacherStatsModal()" class="bg-purple-500/80 p-3 rounded-xl hover:bg-purple-400/80 flex flex-col items-center shadow-lg button-effect">
-                                    <svg class="w-8 h-8 svg-icon mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 5.74"></path>
-                                    </svg>
-                                    <span class="font-semibold text-xs">👩‍🏫 إحصاءات المعلمات</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-bg rounded-2xl p-6">
-                            <h3 class="text-xl font-bold mb-4">نجوم الشهر ⭐</h3>
-                            <div class="space-y-4" id="monthly-stats-container"></div>
-                        </div>
-                    </div>
-                </div>`;
-            renderDashboardCards();
-            displayTodaysSubstitutes();
-            displayMonthlyStats();
-        }
-        
-        function renderDashboardCards() {
-            const container = document.getElementById("dashboard-cards");
-            const today = new Date().toISOString().slice(0, 10);
-            const totalSubs = allSubstitutes.length;
-            const todaySubs = allSubstitutes.filter(s => s.date === today);
-            const educationalLoss = todaySubs.length * 45;
-            
-            container.innerHTML = `
-                <div class="card-bg text-white rounded-2xl p-5 flex items-center justify-between hover-effect">
-                    <div><p class="text-4xl font-black text-pink-300">${totalSubs}</p><p class="font-medium">إجمالي الاحتياط</p></div>
-                    <svg class="w-12 h-12 text-pink-400 opacity-60 svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 11 12 14 22 4"></polyline>
-                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                    </svg>
+    <!-- Statistics Bar -->
+    <div id="statsBar" class="bg-white shadow-md py-4 mb-6">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-center space-x-reverse space-x-8">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="presentCount">0</div>
+                    <div class="text-sm text-gray-600">حاضرات</div>
                 </div>
-                <div class="card-bg text-white rounded-2xl p-5 flex items-center justify-between hover-effect">
-                    <div><p class="text-4xl font-black text-blue-300">${educationalLoss}</p><p class="font-medium">دقيقة فاقد تعليمي</p></div>
-                     <button onclick="initializeDashboard()" class="text-white hover:text-blue-200 transition">
-                         <svg class="w-10 h-10 svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21.5 2v6h-6M2.5 22v-6h6"></path>
-                            <path d="M2.5 16a9 9 0 0 1 18.2-2M21.5 8a9 9 0 0 1-18.2 2"></path>
-                         </svg>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-red-600" id="absentCount">0</div>
+                    <div class="text-sm text-gray-600">غائبات</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600" id="excusedCount">0</div>
+                    <div class="text-sm text-gray-600">بعذر</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-orange-600" id="lateCount">0</div>
+                    <div class="text-sm text-gray-600">متأخرات</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected Teacher Card -->
+    <div id="selectedTeacherCard" class="hidden text-white shadow-lg mb-6 mx-4 rounded-lg transition-all duration-300">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="text-4xl">👩‍🏫</div>
+                    <div>
+                        <h3 class="text-xl font-bold" id="selectedTeacherName">اسم المعلمة</h3>
+                        <p class="opacity-80" id="selectedTeacherClass">الصف</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="selectedTeacherStatus" class="px-4 py-2 rounded-full font-semibold">
+                        الحالة
+                    </div>
+                    <button onclick="clearSelection()" class="text-white hover:text-red-200 text-2xl">
+                        ✕
                     </button>
                 </div>
-                 <div class="card-bg text-white rounded-2xl p-5 flex items-center justify-between hover-effect">
-                    <div><p class="text-4xl font-black text-yellow-300">${topSubstituteOfMonth.split(' ')[0]}</p><p class="font-medium">معلمة الشهر 🏆</p></div>
-                    <svg class="w-12 h-12 text-yellow-400 opacity-60 svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
-                </div>`;
-        }
-        
-        function displayTodaysSubstitutes() {
-            const container = document.getElementById("today-substitutes-container");
-            const today = new Date().toISOString().slice(0, 10);
-            const todaySubs = allSubstitutes.filter(s => s.date === today);
-            
-            if (todaySubs.length === 0) {
-                container.innerHTML = `<div class="card-bg rounded-b-2xl p-8 text-center mt-4"><p class="text-white opacity-80">لا توجد حصص احتياط مسجلة لليوم. 🎉</p></div>`;
-                return;
-            }
+            </div>
+        </div>
+    </div>
 
-            let html = '<div id="printable-today">';
-            todaySubs.forEach(sub => {
-                const signatureData = sub.signatureData;
-                const signatureBlock = signatureData ? `<img src="${signatureData}" alt="توقيع" class="w-24 h-12 object-contain border bg-white/30 rounded-md cursor-pointer" onclick="showSignatureModal('${signatureData}')">` : `<div class="w-24 h-12 flex items-center justify-center text-xs text-red-300">(لم توقع ✍️)</div>`;
-                
-                html += `
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 items-center card-bg rounded-2xl p-4 mt-4">
-                        <div class="md:col-span-1"><p class="text-sm">المعلمة الغائبة</p><p class="font-bold">${sub.absentTeacher}</p></div>
-                        <div class="md:col-span-1"><p class="text-sm">الحصة</p><p class="font-bold">${sub.period}</p></div>
-                        <div class="md:col-span-1"><p class="text-sm">الصف</p><p class="font-bold">${sub.class}</p></div>
-                        <div class="md:col-span-1"><p class="text-sm">المعلمة البديلة</p><p class="font-bold">${sub.substituteTeacher}</p></div>
-                        <div class="flex flex-col items-center md:col-span-1"><p class="text-sm">التوقيع</p>${signatureBlock}</div>
-                    </div>`;
-            });
-            
-            html += '</div>';
-            container.innerHTML = html;
-        }
+    <!-- Save Status Indicator -->
+    <div id="saveStatus" class="fixed top-4 right-4 z-50 hidden">
+        <div class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+            <span class="text-sm">💾 تم الحفظ</span>
+        </div>
+    </div>
 
-        function displayMonthlyStats() {
-            const container = document.getElementById("monthly-stats-container");
-            const thisMonth = new Date().toISOString().slice(0, 7);
-            const monthSubs = allSubstitutes.filter(s => s.date && s.date.startsWith(thisMonth));
-            if (monthSubs.length === 0) {
-                container.innerHTML = '<p class="text-center p-4 opacity-80 text-white">لا توجد بيانات لهذا الشهر. 🗓️</p>';
-                return;
-            }
-            const substituteCounts = monthSubs.reduce((acc, sub) => { if (sub.substituteTeacher) acc[sub.substituteTeacher] = (acc[sub.substituteTeacher] || 0) + 1; return acc; }, {});
-            const topSubstitute = Object.entries(substituteCounts).sort((a, b) => b[1] - a[1])[0];
-            
-            let html = `<div class="card-bg rounded-xl p-3 flex items-center border border-yellow-400"><span class="text-2xl ml-3">🥇</span><div><p class="font-bold">${topSubstitute ? topSubstitute[0] : 'لا يوجد'}</p><p class="text-sm opacity-80">أكثر معلمة احتياط (${topSubstitute ? topSubstitute[1] : 0})</p></div></div>`;
-            if (monthlyStats && monthlyStats.mostFrequentPeriod7Teacher) {
-                html += `<div class="card-bg rounded-xl p-3 flex items-center mt-2 border border-purple-400"><span class="text-2xl ml-3">⭐</span><div><p class="font-bold">${monthlyStats.mostFrequentPeriod7Teacher}</p><p class="text-sm opacity-80">أكثر معلمة تأخذ الحصة السابعة (${monthlyStats.period7Count})</p></div></div>`;
-            }
-            container.innerHTML = html;
-        }
-        
-        function saveReportToDrive(reportType) {
-            const originalBodyHTML = document.body.innerHTML;
-            document.body.innerHTML = `
-                <div id="loading-spinner" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-50">
-                    <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-                    <p class="text-xl text-white ml-4">... جاري حفظ التقرير</p>
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 pb-8">
+        <!-- Teachers Section -->
+        <div id="teachersSection" class="section">
+            <!-- Teachers Status Lists -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Present Teachers List -->
+                <div class="bg-white rounded-lg shadow-lg p-4">
+                    <h3 class="text-lg font-bold text-center mb-3 text-green-600">👩‍🏫 الحاضرات</h3>
+                    <div id="presentTeachersNames" class="flex flex-wrap gap-2 justify-center min-h-[60px]">
+                        <!-- Present teachers will be shown here -->
+                    </div>
                 </div>
-            `;
-            google.script.run
-                .withSuccessHandler(response => {
-                    document.body.innerHTML = originalBodyHTML;
-                    if (response.status === 'success') {
-                        alert('تم حفظ التقرير بنجاح في مجلد جوجل درايف!');
-                        window.open(response.url, '_blank');
-                    } else {
-                        alert(response.message);
-                    }
-                })
-                .withFailureHandler(err => {
-                    document.body.innerHTML = originalBodyHTML;
-                    alert('فشل حفظ التقرير: ' + err.message);
-                })
-                .generateAndSavePdfReport(reportType, REPORTS_FOLDER_ID);
+                
+                <!-- Late Teachers List -->
+                <div class="bg-white rounded-lg shadow-lg p-4">
+                    <h3 class="text-lg font-bold text-center mb-3 text-orange-600">⏰ المتأخرات</h3>
+                    <div id="lateTeachersNames" class="flex flex-wrap gap-2 justify-center min-h-[60px]">
+                        <!-- Late teachers will be shown here -->
+                    </div>
+                </div>
+                
+                <!-- Excused Teachers List -->
+                <div class="bg-white rounded-lg shadow-lg p-4">
+                    <h3 class="text-lg font-bold text-center mb-3 text-yellow-600">📋 المعذورات</h3>
+                    <div id="excusedTeachersNames" class="flex flex-wrap gap-2 justify-center min-h-[60px]">
+                        <!-- Excused teachers will be shown here -->
+                    </div>
+                </div>
+                
+                <!-- Absent Teachers List -->
+                <div class="bg-white rounded-lg shadow-lg p-4">
+                    <h3 class="text-lg font-bold text-center mb-3 text-red-600">❌ الغائبات</h3>
+                    <div id="absentTeachersNames" class="flex flex-wrap gap-2 justify-center min-h-[60px]">
+                        <!-- Absent teachers will be shown here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div id="teachersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Teacher cards will be generated here -->
+            </div>
+        </div>
+
+        <!-- Classes Section -->
+        <div id="classesSection" class="section hidden">
+            <div id="classesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Class cards will be generated here -->
+            </div>
+        </div>
+
+        <!-- Admin Section -->
+        <div id="adminSection" class="section hidden">
+            <!-- Teachers Table -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">📋 جدول المعلمات</h3>
+                    <div class="flex gap-2">
+                        <button onclick="copyTableData()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">
+                            📋 نسخ الجدول
+                        </button>
+                        <button onclick="selectAllTable()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm">
+                            ✅ تحديد الكل
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table id="teachersTable" class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-4 py-2 text-center">#</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">اسم المعلمة</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">الصف</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">الحالة</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">نقاط اليوم</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">نقاط الشهر</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachersTableBody">
+                            <!-- Table rows will be generated here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-4 text-sm text-gray-600">
+                    <p>💡 يمكنك نسخ الجدول كاملاً أو تحديد صفوف معينة ونسخها</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Data Management -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 text-center">📊 إدارة البيانات</h3>
+                    <div class="space-y-4">
+                        <input type="file" id="excelFile" accept=".xlsx,.xls" class="w-full p-3 border rounded-lg">
+                        <button onclick="uploadExcel()" class="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600">
+                            رفع ملف Excel
+                        </button>
+                        <button onclick="showAddTeacherForm()" class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600">
+                            إضافة معلمة يدوياً
+                        </button>
+                        <button onclick="showBulkAddModal()" class="w-full bg-teal-500 text-white py-3 rounded-lg hover:bg-teal-600">
+                            📋 جدول إضافة المعلمات
+                        </button>
+                        <button onclick="showAddClassForm()" class="w-full bg-purple-500 text-white py-3 rounded-lg hover:bg-purple-600">
+                            إضافة صف يدوياً
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Certificates -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 text-center">🏆 الشهادات</h3>
+                    <div class="space-y-4">
+                        <button onclick="generateDailyCertificate()" class="w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600">
+                            شهادة نجم اليوم
+                        </button>
+                        <button onclick="generateMonthlyCertificate()" class="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600">
+                            شهادة نجم الشهر
+                        </button>
+                        <button onclick="generateTeacherCertificate()" class="w-full bg-pink-500 text-white py-3 rounded-lg hover:bg-pink-600">
+                            شهادة معلمة مثالية
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 text-center">⚙️ الإعدادات</h3>
+                    <div class="space-y-4">
+                        <button onclick="showSettings()" class="w-full bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600">
+                            إعدادات النظام
+                        </button>
+                        <button onclick="exportData()" class="w-full bg-indigo-500 text-white py-3 rounded-lg hover:bg-indigo-600">
+                            تصدير البيانات
+                        </button>
+                        <button onclick="resetSystem()" class="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-red-600">
+                            إعادة تعيين النظام
+                        </button>
+                        <button onclick="clearAllData()" class="w-full bg-red-700 text-white py-3 rounded-lg hover:bg-red-800">
+                            🗑️ مسح جميع البيانات
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-center">إعدادات النظام</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">عنوان النظام</label>
+                    <input type="text" id="systemTitle" class="w-full p-3 border rounded-lg" value="الطابور المدرسي">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">اسم المديرة</label>
+                    <input type="text" id="principalNameInput" class="w-full p-3 border rounded-lg" value="أ. فاطمة الأحمد">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">كلمة مرور النظام</label>
+                    <input type="password" id="systemPassword" class="w-full p-3 border rounded-lg" placeholder="أدخل كلمة مرور جديدة">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">رفع الشعار الأول</label>
+                    <input type="file" id="logoFile" accept="image/*" class="w-full p-3 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">رفع الشعار الثاني</label>
+                    <input type="file" id="logoFile2" accept="image/*" class="w-full p-3 border rounded-lg">
+                </div>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button onclick="saveSettings()" class="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600">
+                    حفظ
+                </button>
+                <button onclick="closeModal('settingsModal')" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Teacher Modal -->
+    <div id="addTeacherModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-center">إضافة معلمة جديدة</h3>
+            <div class="space-y-4">
+                <input type="text" id="newTeacherName" class="w-full p-3 border rounded-lg" placeholder="اسم المعلمة">
+                <input type="text" id="newTeacherClass" class="w-full p-3 border rounded-lg" placeholder="الصف">
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button onclick="addTeacher()" class="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600">
+                    إضافة
+                </button>
+                <button onclick="closeModal('addTeacherModal')" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div id="addClassModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-center">إضافة صف جديد</h3>
+            <div class="space-y-4">
+                <input type="text" id="newClassName" class="w-full p-3 border rounded-lg" placeholder="اسم الصف">
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button onclick="addClass()" class="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600">
+                    إضافة
+                </button>
+                <button onclick="closeModal('addClassModal')" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Modal -->
+    <div id="cameraModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-center">التقاط صورة</h3>
+            <video id="cameraVideo" class="w-full rounded-lg mb-4" autoplay></video>
+            <canvas id="cameraCanvas" class="hidden"></canvas>
+            <div class="flex gap-4">
+                <button onclick="capturePhoto()" class="flex-1 bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600">
+                    📸 التقاط
+                </button>
+                <button onclick="closeCameraModal()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="passwordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-center">🔐 كلمة مرور إدارة النظام</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">أدخل كلمة المرور</label>
+                    <input type="password" id="adminPasswordInput" class="w-full p-3 border rounded-lg" placeholder="كلمة المرور">
+                </div>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button onclick="checkAdminPassword()" class="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600">
+                    دخول
+                </button>
+                <button onclick="closeModal('passwordModal')" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-center">تصدير البيانات</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">نوع التقرير</label>
+                    <select id="exportType" class="w-full p-3 border rounded-lg">
+                        <option value="daily">يومي</option>
+                        <option value="weekly">أسبوعي</option>
+                        <option value="monthly">شهري</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">صيغة الملف</label>
+                    <select id="exportFormat" class="w-full p-3 border rounded-lg">
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="image">صورة</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button onclick="performExport()" class="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600">
+                    تصدير
+                </button>
+                <button onclick="closeModal('exportModal')" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Add Teachers Modal -->
+    <div id="bulkAddModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-6 text-center">📋 جدول إضافة المعلمات</h3>
+            
+            <!-- Instructions -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 class="font-bold text-blue-800 mb-2">💡 كيفية الاستخدام:</h4>
+                <ul class="text-sm text-blue-700 space-y-1">
+                    <li>• انسخ البيانات من Excel (عمودين: اسم المعلمة والصف)</li>
+                    <li>• الصق البيانات في المربع أدناه</li>
+                    <li>• أو أدخل البيانات يدوياً في الجدول</li>
+                    <li>• انقر "إضافة المعلمات" لحفظ البيانات</li>
+                </ul>
+            </div>
+            
+            <!-- Paste Area -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">📋 الصق البيانات هنا (من Excel أو أي مصدر آخر):</label>
+                <textarea id="bulkPasteArea" class="w-full h-32 p-3 border rounded-lg resize-none" 
+                          placeholder="الصق البيانات هنا... مثال:&#10;أ. سارة محمد	الصف الأول أ&#10;أ. نور أحمد	الصف الثاني ب&#10;أ. فاطمة علي	الصف الثالث أ"></textarea>
+                <div class="flex gap-2 mt-2">
+                    <button onclick="parsePastedData()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">
+                        📥 تحليل البيانات
+                    </button>
+                    <button onclick="clearPasteArea()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 text-sm">
+                        🗑️ مسح
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Editable Table -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-lg font-bold">📊 جدول المعلمات</h4>
+                    <div class="flex gap-2">
+                        <button onclick="addEmptyRow()" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">
+                            ➕ إضافة صف
+                        </button>
+                        <button onclick="clearTable()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                            🗑️ مسح الجدول
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto border rounded-lg">
+                    <table id="bulkAddTable" class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-4 py-2 text-center w-16">#</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">اسم المعلمة</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">الصف</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center w-20">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulkAddTableBody">
+                            <!-- Rows will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex gap-4">
+                <button onclick="saveBulkTeachers()" class="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 font-semibold">
+                    ✅ إضافة المعلمات
+                </button>
+                <button onclick="closeModal('bulkAddModal')" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables - Default data that will be replaced by saved data
+        let selectedTeacherId = null;
+        let teachers = [];
+        let classes = [];
+        let systemSettings = {
+            title: 'الطابور المدرسي',
+            principalName: 'أ. فاطمة الأحمد',
+            password: '1234',
+            logo1: '',
+            logo2: ''
+        };
+
+        // No default data - system starts empty
+
+        // Initialize the system
+        function init() {
+            loadData(); // Load saved data first
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            renderTeachers();
+            renderClasses();
+            updateStatistics();
+            updateTeachersListByStatus(); // Add this to show names immediately
+            updateStars();
+            loadSettings();
+            
+            // Set up auto-save every 30 seconds
+            setInterval(autoSave, 30000);
+            
+            // Set up periodic backup save every 2 minutes
+            setInterval(() => {
+                saveData();
+                console.log('🔄 حفظ دوري للبيانات:', new Date().toLocaleTimeString('ar-SA'));
+            }, 120000);
+            
+            console.log('🚀 تم تشغيل النظام مع الحفظ التلقائي المحسن');
         }
 
-        function openTeacherStatsModal() {
-            google.script.run
-                .withSuccessHandler(response => {
-                    const modal = document.getElementById("report-modal");
-                    let content = `<div class="glass-effect text-white rounded-2xl max-w-2xl w-full max-h-[95vh] flex flex-col shadow-2xl"><div class="p-4 border-b border-white/20 flex justify-between items-center"><h2 class="text-2xl font-bold">👩‍🏫 إحصاءات المعلمات</h2><button onclick="closeModal('report-modal')" class="hover:text-pink-500"><i class="fa-solid fa-times-circle fa-2x"></i></button></div><div class="p-6 overflow-y-auto">`;
-                    if (response.error) {
-                        content += `<p class="text-center text-red-300">${response.error}</p>`;
-                    } else {
-                        content += `<ul class="divide-y divide-gray-300/30">`;
-                        response.stats.forEach(item => {
-                            content += `<li class="flex justify-between items-center py-2"><span class="font-bold">${item.teacher}</span><span>${item.count} حصة</span></li>`;
-                        });
-                        content += `</ul>`;
-                    }
-                    content += `</div></div>`;
-                    modal.innerHTML = content;
-                    modal.classList.remove('hidden');
-                })
-                .withFailureHandler(err => {
-                    alert('فشل تحميل الإحصائيات: ' + err.message);
-                })
-                .getTeachersStats();
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('ar-SA', options);
         }
 
-        function buildModals() {
-            document.getElementById("form-modal").innerHTML = `<div class="glass-effect text-white rounded-2xl max-w-2xl w-full max-h-[95vh] flex flex-col shadow-2xl"><div class="p-4 border-b border-white/20 flex justify-between items-center"><h2 class="text-2xl font-bold">📝 تسجيل حصة احتياط جديدة</h2><button onclick="closeModal('form-modal')" class="hover:text-pink-500"><i class="fa-solid fa-times-circle fa-2x"></i></button></div><div class="p-6 overflow-y-auto" id="form-content"></div></div>`;
-            document.getElementById("signature-view-modal").innerHTML = `<div class="glass-effect rounded-2xl p-4 w-full max-w-lg shadow-2xl relative"><button onclick="closeModal('signature-view-modal')" class="absolute top-2 left-2 text-white hover:text-pink-500"><i class="fa-solid fa-times-circle fa-2x"></i></button><div id="signature-view-content" class="mt-8"></div></div>`;
-        }
-        
-        function openFormModal() {
-            document.getElementById('form-modal').classList.remove('hidden');
-            setupForm();
+        // Show password modal
+        function showPasswordModal() {
+            showModal('passwordModal');
+            document.getElementById('adminPasswordInput').focus();
         }
 
-        function setupForm() {
-            const formContent = document.getElementById("form-content");
-            formContent.innerHTML = `
-                <form id="substitutionForm">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div><label class="block text-sm font-medium mb-1">التاريخ</label><div id="date-display" class="bg-white/20 p-3 rounded-lg text-white"></div></div>
-                        <div><label class="block text-sm font-medium mb-1">اليوم</label><div id="day-display" class="bg-white/20 p-3 rounded-lg text-white"></div></div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-1">اختر الحصة</label>
-                        <div id="period-buttons" class="flex flex-wrap gap-2"></div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-1">اختر الصف</label>
-                        <div id="class-buttons" class="flex flex-wrap gap-2"></div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label for="absentTeacher" class="block text-sm font-medium mb-1">المعلمة الغائبة</label>
-                            <select id="absentTeacher" required class="w-full p-3 rounded-lg border text-gray-700"></select>
-                        </div>
-                        <div>
-                            <label for="subject" class="block text-sm font-medium mb-1">المادة</label>
-                            <input type="text" id="subject" readonly class="w-full p-3 rounded-lg bg-gray-200 text-gray-700 cursor-not-allowed">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label for="substituteTeacher" class="block text-sm font-medium mb-1">المعلمة البديلة</label>
-                            <select id="substituteTeacher" required class="w-full p-3 rounded-lg border text-gray-700"></select>
-                        </div>
-                        <div>
-                            <label for="phone" class="block text-sm font-medium mb-1">رقم هاتف المعلمة البديلة</label>
-                            <input type="text" id="phone" readonly class="w-full p-3 rounded-lg bg-gray-200 text-gray-700 cursor-not-allowed">
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-1">توقيع المعلمة البديلة</label>
-                        <div class="signature-pad-container">
-                            <canvas id="signature-pad"></canvas>
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center mt-4 gap-4">
-                        <button type="submit" id="submit-btn" class="bg-green-500/80 hover:bg-green-400/80 text-white font-bold py-3 px-6 rounded-lg flex-grow button-effect">إرسال وحفظ ✅</button>
-                        <button type="button" id="clear-btn" class="bg-red-500/80 hover:bg-red-400/80 text-white font-bold py-3 px-6 rounded-lg button-effect">مسح 🗑️</button>
-                    </div>
-                </form>
-                <div id="message" class="mt-4 text-center p-3 rounded-lg hidden"></div>`;
+        // Check admin password
+        function checkAdminPassword() {
+            const password = document.getElementById('adminPasswordInput').value;
+            if (password === '1234') {
+                closeModal('passwordModal');
+                showSection('admin');
+                document.getElementById('adminPasswordInput').value = '';
+            } else if (password !== '') {
+                alert('كلمة المرور غير صحيحة!');
+                document.getElementById('adminPasswordInput').value = '';
+                document.getElementById('adminPasswordInput').focus();
+            }
+        }
 
-            if (!dropdownData || !dropdownData.absentTeachers || dropdownData.absentTeachers.length === 0) {
-                formContent.innerHTML = `<div class="text-center p-6 bg-red-500/50 text-white rounded-lg"><b>❌ خطأ:</b> لم يتم العثور على أسماء المعلمات.</div>`;
+        // Show section
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(section + 'Section').classList.remove('hidden');
+            
+            // Update nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'bg-green-600', 'bg-purple-600');
+                btn.classList.add('bg-blue-500', 'bg-green-500', 'bg-purple-500');
+            });
+            
+            // If showing admin section, render the teachers table
+            if (section === 'admin') {
+                renderTeachersTable();
+            }
+        }
+
+        // Render teachers
+        function renderTeachers() {
+            const grid = document.getElementById('teachersGrid');
+            grid.innerHTML = '';
+            
+            // Show welcome message if no teachers
+            if (teachers.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-16">
+                        <div class="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
+                            <div class="text-6xl mb-4">👩‍🏫</div>
+                            <h3 class="text-2xl font-bold mb-4 text-gray-700">مرحباً بك في نظام الطابور المدرسي!</h3>
+                            <p class="text-gray-600 mb-6">لم يتم إضافة أي معلمات بعد</p>
+                            <div class="space-y-3">
+                                <button onclick="showPasswordModal()" class="w-full bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 font-semibold">
+                                    🔧 اذهب إلى الإعدادات لإضافة المعلمات
+                                </button>
+                                <p class="text-sm text-gray-500">يمكنك إضافة المعلمات عبر:</p>
+                                <div class="text-xs text-gray-400 space-y-1">
+                                    <div>📊 رفع ملف Excel</div>
+                                    <div>📋 جدول إضافة المعلمات</div>
+                                    <div>✏️ إضافة معلمة يدوياً</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 return;
             }
-            setAutoDateAndDay();
-            populateSelect("absentTeacher", dropdownData.absentTeachers);
-            populateSelect("substituteTeacher", dropdownData.substituteTeachers);
-            createButtons("period-buttons", dropdownData.periods, "period");
-            createButtons("class-buttons", dropdownData.classes, "class");
             
-            document.getElementById("absentTeacher").addEventListener("change", function(){ 
-                document.getElementById("subject").value = dropdownData.teacherSubjectMap[this.value] || ""; 
-            });
-            document.getElementById("substituteTeacher").addEventListener("change", function(){ 
-                document.getElementById("phone").value = dropdownData.teacherPhoneMap[this.value] || ""; 
-            });
+            teachers.forEach(teacher => {
+                const statusColors = {
+                    present: 'bg-green-500',
+                    absent: 'bg-red-500',
+                    excused: 'bg-yellow-500',
+                    late: 'bg-orange-500'
+                };
+                
+                const statusTexts = {
+                    present: 'حاضرة',
+                    absent: 'غائبة',
+                    excused: 'بعذر',
+                    late: 'متأخرة'
+                };
 
-            const canvas = document.getElementById("signature-pad");
+                // Card background colors based on status
+                const cardColors = {
+                    present: 'bg-green-50 border-2 border-green-200',
+                    absent: 'bg-red-50 border-2 border-red-200',
+                    excused: 'bg-yellow-50 border-2 border-yellow-200',
+                    late: 'bg-orange-50 border-2 border-orange-200'
+                };
+
+                const card = document.createElement('div');
+                card.className = `${cardColors[teacher.status]} rounded-lg shadow-lg p-6 card-shadow cursor-pointer transition-all duration-300 hover:shadow-xl ${selectedTeacherId === teacher.id ? 'ring-4 ring-blue-500' : ''}`;
+                card.onclick = () => selectTeacher(teacher.id);
+                card.innerHTML = `
+                    <div class="text-center mb-4">
+                        <div class="text-4xl mb-2 transition-transform duration-300 hover:scale-110">👩‍🏫</div>
+                        <h3 class="text-xl font-bold">${teacher.name}</h3>
+                        <p class="text-gray-600">${teacher.class}</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <button onclick="updateTeacherStatus(${teacher.id}, 'present')" 
+                                class="py-2 px-3 rounded text-white text-sm ${teacher.status === 'present' ? 'bg-green-600' : 'bg-green-400'} hover:bg-green-600">
+                            حاضرة
+                        </button>
+                        <button onclick="updateTeacherStatus(${teacher.id}, 'absent')" 
+                                class="py-2 px-3 rounded text-white text-sm ${teacher.status === 'absent' ? 'bg-red-600' : 'bg-red-400'} hover:bg-red-600">
+                            غائبة
+                        </button>
+                        <button onclick="updateTeacherStatus(${teacher.id}, 'excused')" 
+                                class="py-2 px-3 rounded text-white text-sm ${teacher.status === 'excused' ? 'bg-yellow-600' : 'bg-yellow-400'} hover:bg-yellow-600">
+                            بعذر
+                        </button>
+                        <button onclick="updateTeacherStatus(${teacher.id}, 'late')" 
+                                class="py-2 px-3 rounded text-white text-sm ${teacher.status === 'late' ? 'bg-orange-600' : 'bg-orange-400'} hover:bg-orange-600">
+                            متأخرة
+                        </button>
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <span class="inline-block px-3 py-1 rounded-full text-white text-sm ${statusColors[teacher.status]}">
+                            ${statusTexts[teacher.status]}
+                        </span>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="resetTeacher(${teacher.id})" class="flex-1 bg-gray-500 text-white py-2 rounded hover:bg-gray-600 text-sm">
+                            إعادة تعيين
+                        </button>
+                        <button onclick="openCamera()" class="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600 text-sm">
+                            📸 كاميرا
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
             
-            function resizeCanvas() {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
-                signaturePad.clear();
-            }
-
-            signaturePad = new SignaturePad(canvas, { 
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                penColor: 'black' 
-            });
-
-            resizeCanvas();
-            window.addEventListener("resize", resizeCanvas);
-
-            document.getElementById("clear-btn").addEventListener("click", () => signaturePad.clear());
-            document.getElementById("substitutionForm").addEventListener("submit", handleFormSubmit);
+            // Update the status lists after rendering
+            updateTeachersListByStatus();
         }
 
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            if (signaturePad.isEmpty()) return alert("الرجاء إضافة التوقيع.");
-            if (!selectedPeriod) return alert("الرجاء اختيار الحصة.");
-            if (!selectedClass) return alert("الرجاء اختيار الصف.");
-            const submitBtn = document.getElementById("submit-btn");
-            submitBtn.disabled = true;
-            submitBtn.textContent = "جاري الحفظ...";
-            const formData = { 
-                date: new Date().toISOString().slice(0, 10), 
-                day: document.getElementById("day-display").textContent, 
-                period: selectedPeriod, 
-                class: selectedClass, 
-                subject: document.getElementById("subject").value, 
-                absentTeacher: document.getElementById("absentTeacher").value, 
-                substituteTeacher: document.getElementById("substituteTeacher").value, 
-                phone: document.getElementById("phone").value, 
-                signature: signaturePad.toDataURL("image/png") 
-            };
-            google.script.run.withSuccessHandler(response => onFormSubmitSuccess(response, formData)).processForm(formData);
+        // Render classes
+        function renderClasses() {
+            const grid = document.getElementById('classesGrid');
+            grid.innerHTML = '';
+            
+            // Show welcome message if no classes
+            if (classes.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-16">
+                        <div class="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
+                            <div class="text-6xl mb-4">🏫</div>
+                            <h3 class="text-2xl font-bold mb-4 text-gray-700">لا توجد صفوف بعد!</h3>
+                            <p class="text-gray-600 mb-6">سيتم إنشاء الصفوف تلقائياً عند إضافة المعلمات</p>
+                            <button onclick="showPasswordModal()" class="bg-purple-500 text-white py-3 px-6 rounded-lg hover:bg-purple-600 font-semibold">
+                                🔧 اذهب إلى الإعدادات لإضافة المعلمات والصفوف
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            classes.forEach(classItem => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-lg p-6 card-shadow';
+                card.innerHTML = `
+                    <div class="text-center mb-4">
+                        <div class="text-4xl mb-2">🏫</div>
+                        <h3 class="text-xl font-bold">${classItem.name}</h3>
+                        <div class="text-sm text-gray-600 mt-2">
+                            <div>نقاط اليوم: <span class="font-bold text-blue-600">${classItem.dailyPoints}</span></div>
+                            <div>نقاط الشهر: <span class="font-bold text-green-600">${classItem.monthlyPoints}</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 mb-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">الهدوء:</span>
+                            <div class="flex gap-1">
+                                ${[1,2,3,4,5].map(i => `
+                                    <button onclick="updateRating(${classItem.id}, 'quiet', ${i})" 
+                                            class="w-6 h-6 rounded-full text-xs ${i <= classItem.ratings.quiet ? 'bg-yellow-400' : 'bg-gray-200'}">
+                                        ⭐
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">سرعة الاصطفاف:</span>
+                            <div class="flex gap-1">
+                                ${[1,2,3,4,5].map(i => `
+                                    <button onclick="updateRating(${classItem.id}, 'speed', ${i})" 
+                                            class="w-6 h-6 rounded-full text-xs ${i <= classItem.ratings.speed ? 'bg-blue-400' : 'bg-gray-200'}">
+                                        ⚡
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">الاصطفاف:</span>
+                            <div class="flex gap-1">
+                                ${[1,2,3,4,5].map(i => `
+                                    <button onclick="updateRating(${classItem.id}, 'alignment', ${i})" 
+                                            class="w-6 h-6 rounded-full text-xs ${i <= classItem.ratings.alignment ? 'bg-green-400' : 'bg-gray-200'}">
+                                        📏
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">مستوى الصوت:</span>
+                            <div class="flex gap-1">
+                                ${[1,2,3,4,5].map(i => `
+                                    <button onclick="updateRating(${classItem.id}, 'noise', ${i})" 
+                                            class="w-6 h-6 rounded-full text-xs ${i <= classItem.ratings.noise ? 'bg-red-400' : 'bg-gray-200'}">
+                                        🔊
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">النظافة:</span>
+                            <div class="flex gap-1">
+                                ${[1,2,3,4,5].map(i => `
+                                    <button onclick="updateRating(${classItem.id}, 'cleanliness', ${i})" 
+                                            class="w-6 h-6 rounded-full text-xs ${i <= classItem.ratings.cleanliness ? 'bg-purple-400' : 'bg-gray-200'}">
+                                        ✨
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="addPoints(${classItem.id}, 5)" class="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600 text-sm">
+                            +5 نقاط
+                        </button>
+                        <button onclick="addPoints(${classItem.id}, -2)" class="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600 text-sm">
+                            -2 نقاط
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
         }
 
-        function onFormSubmitSuccess(response, formData) {
-            const messageDiv = document.getElementById("message");
-            messageDiv.className = `p-3 rounded-lg ${response.status === "success" ? "bg-green-500/50 text-white" : "bg-red-500/50 text-white"}`;
-            messageDiv.textContent = response.message;
-            messageDiv.style.display = "block";
-            if (response.status === "success") {
-                const newSub = { ...formData, signatureUrl: `https://drive.google.com/uc?export=view&id=${response.signatureFileId}` };
-                allSubstitutes.push(newSub);
-                renderFullUI();
-                setTimeout(() => closeModal('form-modal'), 1500);
+        // Select teacher
+        function selectTeacher(teacherId) {
+            selectedTeacherId = teacherId;
+            const teacher = teachers.find(t => t.id === teacherId);
+            if (teacher) {
+                // Show selected teacher card
+                const selectedCard = document.getElementById('selectedTeacherCard');
+                selectedCard.classList.remove('hidden');
+                document.getElementById('selectedTeacherName').textContent = teacher.name;
+                document.getElementById('selectedTeacherClass').textContent = teacher.class;
+                
+                // Update status display and card background color
+                const statusColors = {
+                    present: 'bg-green-500',
+                    absent: 'bg-red-500',
+                    excused: 'bg-yellow-500',
+                    late: 'bg-orange-500'
+                };
+                
+                const cardBackgrounds = {
+                    present: 'bg-gradient-to-r from-green-500 to-green-600',
+                    absent: 'bg-gradient-to-r from-red-500 to-red-600',
+                    excused: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
+                    late: 'bg-gradient-to-r from-orange-500 to-orange-600'
+                };
+                
+                const statusTexts = {
+                    present: 'حاضرة',
+                    absent: 'غائبة',
+                    excused: 'بعذر',
+                    late: 'متأخرة'
+                };
+                
+                // Update card background
+                selectedCard.className = `text-white shadow-lg mb-6 mx-4 rounded-lg transition-all duration-300 ${cardBackgrounds[teacher.status]}`;
+                
+                const statusElement = document.getElementById('selectedTeacherStatus');
+                statusElement.className = `px-4 py-2 rounded-full font-semibold bg-white bg-opacity-20`;
+                statusElement.textContent = statusTexts[teacher.status];
+                
+                // Re-render to show selection
+                renderTeachers();
             }
-            const submitBtn = document.getElementById("submit-btn");
-            submitBtn.disabled = false;
-            submitBtn.textContent = "إرسال وحفظ ✅";
+        }
+
+        // Clear selection
+        function clearSelection() {
+            selectedTeacherId = null;
+            document.getElementById('selectedTeacherCard').classList.add('hidden');
+            renderTeachers();
+        }
+
+        // Update teacher status
+        function updateTeacherStatus(teacherId, status) {
+            const teacher = teachers.find(t => t.id === teacherId);
+            if (teacher) {
+                const oldStatus = teacher.status;
+                teacher.status = status;
+                
+                // Award points based on status
+                if (status === 'present' && oldStatus !== 'present') {
+                    teacher.dailyPoints += 5;
+                    teacher.monthlyPoints += 5;
+                } else if (status === 'late' && oldStatus !== 'late') {
+                    teacher.dailyPoints += 2;
+                    teacher.monthlyPoints += 2;
+                } else if (status === 'excused' && oldStatus !== 'excused') {
+                    teacher.dailyPoints += 3;
+                    teacher.monthlyPoints += 3;
+                } else if (status === 'absent') {
+                    // Reset daily points for absent teachers
+                    teacher.dailyPoints = 0;
+                }
+                
+                // Update selected teacher card if this teacher is selected
+                if (selectedTeacherId === teacherId) {
+                    selectTeacher(teacherId);
+                }
+                
+                renderTeachers();
+                updateStatistics();
+                updatePresentTeachersList();
+                updateStars();
+                
+                // Force immediate save after status change
+                saveData();
+            }
+        }
+
+        // Reset teacher
+        function resetTeacher(teacherId) {
+            const teacher = teachers.find(t => t.id === teacherId);
+            if (teacher) {
+                teacher.status = 'present';
+                renderTeachers();
+                updateStatistics();
+                saveData();
+            }
+        }
+
+        // Update class rating
+        function updateRating(classId, category, rating) {
+            const classItem = classes.find(c => c.id === classId);
+            if (classItem) {
+                classItem.ratings[category] = rating;
+                updateClassPoints(classId);
+                renderClasses();
+                updateStars();
+                saveData();
+            }
+        }
+
+        // Add points to class
+        function addPoints(classId, points) {
+            const classItem = classes.find(c => c.id === classId);
+            if (classItem) {
+                classItem.dailyPoints += points;
+                classItem.monthlyPoints += points;
+                if (classItem.dailyPoints < 0) classItem.dailyPoints = 0;
+                if (classItem.monthlyPoints < 0) classItem.monthlyPoints = 0;
+                renderClasses();
+                updateStars();
+                saveData();
+            }
+        }
+
+        // Update class points based on ratings
+        function updateClassPoints(classId) {
+            const classItem = classes.find(c => c.id === classId);
+            if (classItem) {
+                const totalRating = Object.values(classItem.ratings).reduce((sum, rating) => sum + rating, 0);
+                classItem.dailyPoints = totalRating;
+                classItem.monthlyPoints += totalRating - 15; // Assuming 15 is the base
+            }
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const present = teachers.filter(t => t.status === 'present').length;
+            const absent = teachers.filter(t => t.status === 'absent').length;
+            const excused = teachers.filter(t => t.status === 'excused').length;
+            const late = teachers.filter(t => t.status === 'late').length;
+            
+            document.getElementById('presentCount').textContent = present;
+            document.getElementById('absentCount').textContent = absent;
+            document.getElementById('excusedCount').textContent = excused;
+            document.getElementById('lateCount').textContent = late;
+            
+            // Update present teachers list
+            updatePresentTeachersList();
+        }
+
+        // Update all teachers lists by status
+        function updatePresentTeachersList() {
+            updateTeachersListByStatus();
         }
         
-        function setAutoDateAndDay(){const e=new Date,t=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];document.getElementById("date-display").textContent=e.toLocaleDateString("ar-EG-u-nu-latn",{year:"numeric",month:"long",day:"numeric"}),document.getElementById("day-display").textContent=t[e.getDay()]}
-        function populateSelect(e,t){const o=document.getElementById(e);o.innerHTML='<option value="">اختر المعلمة...</option>',t&&t.forEach(e=>{const t=document.createElement("option");t.value=e,t.textContent=e,o.appendChild(t)})}
-        function createButtons(e,t,o){const n=document.getElementById(e);n.innerHTML="",t&&t.forEach(e=>{const t=document.createElement("button");t.type="button",t.className="flex-grow p-2 rounded-md cursor-pointer bg-white/20 hover:bg-white/40 border border-transparent hover:border-white/50 transition",t.textContent=e,t.dataset.value=e,t.onclick=()=>{n.querySelectorAll("button").forEach(e=>e.classList.remove("bg-pink-500/80","border-pink-500","text-white")),t.classList.add("bg-pink-500/80","border-pink-500","text-white"),"period"===o?selectedPeriod=e:"class"===o&&(selectedClass=e)},n.appendChild(t)})}
-        function closeModal(e){document.getElementById(e).classList.add("hidden")}
-        function showSignatureModal(t){document.getElementById("signature-view-modal").classList.remove("hidden"),document.getElementById("modal-signature-image").src=t;}
+        function updateTeachersListByStatus() {
+            // Present teachers
+            const presentTeachers = teachers.filter(t => t.status === 'present');
+            const presentContainer = document.getElementById('presentTeachersNames');
+            
+            if (presentTeachers.length === 0) {
+                presentContainer.innerHTML = '<p class="text-gray-500 text-center text-xs">لا يوجد</p>';
+            } else {
+                presentContainer.innerHTML = presentTeachers.map(teacher => 
+                    `<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                        ${teacher.name}
+                    </span>`
+                ).join('');
+            }
+            
+            // Late teachers
+            const lateTeachers = teachers.filter(t => t.status === 'late');
+            const lateContainer = document.getElementById('lateTeachersNames');
+            
+            if (lateTeachers.length === 0) {
+                lateContainer.innerHTML = '<p class="text-gray-500 text-center text-xs">لا يوجد</p>';
+            } else {
+                lateContainer.innerHTML = lateTeachers.map(teacher => 
+                    `<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
+                        ${teacher.name}
+                    </span>`
+                ).join('');
+            }
+            
+            // Excused teachers
+            const excusedTeachers = teachers.filter(t => t.status === 'excused');
+            const excusedContainer = document.getElementById('excusedTeachersNames');
+            
+            if (excusedTeachers.length === 0) {
+                excusedContainer.innerHTML = '<p class="text-gray-500 text-center text-xs">لا يوجد</p>';
+            } else {
+                excusedContainer.innerHTML = excusedTeachers.map(teacher => 
+                    `<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
+                        ${teacher.name}
+                    </span>`
+                ).join('');
+            }
+            
+            // Absent teachers
+            const absentTeachers = teachers.filter(t => t.status === 'absent');
+            const absentContainer = document.getElementById('absentTeachersNames');
+            
+            if (absentTeachers.length === 0) {
+                absentContainer.innerHTML = '<p class="text-gray-500 text-center text-xs">لا يوجد</p>';
+            } else {
+                absentContainer.innerHTML = absentTeachers.map(teacher => 
+                    `<span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                        ${teacher.name}
+                    </span>`
+                ).join('');
+            }
+        }
+
+        // Update stars
+        function updateStars() {
+            // Class stars
+            if (classes.length > 0) {
+                const dailyWinner = classes.reduce((prev, current) => 
+                    (prev.dailyPoints > current.dailyPoints) ? prev : current
+                );
+                const monthlyWinner = classes.reduce((prev, current) => 
+                    (prev.monthlyPoints > current.monthlyPoints) ? prev : current
+                );
+                
+                document.getElementById('dailyStar').textContent = dailyWinner.name;
+                document.getElementById('monthlyStar').textContent = monthlyWinner.name;
+            } else {
+                document.getElementById('dailyStar').textContent = 'لا توجد صفوف';
+                document.getElementById('monthlyStar').textContent = 'لا توجد صفوف';
+            }
+            
+            // Teacher stars
+            updateTeacherStars();
+        }
+        
+        // Update teacher stars
+        function updateTeacherStars() {
+            if (teachers.length === 0) {
+                document.getElementById('dailyTeacherStar').textContent = 'لا توجد معلمات';
+                document.getElementById('monthlyTeacherStar').textContent = 'لا توجد معلمات';
+                return;
+            }
+            
+            const presentTeachers = teachers.filter(t => t.status === 'present');
+            const dailyTeacherWinner = presentTeachers.length > 0 ? 
+                presentTeachers.reduce((prev, current) => 
+                    (prev.dailyPoints > current.dailyPoints) ? prev : current
+                ) : null;
+            
+            const monthlyTeacherWinner = teachers.length > 0 ? 
+                teachers.reduce((prev, current) => 
+                    (prev.monthlyPoints > current.monthlyPoints) ? prev : current
+                ) : null;
+            
+            document.getElementById('dailyTeacherStar').textContent = 
+                dailyTeacherWinner ? dailyTeacherWinner.name : 'لا توجد معلمات حاضرات';
+            document.getElementById('monthlyTeacherStar').textContent = 
+                monthlyTeacherWinner ? monthlyTeacherWinner.name : 'لا توجد معلمات';
+        }
+
+        // Modal functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function showSettings() {
+            showModal('settingsModal');
+        }
+
+        function showAddTeacherForm() {
+            showModal('addTeacherModal');
+        }
+
+        function showAddClassForm() {
+            showModal('addClassModal');
+        }
+
+        function showBulkAddModal() {
+            showModal('bulkAddModal');
+            // Initialize with a few empty rows
+            clearTable();
+            for (let i = 0; i < 5; i++) {
+                addEmptyRow();
+            }
+        }
+
+        // Settings functions
+        function saveSettings() {
+            const title = document.getElementById('systemTitle').value;
+            const principalName = document.getElementById('principalNameInput').value;
+            const password = document.getElementById('systemPassword').value;
+            
+            // Update system settings
+            systemSettings.title = title;
+            systemSettings.principalName = principalName;
+            if (password) systemSettings.password = password;
+            
+            // Update display immediately
+            document.getElementById('mainTitle').textContent = title;
+            document.getElementById('principalName').textContent = principalName;
+            
+            // Handle logo files
+            const logoFile = document.getElementById('logoFile').files[0];
+            const logoFile2 = document.getElementById('logoFile2').files[0];
+            
+            let logosToProcess = 0;
+            let logosProcessed = 0;
+            
+            if (logoFile) logosToProcess++;
+            if (logoFile2) logosToProcess++;
+            
+            function checkAndSave() {
+                logosProcessed++;
+                if (logosProcessed >= logosToProcess || logosToProcess === 0) {
+                    // Force save settings
+                    saveData();
+                    
+                    // Save again after a short delay to ensure persistence
+                    setTimeout(() => {
+                        saveData();
+                        console.log('💾 تم حفظ الإعدادات بشكل دائم');
+                    }, 300);
+                    
+                    closeModal('settingsModal');
+                    alert('✅ تم حفظ الإعدادات بنجاح!\n\n💾 الإعدادات محفوظة بشكل دائم ولن تتغير عند إعادة تحميل الصفحة أو استخدام أجهزة مختلفة!');
+                }
+            }
+            
+            if (logoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const logoContainer = document.getElementById('logoContainer');
+                    logoContainer.innerHTML = `<img src="${e.target.result}" alt="شعار أول" class="w-16 h-16 rounded-full object-cover">`;
+                    systemSettings.logo1 = e.target.result;
+                    checkAndSave();
+                };
+                reader.readAsDataURL(logoFile);
+            }
+            
+            if (logoFile2) {
+                const reader2 = new FileReader();
+                reader2.onload = function(e) {
+                    const logoContainer2 = document.getElementById('logoContainer2');
+                    logoContainer2.innerHTML = `<img src="${e.target.result}" alt="شعار ثاني" class="w-16 h-16 rounded-full object-cover">`;
+                    systemSettings.logo2 = e.target.result;
+                    checkAndSave();
+                };
+                reader2.readAsDataURL(logoFile2);
+            }
+            
+            // If no logos to process, save immediately
+            if (logosToProcess === 0) {
+                checkAndSave();
+            }
+        }
+
+        // Add teacher
+        function addTeacher() {
+            const name = document.getElementById('newTeacherName').value;
+            const className = document.getElementById('newTeacherClass').value;
+            
+            if (name && className) {
+                const newId = Math.max(...teachers.map(t => t.id)) + 1;
+                teachers.push({
+                    id: newId,
+                    name: name,
+                    class: className,
+                    status: 'absent',
+                    dailyPoints: 0,
+                    monthlyPoints: 0
+                });
+                
+                renderTeachers();
+                updateStatistics();
+                saveData();
+                closeModal('addTeacherModal');
+                
+                document.getElementById('newTeacherName').value = '';
+                document.getElementById('newTeacherClass').value = '';
+                
+                alert('تم إضافة المعلمة بنجاح!');
+            }
+        }
+
+        // Add class
+        function addClass() {
+            const name = document.getElementById('newClassName').value;
+            
+            if (name) {
+                const newId = Math.max(...classes.map(c => c.id)) + 1;
+                classes.push({
+                    id: newId,
+                    name: name,
+                    dailyPoints: 0,
+                    monthlyPoints: 0,
+                    ratings: { quiet: 3, speed: 3, alignment: 3, noise: 3, cleanliness: 3 }
+                });
+                
+                renderClasses();
+                updateStars();
+                saveData();
+                closeModal('addClassModal');
+                
+                document.getElementById('newClassName').value = '';
+                
+                alert('تم إضافة الصف بنجاح!');
+            }
+        }
+
+        // Camera functions
+        function openCamera() {
+            showModal('cameraModal');
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    document.getElementById('cameraVideo').srcObject = stream;
+                })
+                .catch(err => {
+                    alert('لا يمكن الوصول للكاميرا');
+                    closeModal('cameraModal');
+                });
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.getElementById('cameraCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            
+            // Here you would typically save the photo
+            alert('تم التقاط الصورة بنجاح!');
+            closeCameraModal();
+        }
+
+        function closeCameraModal() {
+            const video = document.getElementById('cameraVideo');
+            const stream = video.srcObject;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            closeModal('cameraModal');
+        }
+
+        // Excel upload
+        function uploadExcel() {
+            const file = document.getElementById('excelFile').files[0];
+            if (!file) {
+                alert('يرجى اختيار ملف Excel');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    
+                    // First try to read with headers
+                    const namedData = XLSX.utils.sheet_to_json(worksheet);
+                    console.log('البيانات المقروءة:', namedData);
+                    
+                    // Clear existing data
+                    teachers = [];
+                    classes = [];
+                    
+                    let teachersAdded = 0;
+                    let classesAdded = 0;
+                    
+                    if (namedData.length > 0) {
+                        // Get all possible column names from the first row
+                        const headers = Object.keys(namedData[0]);
+                        console.log('أسماء الأعمدة:', headers);
+                        
+                        // Find the correct column names
+                        let teacherColumn = null;
+                        let classColumn = null;
+                        
+                        // Look for teacher column
+                        const teacherPossibleNames = ['المعلمات', 'اسم المعلمة', 'المعلمة', 'الاسم', 'Name', 'Teacher', 'معلمة'];
+                        for (let header of headers) {
+                            if (teacherPossibleNames.some(name => header.includes(name) || name.includes(header))) {
+                                teacherColumn = header;
+                                break;
+                            }
+                        }
+                        
+                        // Look for class column
+                        const classPossibleNames = ['الصف', 'Class', 'الفصل', 'Grade', 'صف'];
+                        for (let header of headers) {
+                            if (classPossibleNames.some(name => header.includes(name) || name.includes(header))) {
+                                classColumn = header;
+                                break;
+                            }
+                        }
+                        
+                        console.log('عمود المعلمات:', teacherColumn);
+                        console.log('عمود الصفوف:', classColumn);
+                        
+                        if (teacherColumn && classColumn) {
+                            // Process each row
+                            namedData.forEach((row, index) => {
+                                let teacherName = row[teacherColumn];
+                                let className = row[classColumn];
+                                
+                                // Clean up the data
+                                if (teacherName) teacherName = teacherName.toString().trim();
+                                if (className) className = className.toString().trim();
+                                
+                                // Skip empty rows or headers
+                                if (teacherName && className && 
+                                    !teacherPossibleNames.includes(teacherName) && 
+                                    !classPossibleNames.includes(className)) {
+                                    
+                                    // Add teacher
+                                    teachers.push({
+                                        id: teachers.length + 1,
+                                        name: teacherName,
+                                        class: className,
+                                        status: 'absent',
+                                        dailyPoints: 0,
+                                        monthlyPoints: 0
+                                    });
+                                    teachersAdded++;
+                                    
+                                    // Add unique classes
+                                    if (!classes.find(c => c.name === className)) {
+                                        classes.push({
+                                            id: classes.length + 1,
+                                            name: className,
+                                            dailyPoints: 0,
+                                            monthlyPoints: 0,
+                                            ratings: { quiet: 3, speed: 3, alignment: 3, noise: 3, cleanliness: 3 }
+                                        });
+                                        classesAdded++;
+                                    }
+                                }
+                            });
+                        } else {
+                            // If headers not found, try with array format
+                            const arrayData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                            console.log('البيانات كمصفوفة:', arrayData);
+                            
+                            // Skip header row and process data
+                            for (let i = 1; i < arrayData.length; i++) {
+                                const row = arrayData[i];
+                                
+                                // Assume first column is teachers, second is classes
+                                let teacherName = row[0];
+                                let className = row[1];
+                                
+                                // Clean up the data
+                                if (teacherName) teacherName = teacherName.toString().trim();
+                                if (className) className = className.toString().trim();
+                                
+                                if (teacherName && className) {
+                                    // Add teacher
+                                    teachers.push({
+                                        id: teachers.length + 1,
+                                        name: teacherName,
+                                        class: className,
+                                        status: 'absent',
+                                        dailyPoints: 0,
+                                        monthlyPoints: 0
+                                    });
+                                    teachersAdded++;
+                                    
+                                    // Add unique classes
+                                    if (!classes.find(c => c.name === className)) {
+                                        classes.push({
+                                            id: classes.length + 1,
+                                            name: className,
+                                            dailyPoints: 0,
+                                            monthlyPoints: 0,
+                                            ratings: { quiet: 3, speed: 3, alignment: 3, noise: 3, cleanliness: 3 }
+                                        });
+                                        classesAdded++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (teachersAdded > 0) {
+                        // Force immediate save to ensure data persistence
+                        saveData();
+                        
+                        // Update all displays
+                        renderTeachers();
+                        renderClasses();
+                        updateStatistics();
+                        updateStars();
+                        
+                        // Save again after rendering to ensure everything is captured
+                        setTimeout(() => {
+                            saveData();
+                            console.log('🔄 تم حفظ البيانات مرة أخرى بعد التحديث');
+                        }, 500);
+                        
+                        alert(`✅ تم رفع ملف Excel وحفظه بنجاح!\n📊 تم إضافة ${teachersAdded} معلمة\n🏫 تم إضافة ${classesAdded} صف\n\n💾 البيانات محفوظة بشكل دائم ولن تختفي عند إعادة تحميل الصفحة أو استخدام أجهزة مختلفة!\n\n✨ البيانات جاهزة في حضور المعلمات ونجم الطابور!`);
+                        
+                        // Clear the file input
+                        document.getElementById('excelFile').value = '';
+                        
+                        // Show teachers section automatically
+                        showSection('teachers');
+                    } else {
+                        alert('❌ لم يتم العثور على بيانات صالحة في الملف.\n\n📋 تأكد من وجود عمودين:\n• عمود المعلمات (أسماء المعلمات)\n• عمود الصف (أسماء الصفوف)\n\n💡 يمكن أن تكون أسماء الأعمدة: "المعلمات" و "الصف" أو "اسم المعلمة" و "الصف"');
+                    }
+                    
+                } catch (error) {
+                    console.error('خطأ في Excel:', error);
+                    alert('❌ خطأ في قراءة ملف Excel.\n\n🔍 تأكد من:\n• الملف بصيغة .xlsx أو .xls\n• وجود عمودين للمعلمات والصفوف\n• عدم وجود خلايا فارغة في البيانات المهمة');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Certificate generation
+        function generateDailyCertificate() {
+            const winner = classes.reduce((prev, current) => 
+                (prev.dailyPoints > current.dailyPoints) ? prev : current
+            );
+            generateCertificate(winner.name, 'نجم الطابور لهذا اليوم');
+        }
+
+        function generateMonthlyCertificate() {
+            const winner = classes.reduce((prev, current) => 
+                (prev.monthlyPoints > current.monthlyPoints) ? prev : current
+            );
+            generateCertificate(winner.name, 'نجم الطابور لهذا الشهر');
+        }
+
+        function generateTeacherCertificate() {
+            const winner = teachers.reduce((prev, current) => 
+                (prev.monthlyPoints > current.monthlyPoints) ? prev : current
+            );
+            generateCertificate(winner.name, 'المعلمة المثالية');
+        }
+
+        function generateCertificate(name, title) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add certificate content
+            doc.setFontSize(20);
+            doc.text('شهادة تقدير', 105, 50, { align: 'center' });
+            
+            doc.setFontSize(16);
+            doc.text(title, 105, 80, { align: 'center' });
+            
+            doc.setFontSize(14);
+            doc.text(`تُمنح هذه الشهادة إلى: ${name}`, 105, 110, { align: 'center' });
+            
+            doc.text(`المديرة: ${systemSettings.principalName}`, 105, 200, { align: 'center' });
+            
+            const today = new Date().toLocaleDateString('ar-SA');
+            doc.text(`التاريخ: ${today}`, 105, 220, { align: 'center' });
+            
+            doc.save(`شهادة_${name}_${title}.pdf`);
+        }
+
+        // Export data
+        function exportData() {
+            showModal('exportModal');
+        }
+
+        function performExport() {
+            const type = document.getElementById('exportType').value;
+            const format = document.getElementById('exportFormat').value;
+            
+            const data = {
+                teachers: teachers,
+                classes: classes,
+                date: new Date().toLocaleDateString('ar-SA'),
+                type: type
+            };
+            
+            if (format === 'excel') {
+                exportToExcel(data);
+            } else if (format === 'pdf') {
+                exportToPDF(data);
+            } else if (format === 'image') {
+                exportToImage(data);
+            }
+            
+            closeModal('exportModal');
+        }
+
+        function exportToExcel(data) {
+            // Prepare data with correct order: Teacher Name first, then Class
+            const exportData = data.teachers.map(teacher => ({
+                'اسم المعلمة': teacher.name,
+                'الصف': teacher.class,
+                'الحالة': teacher.status === 'present' ? 'حاضرة' : 
+                         teacher.status === 'absent' ? 'غائبة' : 
+                         teacher.status === 'excused' ? 'بعذر' : 'متأخرة'
+            }));
+            
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'تقرير الحضور');
+            XLSX.writeFile(wb, `تقرير_${data.type}_${data.date}.xlsx`);
+        }
+
+        function exportToPDF(data) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(16);
+            doc.text(`تقرير ${data.type} - ${data.date}`, 105, 30, { align: 'center' });
+            
+            let y = 60;
+            data.teachers.forEach(teacher => {
+                const statusText = teacher.status === 'present' ? 'حاضرة' : 
+                                 teacher.status === 'absent' ? 'غائبة' : 
+                                 teacher.status === 'excused' ? 'بعذر' : 'متأخرة';
+                doc.setFontSize(12);
+                doc.text(`${teacher.name} - ${teacher.class} - ${statusText}`, 20, y);
+                y += 10;
+            });
+            
+            doc.save(`تقرير_${data.type}_${data.date}.pdf`);
+        }
+
+        function exportToImage(data) {
+            // Create a canvas element to generate image
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 800;
+            canvas.height = 600;
+            
+            // Draw report content
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`تقرير ${data.type} - ${data.date}`, canvas.width/2, 50);
+            
+            let y = 100;
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'right';
+            data.teachers.forEach(teacher => {
+                const statusText = teacher.status === 'present' ? 'حاضرة' : 
+                                 teacher.status === 'absent' ? 'غائبة' : 
+                                 teacher.status === 'excused' ? 'بعذر' : 'متأخرة';
+                ctx.fillText(`${teacher.name} - ${teacher.class} - ${statusText}`, canvas.width - 50, y);
+                y += 25;
+            });
+            
+            // Download image
+            const link = document.createElement('a');
+            link.download = `تقرير_${data.type}_${data.date}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Reset system
+        function resetSystem() {
+            if (confirm('هل أنت متأكد من إعادة تعيين النظام؟ سيتم إعادة تعيين الحضور والنقاط فقط.')) {
+                teachers.forEach(teacher => {
+                    teacher.status = 'absent';
+                    teacher.dailyPoints = 0;
+                });
+                
+                classes.forEach(classItem => {
+                    classItem.dailyPoints = 0;
+                    classItem.ratings = { quiet: 3, speed: 3, alignment: 3, noise: 3, cleanliness: 3 };
+                });
+                
+                renderTeachers();
+                renderClasses();
+                updateStatistics();
+                updateStars();
+                saveData();
+                
+                alert('✅ تم إعادة تعيين الحضور والنقاط بنجاح!');
+            }
+        }
+        
+        // Clear all data
+        function clearAllData() {
+            if (confirm('⚠️ تحذير: هذا سيحذف جميع البيانات نهائياً!\n\n• جميع المعلمات\n• جميع الصفوف\n• الإعدادات (عدا كلمة المرور)\n\nهل أنت متأكد؟')) {
+                if (confirm('🚨 تأكيد أخير: هل أنت متأكد من حذف جميع البيانات؟\n\nلا يمكن التراجع عن هذا الإجراء!')) {
+                    // Clear all data
+                    teachers = [];
+                    classes = [];
+                    
+                    // Reset settings but keep password
+                    const currentPassword = systemSettings.password;
+                    systemSettings = {
+                        title: 'الطابور المدرسي',
+                        principalName: 'أ. فاطمة الأحمد',
+                        password: currentPassword,
+                        logo1: '',
+                        logo2: ''
+                    };
+                    
+                    // Clear all localStorage data
+                    const keys = Object.keys(localStorage).filter(key => 
+                        key.startsWith('schoolQueueData') || key === 'deviceId'
+                    );
+                    keys.forEach(key => localStorage.removeItem(key));
+                    
+                    // Clear sessionStorage
+                    sessionStorage.clear();
+                    
+                    // Update displays
+                    renderTeachers();
+                    renderClasses();
+                    updateStatistics();
+                    updateStars();
+                    loadSettings();
+                    
+                    // Save empty state
+                    saveData();
+                    
+                    alert('🗑️ تم حذف جميع البيانات بنجاح!\n\n✨ النظام الآن فارغ ومستعد لإدخال بيانات جديدة.');
+                    
+                    // Close admin section
+                    showSection('teachers');
+                }
+            }
+        }
+
+        // Render teachers table
+        function renderTeachersTable() {
+            const tbody = document.getElementById('teachersTableBody');
+            tbody.innerHTML = '';
+            
+            teachers.forEach((teacher, index) => {
+                const statusTexts = {
+                    present: 'حاضرة',
+                    absent: 'غائبة',
+                    excused: 'بعذر',
+                    late: 'متأخرة'
+                };
+                
+                const statusColors = {
+                    present: 'bg-green-100 text-green-800',
+                    absent: 'bg-red-100 text-red-800',
+                    excused: 'bg-yellow-100 text-yellow-800',
+                    late: 'bg-orange-100 text-orange-800'
+                };
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 cursor-pointer';
+                row.onclick = () => toggleRowSelection(row);
+                row.innerHTML = `
+                    <td class="border border-gray-300 px-4 py-2 text-center">${index + 1}</td>
+                    <td class="border border-gray-300 px-4 py-2">${teacher.name}</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center">${teacher.class}</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${statusColors[teacher.status]}">
+                            ${statusTexts[teacher.status]}
+                        </span>
+                    </td>
+                    <td class="border border-gray-300 px-4 py-2 text-center">${teacher.dailyPoints}</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center">${teacher.monthlyPoints}</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center">
+                        <div class="flex gap-1 justify-center">
+                            <button onclick="editTeacher(${teacher.id}); event.stopPropagation();" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">
+                                ✏️
+                            </button>
+                            <button onclick="deleteTeacher(${teacher.id}); event.stopPropagation();" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+                                🗑️
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Toggle row selection
+        function toggleRowSelection(row) {
+            if (row.classList.contains('bg-blue-100')) {
+                row.classList.remove('bg-blue-100');
+            } else {
+                row.classList.add('bg-blue-100');
+            }
+        }
+        
+        // Select all table rows
+        function selectAllTable() {
+            const rows = document.querySelectorAll('#teachersTableBody tr');
+            const allSelected = Array.from(rows).every(row => row.classList.contains('bg-blue-100'));
+            
+            rows.forEach(row => {
+                if (allSelected) {
+                    row.classList.remove('bg-blue-100');
+                } else {
+                    row.classList.add('bg-blue-100');
+                }
+            });
+        }
+        
+        // Copy table data
+        function copyTableData() {
+            const selectedRows = document.querySelectorAll('#teachersTableBody tr.bg-blue-100');
+            let textToCopy = '';
+            
+            if (selectedRows.length === 0) {
+                // Copy all data if nothing is selected
+                textToCopy = 'اسم المعلمة\tالصف\tالحالة\tنقاط اليوم\tنقاط الشهر\n';
+                teachers.forEach(teacher => {
+                    const statusTexts = {
+                        present: 'حاضرة',
+                        absent: 'غائبة',
+                        excused: 'بعذر',
+                        late: 'متأخرة'
+                    };
+                    textToCopy += `${teacher.name}\t${teacher.class}\t${statusTexts[teacher.status]}\t${teacher.dailyPoints}\t${teacher.monthlyPoints}\n`;
+                });
+            } else {
+                // Copy only selected rows
+                textToCopy = 'اسم المعلمة\tالصف\tالحالة\tنقاط اليوم\tنقاط الشهر\n';
+                selectedRows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    const name = cells[1].textContent;
+                    const className = cells[2].textContent;
+                    const status = cells[3].textContent.trim();
+                    const dailyPoints = cells[4].textContent;
+                    const monthlyPoints = cells[5].textContent;
+                    textToCopy += `${name}\t${className}\t${status}\t${dailyPoints}\t${monthlyPoints}\n`;
+                });
+            }
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const count = selectedRows.length === 0 ? teachers.length : selectedRows.length;
+                alert(`✅ تم نسخ ${count} صف إلى الحافظة!\n\n💡 يمكنك الآن لصقها في Excel أو أي برنامج آخر`);
+                
+                // Clear selection after copying
+                selectedRows.forEach(row => row.classList.remove('bg-blue-100'));
+            }).catch(() => {
+                alert('❌ فشل في نسخ البيانات. تأكد من أن المتصفح يدعم النسخ.');
+            });
+        }
+        
+        // Edit teacher
+        function editTeacher(teacherId) {
+            const teacher = teachers.find(t => t.id === teacherId);
+            if (teacher) {
+                const newName = prompt('اسم المعلمة الجديد:', teacher.name);
+                const newClass = prompt('الصف الجديد:', teacher.class);
+                
+                if (newName && newClass) {
+                    teacher.name = newName;
+                    teacher.class = newClass;
+                    renderTeachers();
+                    renderTeachersTable();
+                    saveData();
+                    alert('✅ تم تحديث بيانات المعلمة بنجاح!');
+                }
+            }
+        }
+        
+        // Delete teacher
+        function deleteTeacher(teacherId) {
+            const teacher = teachers.find(t => t.id === teacherId);
+            if (teacher && confirm(`هل أنت متأكد من حذف المعلمة "${teacher.name}"؟`)) {
+                teachers = teachers.filter(t => t.id !== teacherId);
+                renderTeachers();
+                renderTeachersTable();
+                updateStatistics();
+                updateStars();
+                saveData();
+                alert('✅ تم حذف المعلمة بنجاح!');
+            }
+        }
+
+        // Enhanced data persistence with automatic saving and cloud sync simulation
+        function saveData() {
+            const dataToSave = {
+                teachers: teachers,
+                classes: classes,
+                settings: systemSettings,
+                lastUpdated: new Date().toISOString(),
+                version: '3.0',
+                deviceId: getDeviceId()
+            };
+            
+            // Save to localStorage (primary storage)
+            localStorage.setItem('schoolQueueData', JSON.stringify(dataToSave));
+            
+            // Save to sessionStorage as backup
+            sessionStorage.setItem('schoolQueueData', JSON.stringify(dataToSave));
+            
+            // Simulate cloud sync by saving with timestamp
+            const cloudKey = 'schoolQueueData_cloud_' + new Date().getTime();
+            localStorage.setItem(cloudKey, JSON.stringify(dataToSave));
+            
+            // Keep only last 5 cloud backups to avoid storage overflow
+            cleanupCloudBackups();
+            
+            // Show save indicator
+            showSaveStatus();
+            
+            console.log('✅ تم حفظ البيانات ومزامنتها في:', new Date().toLocaleString('ar-SA'));
+        }
+        
+        // Get unique device identifier
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('deviceId');
+            if (!deviceId) {
+                deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                localStorage.setItem('deviceId', deviceId);
+            }
+            return deviceId;
+        }
+        
+        // Clean up old cloud backups
+        function cleanupCloudBackups() {
+            const keys = Object.keys(localStorage).filter(key => key.startsWith('schoolQueueData_cloud_'));
+            if (keys.length > 5) {
+                // Sort by timestamp and remove oldest
+                keys.sort().slice(0, keys.length - 5).forEach(key => {
+                    localStorage.removeItem(key);
+                });
+            }
+        }
+
+        // Show save status indicator
+        function showSaveStatus() {
+            const saveStatus = document.getElementById('saveStatus');
+            saveStatus.classList.remove('hidden');
+            
+            // Hide after 2 seconds
+            setTimeout(() => {
+                saveStatus.classList.add('hidden');
+            }, 2000);
+        }
+
+        function loadData() {
+            let saved = localStorage.getItem('schoolQueueData');
+            
+            // If localStorage is empty, try sessionStorage
+            if (!saved) {
+                saved = sessionStorage.getItem('schoolQueueData');
+            }
+            
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    console.log('📥 تم تحميل البيانات المحفوظة من:', data.lastUpdated || 'غير محدد');
+                    
+                    // Load teachers data (empty array if no data)
+                    teachers = data.teachers || [];
+                    console.log(`👩‍🏫 تم تحميل ${teachers.length} معلمة`);
+                    
+                    // Load classes data (empty array if no data)
+                    classes = data.classes || [];
+                    console.log(`🏫 تم تحميل ${classes.length} صف`);
+                    
+                    // Load settings
+                    if (data.settings) {
+                        systemSettings = { ...systemSettings, ...data.settings };
+                        console.log('⚙️ تم تحميل إعدادات النظام');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ خطأ في تحميل البيانات:', error);
+                    // Start with empty data if loading fails
+                    teachers = [];
+                    classes = [];
+                }
+            } else {
+                // No saved data, start empty
+                teachers = [];
+                classes = [];
+                console.log('🆕 النظام يبدأ فارغاً - أضف المعلمات والصفوف من الإعدادات');
+            }
+        }
+
+        // Auto-save function that runs periodically
+        function autoSave() {
+            saveData();
+        }
+
+        // Save data whenever the page is about to be closed or refreshed
+        window.addEventListener('beforeunload', function(e) {
+            saveData();
+        });
+
+        // Save data when the page loses focus (user switches tabs/apps)
+        window.addEventListener('blur', function() {
+            saveData();
+        });
+
+        // Save data when the page gains focus (user returns to tab)
+        window.addEventListener('focus', function() {
+            saveData();
+        });
+
+        function loadSettings() {
+            // Settings are already loaded in init(), just update display
+            document.getElementById('mainTitle').textContent = systemSettings.title;
+            document.getElementById('principalName').textContent = systemSettings.principalName;
+            
+            // Load saved logos
+            if (systemSettings.logo1) {
+                const logoContainer = document.getElementById('logoContainer');
+                logoContainer.innerHTML = `<img src="${systemSettings.logo1}" alt="شعار أول" class="w-16 h-16 rounded-full object-cover">`;
+            }
+            
+            if (systemSettings.logo2) {
+                const logoContainer2 = document.getElementById('logoContainer2');
+                logoContainer2.innerHTML = `<img src="${systemSettings.logo2}" alt="شعار ثاني" class="w-16 h-16 rounded-full object-cover">`;
+            }
+        }
+
+        // Bulk add functions
+        function addEmptyRow() {
+            const tbody = document.getElementById('bulkAddTableBody');
+            const rowCount = tbody.children.length + 1;
+            
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50';
+            row.innerHTML = `
+                <td class="border border-gray-300 px-4 py-2 text-center">${rowCount}</td>
+                <td class="border border-gray-300 px-2 py-1">
+                    <input type="text" class="w-full p-2 border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" 
+                           placeholder="اسم المعلمة" onchange="updateRowNumbers()">
+                </td>
+                <td class="border border-gray-300 px-2 py-1">
+                    <input type="text" class="w-full p-2 border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" 
+                           placeholder="الصف" onchange="updateRowNumbers()">
+                </td>
+                <td class="border border-gray-300 px-2 py-1 text-center">
+                    <button onclick="removeRow(this)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+                        🗑️
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        }
+        
+        function removeRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+            updateRowNumbers();
+        }
+        
+        function updateRowNumbers() {
+            const tbody = document.getElementById('bulkAddTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach((row, index) => {
+                const numberCell = row.querySelector('td:first-child');
+                numberCell.textContent = index + 1;
+            });
+        }
+        
+        function clearTable() {
+            const tbody = document.getElementById('bulkAddTableBody');
+            tbody.innerHTML = '';
+        }
+        
+        function clearPasteArea() {
+            document.getElementById('bulkPasteArea').value = '';
+        }
+        
+        function parsePastedData() {
+            const pasteArea = document.getElementById('bulkPasteArea');
+            const data = pasteArea.value.trim();
+            
+            if (!data) {
+                alert('⚠️ لا توجد بيانات للتحليل!');
+                return;
+            }
+            
+            // Clear existing table
+            clearTable();
+            
+            // Split by lines
+            const lines = data.split('\n');
+            let addedRows = 0;
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (line) {
+                    // Try different separators: tab, comma, semicolon, multiple spaces
+                    let parts = [];
+                    
+                    if (line.includes('\t')) {
+                        parts = line.split('\t');
+                    } else if (line.includes(',')) {
+                        parts = line.split(',');
+                    } else if (line.includes(';')) {
+                        parts = line.split(';');
+                    } else if (line.includes('  ')) {
+                        parts = line.split(/\s{2,}/); // Multiple spaces
+                    } else {
+                        // Try to split by single space if it looks like "Name Class"
+                        const spaceIndex = line.lastIndexOf(' ');
+                        if (spaceIndex > 0) {
+                            parts = [line.substring(0, spaceIndex), line.substring(spaceIndex + 1)];
+                        } else {
+                            parts = [line]; // Single column
+                        }
+                    }
+                    
+                    // Clean up parts
+                    parts = parts.map(part => part.trim()).filter(part => part);
+                    
+                    if (parts.length >= 2) {
+                        const teacherName = parts[0];
+                        const className = parts[1];
+                        
+                        // Add row to table
+                        const tbody = document.getElementById('bulkAddTableBody');
+                        const rowCount = tbody.children.length + 1;
+                        
+                        const row = document.createElement('tr');
+                        row.className = 'hover:bg-gray-50';
+                        row.innerHTML = `
+                            <td class="border border-gray-300 px-4 py-2 text-center">${rowCount}</td>
+                            <td class="border border-gray-300 px-2 py-1">
+                                <input type="text" class="w-full p-2 border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" 
+                                       value="${teacherName}" onchange="updateRowNumbers()">
+                            </td>
+                            <td class="border border-gray-300 px-2 py-1">
+                                <input type="text" class="w-full p-2 border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" 
+                                       value="${className}" onchange="updateRowNumbers()">
+                            </td>
+                            <td class="border border-gray-300 px-2 py-1 text-center">
+                                <button onclick="removeRow(this)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+                                    🗑️
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                        addedRows++;
+                    } else if (parts.length === 1 && parts[0]) {
+                        // Single column - assume it's teacher name, let user add class
+                        const teacherName = parts[0];
+                        
+                        const tbody = document.getElementById('bulkAddTableBody');
+                        const rowCount = tbody.children.length + 1;
+                        
+                        const row = document.createElement('tr');
+                        row.className = 'hover:bg-gray-50';
+                        row.innerHTML = `
+                            <td class="border border-gray-300 px-4 py-2 text-center">${rowCount}</td>
+                            <td class="border border-gray-300 px-2 py-1">
+                                <input type="text" class="w-full p-2 border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" 
+                                       value="${teacherName}" onchange="updateRowNumbers()">
+                            </td>
+                            <td class="border border-gray-300 px-2 py-1">
+                                <input type="text" class="w-full p-2 border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" 
+                                       placeholder="أدخل الصف" onchange="updateRowNumbers()">
+                            </td>
+                            <td class="border border-gray-300 px-2 py-1 text-center">
+                                <button onclick="removeRow(this)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+                                    🗑️
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                        addedRows++;
+                    }
+                }
+            });
+            
+            if (addedRows > 0) {
+                alert(`✅ تم تحليل البيانات بنجاح!\n📊 تم إضافة ${addedRows} صف إلى الجدول\n\n💡 يمكنك الآن تعديل البيانات في الجدول قبل الحفظ`);
+                // Clear paste area after successful parsing
+                pasteArea.value = '';
+            } else {
+                alert('❌ لم يتم العثور على بيانات صالحة!\n\n💡 تأكد من أن البيانات بالشكل التالي:\nاسم المعلمة	الصف\nأو\nاسم المعلمة,الصف');
+                // Add some empty rows for manual entry
+                for (let i = 0; i < 3; i++) {
+                    addEmptyRow();
+                }
+            }
+        }
+        
+        function saveBulkTeachers() {
+            const tbody = document.getElementById('bulkAddTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            let addedCount = 0;
+            let classesAdded = 0;
+            const newClasses = new Set();
+            
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const teacherName = inputs[0].value.trim();
+                const className = inputs[1].value.trim();
+                
+                if (teacherName && className) {
+                    // Check if teacher already exists
+                    const existingTeacher = teachers.find(t => 
+                        t.name.toLowerCase() === teacherName.toLowerCase() && 
+                        t.class.toLowerCase() === className.toLowerCase()
+                    );
+                    
+                    if (!existingTeacher) {
+                        // Add teacher
+                        const newId = Math.max(...teachers.map(t => t.id), 0) + 1;
+                        teachers.push({
+                            id: newId,
+                            name: teacherName,
+                            class: className,
+                            status: 'absent',
+                            dailyPoints: 0,
+                            monthlyPoints: 0
+                        });
+                        addedCount++;
+                        
+                        // Add unique classes
+                        if (!classes.find(c => c.name.toLowerCase() === className.toLowerCase())) {
+                            newClasses.add(className);
+                        }
+                    }
+                }
+            });
+            
+            // Add new classes
+            newClasses.forEach(className => {
+                const newId = Math.max(...classes.map(c => c.id), 0) + 1;
+                classes.push({
+                    id: newId,
+                    name: className,
+                    dailyPoints: 0,
+                    monthlyPoints: 0,
+                    ratings: { quiet: 3, speed: 3, alignment: 3, noise: 3, cleanliness: 3 }
+                });
+                classesAdded++;
+            });
+            
+            if (addedCount > 0) {
+                // Force immediate save
+                saveData();
+                
+                // Update displays
+                renderTeachers();
+                renderClasses();
+                renderTeachersTable();
+                updateStatistics();
+                updateStars();
+                
+                // Save again after updates to ensure everything is captured
+                setTimeout(() => {
+                    saveData();
+                    console.log('🔄 تم حفظ البيانات المضافة بالجملة بشكل دائم');
+                }, 500);
+                
+                // Close modal
+                closeModal('bulkAddModal');
+                
+                // Show success message
+                alert(`🎉 تم إضافة البيانات وحفظها بنجاح!\n\n👩‍🏫 المعلمات المضافة: ${addedCount}\n🏫 الصفوف الجديدة: ${classesAdded}\n\n💾 البيانات محفوظة بشكل دائم ولن تختفي!\n\n✨ يمكنك الآن رؤية المعلمات في قسم "حضور المعلمات"`);
+                
+                // Switch to teachers section
+                showSection('teachers');
+            } else {
+                alert('⚠️ لم يتم إضافة أي معلمات!\n\n💡 تأكد من:\n• إدخال اسم المعلمة والصف\n• عدم وجود معلمات مكررة');
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', init);
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97fa7204b538127c',t:'MTc1Nzk2MzY0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

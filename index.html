@@ -1,49 +1,743 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نظام الطابور المدرسي</title>
-<style>
-  body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
-  h1 { text-align: center; color: #333; }
-  table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
-  th, td { padding: 12px; border: 1px solid #ccc; text-align: center; }
-  th { background-color: #007BFF; color: white; }
-  tr:nth-child(even) { background-color: #f9f9f9; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>نظام إدارة الطابور المدرسي - متزامن</title>
+
+  <!-- مكتبات التصدير -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+  <style>
+    /* === نفس تنسيقاتك الأصلية (مختصرة هنا للمساحة) === */
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Tajawal',sans-serif;overflow-x:hidden;min-height:100vh;direction:rtl}
+    .live-background{position:fixed;inset:0;z-index:-1;background:linear-gradient(45deg,#ff6b9d,#ffa726,#ab47bc,#42a5f5);background-size:400% 400%;animation:modernGradientFlow 15s ease infinite}
+    .background-overlay{position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 20% 50%,rgba(255,107,157,.3) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(171,71,188,.3) 0%,transparent 50%),radial-gradient(circle at 40% 80%,rgba(66,165,245,.3) 0%,transparent 50%);animation:modernBackgroundPulse 8s ease-in-out infinite}
+    .glass-morphism{background:rgba(255,255,255,.1);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.2);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.1)}
+    .header{padding:2rem;margin:1rem;position:relative;overflow:hidden}
+    .logo-container{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+    .logo{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;box-shadow:0 0 30px rgba(255,107,157,.5)}
+    .header-logo-image{width:120px;height:120px;border-radius:15px;object-fit:cover;border:3px solid rgba(255,255,255,.4)}
+    .main-title{text-align:center;font-size:3.2rem;font-weight:900;background:linear-gradient(45deg,#ff6b9d,#ffa726,#ab47bc,#42a5f5);background-size:400% 400%;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .subtitle{text-align:center;font-size:1.1rem;color:rgba(255,255,255,.95);margin-bottom:2rem}
+    .header-info{display:flex;justify-content:center;gap:1rem;margin:1rem 0;color:#fff}
+    .stars-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-top:1rem}
+    .star-card{width:100%;color:#fff;padding:1rem;text-align:center}
+    .star-card:nth-child(1){background:linear-gradient(135deg,#ab47bc,#e1bee7)}
+    .star-card:nth-child(2){background:linear-gradient(135deg,#ffa726,#ffcc02)}
+    .star-card:nth-child(3){background:linear-gradient(135deg,#ff6b9d,#ff8a80)}
+    .star-card:nth-child(4){background:linear-gradient(135deg,#42a5f5,#81d4fa)}
+    .navigation{position:sticky;top:0;z-index:100;margin:0 1rem;padding:1rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap}
+    .nav-button{padding:1rem 2rem;background:linear-gradient(45deg,#ff6b9d,#ffa726);color:#fff;border:none;border-radius:15px;font-weight:600;cursor:pointer}
+    .main-content{padding:2rem;max-width:1400px;margin:0 auto}
+    .section{display:none}.section.active{display:block}
+    .attendance-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem}
+    .stat-card{padding:1.2rem;text-align:center;color:#fff}
+    .stat-number{font-size:2.2rem;font-weight:900;margin-bottom:.3rem}
+    .teachers-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.2rem;margin-top:1rem}
+    .teacher-card{padding:1.2rem;position:relative;transition:.3s;cursor:pointer;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)}
+    .teacher-card.status-present{background:linear-gradient(135deg,#4caf50,#81c784)}
+    .teacher-card.status-absent{background:linear-gradient(135deg,#f44336,#ef5350)}
+    .teacher-card.status-late{background:linear-gradient(135deg,#ff9800,#ffb74d)}
+    .teacher-card.status-excused{background:linear-gradient(135deg,#2196f3,#64b5f6)}
+    .teacher-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(45deg,#ff6b9d,#ffa726);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;margin:0 auto 1rem}
+    .teacher-name{font-size:1.2rem;font-weight:700;text-align:center;color:#fff}
+    .teacher-class{text-align:center;color:rgba(255,255,255,.9);margin:.2rem 0 .7rem}
+    .attendance-status{display:flex;justify-content:center;gap:.5rem;margin-bottom:.5rem}
+    .status-btn{padding:.45rem .8rem;border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer}
+    .status-btn.present{background:#4caf50}.status-btn.absent{background:#f44336}.status-btn.late{background:#ff9800}.status-btn.excused{background:#2196f3}
+    .teacher-actions{display:flex;justify-content:center;gap:.5rem}
+    .action-btn{padding:.45rem .7rem;border:none;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;cursor:pointer}
+    .classes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:1.2rem}
+    .class-card{padding:1.4rem;border:1px solid rgba(255,255,255,.2)}
+    .class-card.queue-star-winner{background:linear-gradient(45deg,#f0e68c,#ffd700);border:3px solid #fff;box-shadow:0 0 38px rgba(255,215,0,.7)}
+    .class-name{text-align:center;font-weight:800;color:#fff}
+    .class-points{text-align:center;font-size:1.6rem;font-weight:900;color:#ffa726;margin:.6rem 0 1rem}
+    .criteria-row{display:flex;justify-content:space-between;align-items:center;padding:.45rem;background:rgba(255,255,255,.12);border-radius:10px;margin:.35rem 0}
+    .criteria-name{color:#fff;font-weight:700}
+    .point-btn{width:38px;height:38px;border:none;border-radius:50%;font-size:1.1rem;font-weight:900;cursor:pointer}
+    .point-btn.plus{background:#4caf50;color:#fff}.point-btn.minus{background:#f44336;color:#fff}
+    .notes-indicator{position:absolute;top:10px;left:10px;background:linear-gradient(45deg,#ffa726,#ffcc02);color:#fff;font-size:.8rem;padding:.25rem .5rem;border-radius:15px;font-weight:700}
+    .report-preview-container{font-family:'Tajawal',sans-serif;direction:rtl;padding:2rem;border-radius:15px;background:#fff;color:#333;text-align:right}
+    @keyframes modernGradientFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    @keyframes modernBackgroundPulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.6;transform:scale(1.05)}}
+    @media(max-width:768px){.main-title{font-size:2.4rem}.teachers-grid,.classes-grid{grid-template-columns:1fr}}
+  </style>
 </head>
+
 <body>
+  <div class="live-background"></div>
+  <div class="background-overlay"></div>
 
-<h1>قائمة المعلمات</h1>
+  <header class="header glass-morphism">
+    <div class="logo-container" id="siteHeaderLogo">
+      <div class="logo">⭐</div>
+      <img src="https://lh3.googleusercontent.com/d/1mtn3vRqkD9EotyQGuBAVxjTKxUyzSr3Y" alt="شعار" class="header-logo-image"
+           onerror="this.style.display='none'">
+      <img src="https://lh3.googleusercontent.com/d/1ER6aW7lGipFE4oZ3LW0vftXyoT9Lmf1n" alt="المدرسة" class="header-logo-image"
+           onerror="this.style.display='none'">
+    </div>
 
-<table id="teacherTable">
-  <tr>
-    <th>الرقم</th>
-    <th>الاسم</th>
-    <th>الصف</th>
-    <th>الحالة</th>
-  </tr>
-</table>
+    <h1 class="main-title">الطابور المدرسي</h1>
+    <p class="subtitle" id="motivationalSubtitle">انضباط يعكس وعيًا ونظام يصنع الأجيال</p>
 
-<script>
-// هذا الرابط يأخذ ملف JSON مباشرة من GitHub
-const dataUrl = "https://raw.githubusercontent.com/ahlamdreams/ahlamdreams.github.io/main/data.json";
+    <div class="header-info">
+      <div class="info-card glass-morphism" style="padding:.8rem 1.2rem">
+        <div>مديرة المدرسة: أ.أحلام بنت علي الحمدانية</div>
+        <div id="currentDateTime" style="margin-top:.25rem"></div>
+      </div>
+    </div>
 
-fetch(dataUrl)
-  .then(response => response.json())
-  .then(data => {
-    const table = document.getElementById('teacherTable');
-    data.forEach(teacher => {
-      const row = table.insertRow();
-      row.insertCell(0).innerText = teacher.id;
-      row.insertCell(1).innerText = teacher.name;
-      row.insertCell(2).innerText = teacher.class;
-      row.insertCell(3).innerText = teacher.status;
+    <div class="stars-summary">
+      <div class="star-card glass-morphism">
+        <h3>🏆 نجمة الشهر</h3>
+        <p id="starOfMonth">لم يتم الاختيار بعد</p>
+      </div>
+      <div class="star-card glass-morphism">
+        <h3>⭐ نجم الطابور</h3>
+        <p id="queueStar">لم يتم الاختيار بعد</p>
+      </div>
+      <div class="star-card glass-morphism">
+        <h3>🌟 نجمة اليوم</h3>
+        <p id="starOfDay">لم يتم الاختيار بعد</p>
+      </div>
+      <div class="star-card glass-morphism">
+        <h3>👑 نجم الطابور للشهر</h3>
+        <p id="queueStarMonth">لم يتم الاختيار بعد</p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="navigation glass-morphism">
+    <button class="nav-button active" onclick="showSection('attendance')">👥 حضور المعلمات</button>
+    <button class="nav-button" onclick="showSection('queue-star')">⭐ نجم الطابور</button>
+    <button class="nav-button" onclick="showSection('system-management')">⚙️ إدارة النظام</button>
+  </nav>
+
+  <main class="main-content">
+    <!-- حضور -->
+    <section id="attendance" class="section active">
+      <div class="attendance-stats">
+        <div class="stat-card glass-morphism" style="background:linear-gradient(135deg,#4caf50,#81c784)">
+          <div class="stat-number" id="presentCount">0</div><div>حاضرات</div>
+        </div>
+        <div class="stat-card glass-morphism" style="background:linear-gradient(135deg,#f44336,#ef5350)">
+          <div class="stat-number" id="absentCount">0</div><div>غائبات</div>
+        </div>
+        <div class="stat-card glass-morphism" style="background:linear-gradient(135deg,#ff9800,#ffb74d)">
+          <div class="stat-number" id="notRecordedCount">0</div><div>لم يتم التسجيل</div>
+        </div>
+        <div class="stat-card glass-morphism" style="background:linear-gradient(135deg,#2196f3,#64b5f6)">
+          <div class="stat-number" id="totalCount">0</div><div>الإجمالي</div>
+        </div>
+      </div>
+
+      <div class="glass-morphism" style="padding:1.2rem;margin:1rem 0">
+        <h3 style="color:#fff;text-align:center;margin-bottom:.7rem">سجل الحضور اليومي</h3>
+        <div id="attendanceLog" style="color:#fff;text-align:center">جاري تحميل بيانات الحضور...</div>
+      </div>
+
+      <div class="teachers-grid" id="teachersGrid">
+        <div class="glass-morphism" style="padding:2rem;text-align:center;color:#fff;grid-column:1/-1">
+          جاري تحميل بيانات المعلمات من الخادم...
+        </div>
+      </div>
+    </section>
+
+    <!-- الصفوف -->
+    <section id="queue-star" class="section">
+      <div class="classes-grid" id="classesGrid">
+        <div class="glass-morphism" style="padding:2rem;text-align:center;color:#fff;grid-column:1/-1">
+          جاري تحميل بيانات الصفوف من الخادم...
+        </div>
+      </div>
+    </section>
+
+    <!-- إدارة -->
+    <section id="system-management" class="section">
+      <div class="system-management glass-morphism" style="padding:1.5rem">
+        <div id="passwordPrompt" class="password-prompt" style="text-align:center;padding:1.6rem">
+          <h2 style="color:#fff;margin-bottom:1rem">🔒 إدخال كلمة المرور</h2>
+          <input type="password" class="glass-morphism" placeholder="كلمة المرور" id="systemPassword"
+                 style="padding:.8rem;border-radius:10px;border:none;color:#fff;background:rgba(255,255,255,.12);text-align:center;width:260px"/>
+          <br/>
+          <button class="nav-button" style="margin-top:.8rem" onclick="checkSystemPassword()">دخول</button>
+        </div>
+
+        <div id="systemContent" style="display:none">
+          <div class="tabs" style="display:flex;justify-content:center;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
+            <button class="tab-btn active nav-button" onclick="showTab('teachers-management', this)">إدارة المعلمات</button>
+            <button class="tab-btn nav-button" onclick="showTab('stars-management', this)">إدارة النجوم</button>
+            <button class="tab-btn nav-button" onclick="showTab('reports', this)">التقارير</button>
+            <button class="tab-btn nav-button" onclick="showTab('settings', this)">الإعدادات</button>
+          </div>
+
+          <div id="teachers-management" class="tab-content active" style="padding:1rem">
+            <h3 style="color:#fff;text-align:center;margin-bottom:1rem">إدارة المعلمات والبيانات</h3>
+
+            <div class="glass-morphism" style="padding:1rem;margin-bottom:1rem">
+              <h4 style="color:#fff;margin-bottom:.6rem">📊 معلومات النظام</h4>
+              <div id="dataManagementInfo" style="color:#fff;margin-bottom:.6rem;padding:.8rem;background:rgba(255,255,255,.1);border-radius:10px"></div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.6rem">
+                <button class="nav-button" onclick="loadDataFromSheet()">🔄 تحديث البيانات من الشيت</button>
+                <button class="nav-button" onclick="exportSavedData()">📤 تصدير نسخة احتياطية</button>
+                <button class="nav-button" onclick="importSavedData()">📥 استيراد نسخة احتياطية</button>
+                <button class="nav-button" style="background:#f44336" onclick="clearAllSavedData()">🗑️ مسح البيانات المحلية</button>
+              </div>
+            </div>
+
+            <div class="glass-morphism" style="padding:1rem;margin-bottom:1rem">
+              <h4 style="color:#fff;margin-bottom:.6rem">إجراءات اليوم الجديد (سجل تاريخي)</h4>
+              <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap">
+                <!-- ✅ تم تغيير الاستدعاء ليؤرشف حضور المعلمات فقط -->
+                <button class="nav-button" onclick="archiveAttendanceOnly()" style="background:linear-gradient(45deg,#e7823f,#ffaa00);border:2px solid rgba(255,255,255,.5)">
+                  💾 أرشفة ومسح سجل الحضور (يدوي)
+                </button>
+                <p style="color:rgba(255,255,255,.75);margin-top:10px">(يُفضّل تنفيذها نهاية اليوم)</p>
+              </div>
+            </div>
+
+            <div class="glass-morphism" style="padding:1rem">
+              <h4 style="color:#fff;margin-bottom:.6rem">قائمة المعلمات</h4>
+              <div id="teachersManagementList" style="max-height:400px;overflow-y:auto"></div>
+            </div>
+          </div>
+
+          <div id="stars-management" class="tab-content" style="padding:1rem">
+            <h3 style="color:#fff;text-align:center;margin-bottom:1rem">إدارة النجوم</h3>
+
+            <div class="glass-morphism" style="padding:1rem;margin-bottom:1rem">
+              <h4 style="color:#fff;margin-bottom:.6rem">اختيار نجوم الشهر</h4>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.6rem">
+                <div>
+                  <label style="color:#fff;display:block;margin-bottom:.3rem">🏆 نجمة الشهر:</label>
+                  <select id="starOfMonthSelect" class="glass-morphism" style="width:100%;padding:.7rem;border-radius:10px;border:none;background:rgba(255,255,255,.12);color:#fff">
+                    <option value="">اختر المعلمة</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="color:#fff;display:block;margin-bottom:.3rem">👑 نجم الطابور للشهر:</label>
+                  <select id="queueStarMonthSelect" class="glass-morphism" style="width:100%;padding:.7rem;border-radius:10px;border:none;background:rgba(255,255,255,.12);color:#fff">
+                    <option value="">اختر الصف</option>
+                  </select>
+                </div>
+              </div>
+              <div style="text-align:center;margin-top:.7rem">
+                <button class="nav-button" onclick="updateMonthlyStars()">تحديث نجوم الشهر</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="reports" class="tab-content" style="padding:1rem">
+            <h3 style="color:#fff;text-align:center;margin-bottom:1rem">التقارير</h3>
+            <div class="glass-morphism" style="padding:1rem;margin-bottom:1rem">
+              <h4 style="color:#fff;margin-bottom:.6rem">📊 تقارير الحضور</h4>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.6rem;margin-bottom:.6rem">
+                <button class="nav-button" onclick="generateAndExportDailyAttendance('image')">📸 تقرير يومي (صورة)</button>
+                <button class="nav-button" onclick="generateAndExportDailyAttendance('excel')">📊 تقرير يومي (Excel)</button>
+                <button class="nav-button" onclick="generateAndExportDailyAttendance('pdf')">📄 تقرير يومي (PDF)</button>
+              </div>
+            </div>
+
+            <div class="glass-morphism" style="padding:1rem">
+              <h4 style="color:#fff;margin-bottom:.6rem">👁️ معاينة التقرير</h4>
+              <div id="reportPreviewContainer" style="background:#fff;padding:1rem;border-radius:12px;color:#333;min-height:260px;max-height:460px;overflow:auto">
+                <p id="reportPlaceholder">اختر نوع التقرير لمعاينته</p>
+                <div id="reportToExport" style="display:none;padding:1rem;border:2px solid #333;background:#fff;max-width:900px;margin:auto"></div>
+              </div>
+              <div style="text-align:center;margin-top:.7rem">
+                <button class="nav-button" onclick="printReport()">🖨️ طباعة التقرير</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="settings" class="tab-content" style="padding:1rem">
+            <h3 style="color:#fff;text-align:center">الإعدادات</h3>
+            <div style="color:#fff;margin-top:.8rem">
+              <div style="margin:.6rem 0">
+                <label>كلمة مرور النظام:</label>
+                <input type="password" class="glass-morphism" id="newSystemPassword" placeholder="كلمة المرور الجديدة"
+                       style="padding:.7rem;border-radius:10px;border:none;background:rgba(255,255,255,.12);color:#fff"/>
+                <button class="nav-button" onclick="updateSystemPassword()">تحديث</button>
+              </div>
+              <div style="margin:.6rem 0">
+                <label>العبارة التحفيزية:</label>
+                <input type="text" class="glass-morphism" id="motivationalText" placeholder="انضباط يعكس وعيًا ونظام يصنع الأجيال"
+                       style="width:400px;max-width:100%;padding:.7rem;border-radius:10px;border:none;background:rgba(255,255,255,.12);color:#fff"/>
+                <button class="nav-button" onclick="updateMotivationalText()">تحديث</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- نافذة الكاميرا (مختصرة) -->
+  <div id="cameraModal" class="modal-overlay" style="display:none"></div>
+
+  <script>
+    /* =========================
+       1) المتغيرات العامة
+    ==========================*/
+    let teachers = [];
+    let classes  = [];
+
+    let systemPassword   = 'admin123';
+    let motivationalQuote = 'انضباط يعكس وعيًا ونظام يصنع الأجيال';
+
+    // 🔗 رابط Google Apps Script
+    const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzyEx0-gmYstNeOETO5FSlPkNawtmSJzkCE35M8Mk1dthVrnH2klKcV5cznKebDLvWR/exec';
+
+    /* =========================
+       2) الاتصال بالشيت
+    ==========================*/
+    async function loadDataFromSheet(){
+      try{
+        const res = await fetch(SHEET_API_URL,{method:'GET'});
+        if(!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        if(data.status==='error') throw new Error(data.message);
+
+        // 🕒 تحويل أي وقت قادم إلى ISO لضمان الفرز
+        teachers = (data.teachers||[]).map(t=>({
+          id:Number(t.ID),
+          name:t.Name,
+          class:t.Class,
+          status:t.Status || 'not-recorded',
+          // نحاول تحويل Timestamp أياً كان شكله إلى ISO
+          timestamp: t.Timestamp
+            ? (isNaN(Number(t.Timestamp))
+                ? (new Date(t.Timestamp)).toISOString()
+                : (new Date(Number(t.Timestamp))).toISOString())
+            : null,
+          notes:t.Notes || '',
+          monthlyPoints: Number(t.MonthlyPoints)||0
+        }));
+
+        classes = (data.classes||[]).map(c=>({
+          name:c.ClassName,
+          totalPoints:Number(c.TotalPoints)||0,
+          dailyPoints:Number(c.DailyPoints)||0,
+          monthlyPoints:Number(c.MonthlyPoints)||0,
+          quiet:Number(c.Quiet)||0,
+          speed:Number(c.Speed)||0,
+          volume:Number(c.Volume)||0,
+          cleanliness:Number(c.Cleanliness)||0,
+          notes:c.Notes||''
+        }));
+
+        updateStarSummaries();
+        renderTeachers();
+        renderClasses();
+        updateStats();
+        updateStarSelects();
+        updateDataManagement();
+      }catch(e){
+        console.error('Load error:',e);
+        document.getElementById('teachersGrid').innerHTML =
+          '<div class="glass-morphism" style="padding:2rem;text-align:center;color:#fff;grid-column:1/-1">❌ فشل تحميل البيانات</div>';
+      }
+    }
+
+    async function syncToSheet(action,payload){
+      if(!SHEET_API_URL) return {status:'error',message:'API URL not set'};
+      try{
+        const fullPayload = {action,...payload};
+        await fetch(SHEET_API_URL,{
+          method:'POST',
+          mode:'no-cors',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(fullPayload)
+        });
+        return {status:'success'};
+      }catch(e){
+        console.error('Sync error',e);
+        return {status:'error',message:e.message};
+      }
+    }
+
+    /* =========================
+       3) الحضور/النقاط + الأرشفة
+    ==========================*/
+    function getStatusText(s){return ({present:'حاضرة',absent:'غائبة',late:'متأخرة',excused:'بعذر','not-recorded':'لم يتم التسجيل'})[s]||'لم يتم التسجيل'}
+
+    // ✅ تخزين وقت الحضور بصيغة ISO + تحديث النجوم مباشرة
+    function updateAttendanceWithSave(teacherId,status){
+      const t = teachers.find(x=>x.id===teacherId);
+      if(!t) return;
+      const iso = new Date().toISOString();
+      t.status = status;
+      t.timestamp = iso;
+
+      renderTeachers();
+      updateStats();
+      updateStarSummaries();
+
+      syncToSheet('updateAttendance',{id:teacherId,status,notes:t.notes,timestamp:iso});
+      setTimeout(loadDataFromSheet,1000);
+    }
+
+    function updatePointsWithSave(classIndex,criteria,change){
+      const c = classes[classIndex];
+      if(!c) return;
+      const cur = Number(c[criteria])||0;
+      c[criteria] = Math.max(0,cur+change);
+      c.totalPoints = c.quiet + c.speed + c.volume + c.cleanliness;
+      c.dailyPoints = c.totalPoints;
+
+      renderClasses();
+      updateStarSummaries();
+
+      syncToSheet('updatePoints',{className:c.name,criteria,newValue:c[criteria]});
+      setTimeout(loadDataFromSheet,1000);
+    }
+
+    // ✅ أرشفة حضور المعلمات فقط (لا نلمس الصفوف/النجوم)
+    async function archiveAttendanceOnly(){
+      if(!confirm('هل تريد أرشفة سجل حضور المعلمات لليوم ومسح الحالات لبدء يوم جديد؟')) return;
+
+      // نرسل طلب الأرشفة فقط
+      const r = await syncToSheet('archiveAttendanceOnly',{id:0});
+      // إن رغبتِ باستعمال اسم قديم لديك في السكربت فبدّليه هنا 👇
+      // const r = await syncToSheet('archiveAndResetAttendanceOnly',{id:0});
+
+      // محليًا: نُعيد حالات المعلمات فقط
+      teachers.forEach(t=>{ t.status='not-recorded'; t.timestamp=null; });
+
+      renderTeachers();
+      updateStats();
+      updateStarSummaries();
+
+      if(r.status==='success'){
+        alert('✅ تم إرسال طلب الأرشفة بنجاح. (المعلمات فقط)');
+        setTimeout(loadDataFromSheet,1500);
+      }else{
+        alert('❌ فشل إرسال طلب الأرشفة: '+(r.message||''));
+      }
+    }
+
+    /* =========================
+       4) النجوم التلقائية
+    ==========================*/
+    function updateStarSummaries(){
+      // 🌟 نجمة اليوم: أول «حاضرة» حسب ISO
+      const firstPresent = teachers
+        .filter(t=>t.status==='present' && t.timestamp)
+        .sort((a,b)=> new Date(a.timestamp) - new Date(b.timestamp))[0];
+
+      const starOfDayEl = document.getElementById('starOfDay');
+      if(firstPresent){
+        const timeStr = new Date(firstPresent.timestamp).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
+        starOfDayEl.textContent = `${firstPresent.name} (${firstPresent.class}) — ${timeStr}`;
+      }else{
+        starOfDayEl.textContent = 'لم يتم الاختيار بعد';
+      }
+
+      // ⭐ نجم الطابور (يومي): أعلى dailyPoints + تعادل
+      const maxDaily = Math.max(0,...classes.map(c=>Number(c.dailyPoints)||0));
+      const leaders  = classes.filter(c=>(Number(c.dailyPoints)||0)===maxDaily && maxDaily>0);
+      const queueStarEl = document.getElementById('queueStar');
+
+      if(leaders.length===1){
+        queueStarEl.textContent = `${leaders[0].name} — ${leaders[0].dailyPoints} نقطة`;
+      }else if(leaders.length>1){
+        queueStarEl.textContent = `تعادل: ${leaders.map(l=>l.name).join('، ')} (${maxDaily})`;
+      }else{
+        queueStarEl.textContent = 'لم يتم الاختيار بعد';
+      }
+
+      // 🏆 نجمة الشهر (أعلى نقاط شهرية للمعلمات) — اختياري
+      const topMonthlyTeacher = teachers.reduce((m,t)=>(t.monthlyPoints>(m.monthlyPoints||0)?t:m),{monthlyPoints:-1});
+      document.getElementById('starOfMonth').textContent =
+        (topMonthlyTeacher.monthlyPoints>0) ? `${topMonthlyTeacher.name} (${topMonthlyTeacher.class})` : 'لم يتم الاختيار بعد';
+
+      // 👑 نجم الطابور للشهر (أعلى monthlyPoints للصفوف)
+      const topMonthlyClass = classes.reduce((m,c)=>(c.monthlyPoints>(m.monthlyPoints||0)?c:m),{monthlyPoints:-1});
+      document.getElementById('queueStarMonth').textContent =
+        (topMonthlyClass.monthlyPoints>0) ? topMonthlyClass.name : 'لم يتم الاختيار بعد';
+    }
+
+    /* =========================
+       5) العرض والإحصائيات
+    ==========================*/
+    function updateStats(){
+      const present = teachers.filter(t=>t.status==='present').length;
+      const absent  = teachers.filter(t=>t.status==='absent').length;
+      const late    = teachers.filter(t=>t.status==='late').length;
+      const excused = teachers.filter(t=>t.status==='excused').length;
+      const notRec  = teachers.filter(t=>t.status==='not-recorded').length;
+
+      document.getElementById('presentCount').textContent = present;
+      document.getElementById('absentCount').textContent  = absent + late + excused;
+      document.getElementById('notRecordedCount').textContent = notRec;
+      document.getElementById('totalCount').textContent   = teachers.length;
+
+      // 🕒 سجل اليوم مع وقت واضح
+      const recorded = teachers.filter(t=>t.status!=='not-recorded' && t.timestamp);
+      const log = document.getElementById('attendanceLog');
+      log.innerHTML = recorded.length===0 ? 'لا توجد تسجيلات حضور اليوم'
+        : recorded
+          .sort((a,b)=> new Date(a.timestamp)-new Date(b.timestamp))
+          .map(t=>{
+            const tm = new Date(t.timestamp).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
+            return `<div style="margin:.35rem 0;padding:.45rem;background:rgba(255,255,255,.1);border-radius:8px">
+                      ${t.name} - ${getStatusText(t.status)} - ${tm}
+                    </div>`;
+          }).join('');
+    }
+
+    function updateDateTime(){
+      const now = new Date();
+      const options = { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' };
+      document.getElementById('currentDateTime').textContent = now.toLocaleDateString('ar-SA',options);
+    }
+
+    function renderTeachers(){
+      const grid = document.getElementById('teachersGrid');
+      if(!grid) return;
+      grid.innerHTML = teachers.map(t=>{
+        const st = `status-${t.status}`;
+        const tm = t.timestamp ? new Date(t.timestamp).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : '';
+        return `
+          <div class="teacher-card glass-morphism ${st}" data-id="${t.id}">
+            ${t.notes?'<div class="notes-indicator">ملاحظات</div>':''}
+            <div class="teacher-avatar">${t.name.charAt(0)}</div>
+            <div class="teacher-name">${t.name}</div>
+            <div class="teacher-class">${t.class}</div>
+            <div class="attendance-status">
+              <button class="status-btn present" onclick="updateAttendanceWithSave(${t.id},'present')">حاضرة</button>
+              <button class="status-btn absent"  onclick="updateAttendanceWithSave(${t.id},'absent')">غائبة</button>
+              <button class="status-btn late"    onclick="updateAttendanceWithSave(${t.id},'late')">متأخرة</button>
+              <button class="status-btn excused" onclick="updateAttendanceWithSave(${t.id},'excused')">بعذر</button>
+            </div>
+            <div style="text-align:center;color:#fff;font-size:.92rem;margin-bottom:.35rem">
+              <strong>الحالة:</strong> ${getStatusText(t.status)} ${tm?`(${tm})`:''}
+            </div>
+            <div class="teacher-actions">
+              <button class="action-btn" onclick="openTeacherModal && openTeacherModal(${t.id})">✏️</button>
+              <button class="action-btn" onclick="resetTeacher(${t.id})">🔄</button>
+            </div>
+          </div>`;
+      }).join('') || '<div class="glass-morphism" style="padding:2rem;text-align:center;color:#fff;grid-column:1/-1">لا توجد بيانات</div>';
+    }
+
+    function renderClasses(){
+      const grid = document.getElementById('classesGrid');
+      if(!grid) return;
+
+      const topDaily = classes.reduce((m,c)=> (c.dailyPoints>(m.dailyPoints||0)?c:m),{dailyPoints:-1});
+
+      grid.innerHTML = classes.map((c,idx)=>{
+        const isWinner = (c.name===topDaily.name && topDaily.dailyPoints>0) ? 'queue-star-winner':'';
+        return `
+          <div class="class-card glass-morphism ${isWinner}">
+            <div class="class-name">${c.name}</div>
+            <div class="class-points">${c.dailyPoints} <span style="font-size:.95rem;opacity:.8">(إجمالي اليوم: ${c.totalPoints})</span></div>
+            <div style="text-align:center;color:#fff;margin-bottom:.6rem">نقاط الشهر: <strong>${c.monthlyPoints}</strong></div>
+            <div class="criteria-controls">
+              ${renderCriteriaRow(idx,'quiet','الهدوء')}
+              ${renderCriteriaRow(idx,'speed','السرعة')}
+              ${renderCriteriaRow(idx,'volume','الصوت')}
+              ${renderCriteriaRow(idx,'cleanliness','النظافة')}
+            </div>
+          </div>`;
+      }).join('') || '<div class="glass-morphism" style="padding:2rem;text-align:center;color:#fff;grid-column:1/-1">لا توجد بيانات</div>';
+    }
+
+    function renderCriteriaRow(classIndex,criteria,name){
+      const c = classes[classIndex];
+      const pts = c[criteria]||0;
+      return `
+        <div class="criteria-row">
+          <div class="criteria-name">${name}</div>
+          <div style="display:flex;align-items:center;gap:.7rem">
+            <button class="point-btn minus" onclick="updatePointsWithSave(${classIndex},'${criteria}',-1)">-</button>
+            <div class="criteria-points" style="color:#fff;font-weight:800;min-width:30px;text-align:center">${pts}</div>
+            <button class="point-btn plus" onclick="updatePointsWithSave(${classIndex},'${criteria}',1)">+</button>
+          </div>
+        </div>`;
+    }
+
+    function updateStarSelects(){
+      const teacherSelects = ['starOfMonthSelect'];
+      const classSelects   = ['queueStarMonthSelect'];
+
+      teacherSelects.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.innerHTML = '<option value="">اختر المعلمة</option>' +
+          teachers.map(t=>`<option value="${t.name} (${t.class})">${t.name} (${t.class})</option>`).join('');
+        if(id==='starOfMonthSelect' && document.getElementById('starOfMonth').textContent!=='لم يتم الاختيار بعد'){
+          el.value = document.getElementById('starOfMonth').textContent;
+        }
+      });
+
+      classSelects.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.innerHTML = '<option value="">اختر الصف</option>' +
+          classes.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+        if(id==='queueStarMonthSelect' && document.getElementById('queueStarMonth').textContent!=='لم يتم الاختيار بعد'){
+          el.value = document.getElementById('queueStarMonth').textContent;
+        }
+      });
+    }
+
+    function updateDataManagement(){
+      const el = document.getElementById('dataManagementInfo');
+      if(!el) return;
+      el.innerHTML = `
+        <p>عدد المعلمات المحملة: <strong>${teachers.length}</strong></p>
+        <p>عدد الصفوف المحملة: <strong>${classes.length}</strong></p>
+        <p>آخر تحديث: <strong>${new Date().toLocaleTimeString()}</strong></p>`;
+    }
+
+    /* =========================
+       6) إدارة النظام (مقتطفات)
+    ==========================*/
+    function checkSystemPassword(){
+      const input = document.getElementById('systemPassword');
+      if(input.value===systemPassword){
+        document.getElementById('passwordPrompt').style.display='none';
+        document.getElementById('systemContent').style.display='block';
+        updateStarSelects();
+        updateDataManagement();
+        document.getElementById('motivationalText').value = motivationalQuote;
+      }else{
+        alert('كلمة المرور غير صحيحة'); input.value='';
+      }
+    }
+
+    function updateSystemPassword(){
+      const v = document.getElementById('newSystemPassword').value.trim();
+      if(v.length){ systemPassword=v; alert('✅ تم تحديث كلمة المرور'); document.getElementById('newSystemPassword').value=''; }
+    }
+    function updateMotivationalText(){
+      const v = document.getElementById('motivationalText').value.trim();
+      if(v.length){ motivationalQuote=v; document.getElementById('motivationalSubtitle').textContent=v; alert('✅ تم التحديث'); }
+    }
+
+    function resetTeacher(id){
+      const t = teachers.find(x=>x.id===id); if(!t) return;
+      if(confirm(`إعادة تعيين حضور ${t.name}؟`)){
+        t.status='not-recorded'; t.timestamp=null;
+        renderTeachers(); updateStats(); updateStarSummaries();
+        syncToSheet('updateAttendance',{id,status:'',notes:t.notes,timestamp:null});
+      }
+    }
+
+    /* =========================
+       7) تقارير مختصرة (كما كانت)
+    ==========================*/
+    function displayReport(data,title){
+      const preview = document.getElementById('reportToExport');
+      document.getElementById('reportPlaceholder').style.display='none';
+
+      let html = `<div class="report-preview-container">
+        <div class="report-header" style="text-align:center;margin-bottom:1rem;border-bottom:2px solid #ddd;padding-bottom:.6rem">
+          <h2 class="report-title">${title}</h2>
+          <p class="report-date">تاريخ التقرير: ${new Date().toLocaleDateString('ar-SA')}</p>
+        </div>
+        <table border="1" style="width:100%;border-collapse:collapse;text-align:center;font-size:.95rem">
+          <thead><tr>`;
+
+      const headers = Object.keys(data[0]||{});
+      headers.forEach(h=> html += `<th style="padding:.5rem;background:#ab47bc;color:#fff">${h}</th>`);
+      html += `</tr></thead><tbody>`;
+
+      data.forEach(r=>{
+        html += `<tr>${headers.map(h=>`<td style="padding:.45rem">${r[h]}</td>`).join('')}</tr>`;
+      });
+      html += `</tbody></table></div>`;
+
+      preview.innerHTML = html;
+      preview.style.display='block';
+    }
+
+    function generateAndExportAttendanceReport(format,type='daily'){
+      const rows = teachers.map(t=>({
+        'ID':t.id,'الاسم':t.name,'الصف':t.class,'حالة الحضور':getStatusText(t.status),
+        'وقت التسجيل': t.timestamp ? new Date(t.timestamp).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : 'لا يوجد',
+        'ملاحظات': t.notes
+      }));
+      const title = `تقرير حضور المعلمات (${type==='daily'?'يومي':'عام'})`;
+      const file = `Attendance_${type}_Report_${new Date().toLocaleDateString('en-US').replace(/\//g,'-')}`;
+      displayReport(rows,title);
+      if(format==='excel') exportToExcel(rows,file);
+      else if(format==='pdf') exportToPDF('reportToExport',file);
+      else if(format==='image') exportToImage('reportToExport',file);
+    }
+    function generateAndExportDailyAttendance(fmt){ generateAndExportAttendanceReport(fmt,'daily'); }
+
+    function exportToExcel(data,file){
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb,ws,'البيانات');
+      XLSX.writeFile(wb,`${file}.xlsx`);
+      alert(`✅ تم تصدير ${file}.xlsx`);
+    }
+    async function exportToPDF(id,file){
+      const el = document.getElementById(id);
+      if(!el||el.style.display==='none'){ alert('اعرض التقرير أولاً'); return; }
+      await new Promise(r=>setTimeout(r,150));
+      html2canvas(el,{scale:2,useCORS:true}).then(canvas=>{
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p','mm','a4');
+        const imgData = canvas.toDataURL('image/png');
+        const imgW=200, imgH=canvas.height*imgW/canvas.width;
+        pdf.addImage(imgData,'PNG',5,5,imgW,imgH);
+        pdf.save(`${file}.pdf`);
+        alert(`✅ تم تصدير ${file}.pdf`);
+      });
+    }
+    async function exportToImage(id,file){
+      const el = document.getElementById(id);
+      if(!el||el.style.display==='none'){ alert('اعرض التقرير أولاً'); return; }
+      await new Promise(r=>setTimeout(r,150));
+      html2canvas(el,{scale:2,useCORS:true}).then(canvas=>{
+        canvas.toBlob(blob=>{
+          const a=document.createElement('a');
+          a.href=URL.createObjectURL(blob); a.download=`${file}.png`; a.click();
+        },'image/png');
+      });
+    }
+    function printReport(){
+      const el=document.getElementById('reportToExport');
+      if(el.style.display==='none'){ alert('اعرض التقرير أولاً'); return; }
+      const w=window.open('','_blank');
+      w.document.write('<html><head><title>طباعة التقرير</title></head><body style="direction:rtl;font-family:Tajawal,sans-serif">');
+      w.document.write(el.innerHTML); w.document.write('</body></html>'); w.document.close(); w.print(); w.close();
+    }
+
+    /* =========================
+       8) تبويبات وأقسام
+    ==========================*/
+    function showTab(tab,btn){
+      document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById(tab).classList.add('active'); btn.classList.add('active');
+    }
+    function showSection(name){
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+      document.querySelectorAll('.navigation .nav-button').forEach(b=>b.classList.remove('active'));
+      document.querySelector(`[onclick="showSection('${name}')"]`).classList.add('active');
+      document.getElementById(name).classList.add('active');
+    }
+
+    /* =========================
+       9) إقلاع الصفحة
+    ==========================*/
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      document.getElementById('motivationalSubtitle').textContent = motivationalQuote;
+      updateDateTime(); setInterval(updateDateTime,60000);
+      await loadDataFromSheet();
     });
-  })
-  .catch(error => console.error("حدث خطأ في تحميل البيانات:", error));
-</script>
-
+  </script>
 </body>
 </html>

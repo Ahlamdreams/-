@@ -412,7 +412,7 @@
                                 <button class="nav-button" onclick="resetAllAttendance()" style="background: linear-gradient(45deg, #e7823f, #ffaa00); border: 2px solid rgba(255, 255, 255, 0.5);">
                                     💾 أرشفة ومسح سجل الحضور (يدوي)
                                 </button>
-                                <p style="color: rgba(255,255,255,0.7); margin-top: 10px;">(يتم تشغيله تلقائياً عند 12:00 صباحاً)</p>
+                                <p style="color: rgba(255,255,255,0.7); margin-top: 10px;">(الرجاء تفعيل المشغل التلقائي في Apps Script)</p>
                             </div>
                         </div>
                         
@@ -456,13 +456,13 @@
                                 <div>
                                     <label style="color: white; display: block; margin-bottom: 0.5rem;">🌟 نجمة اليوم:</label>
                                     <select id="starOfDaySelect" class="password-input glass-morphism" style="width: 100%;">
-                                        <option value="">اختر المعلمة (تلقائي)</option>
+                                        <option value="">اختر المعلمة</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label style="color: white; display: block; margin-bottom: 0.5rem;">⭐ نجم الطابور:</label>
                                     <select id="queueStarSelect" class="password-input glass-morphism" style="width: 100%;">
-                                        <option value="">اختر الصف (تلقائي)</option>
+                                        <option value="">اختر الصف</option>
                                     </select>
                                 </div>
                             </div>
@@ -472,23 +472,21 @@
                         </div>
 
                         <div class="glass-morphism" style="padding: 2rem;">
-                            <h4 style="color: white; margin-bottom: 1rem;">نجوم الشهر (تلقائي بناءً على النقاط الشهرية)</h4>
+                            <h4 style="color: white; text-align: center; margin-bottom: 1rem;">نجوم الشهر (تلقائي)</h4>
+                            <p style="color: rgba(255, 255, 255, 0.9); text-align: center; margin-bottom: 2rem;">يتم اختيار نجوم الشهر تلقائياً بناءً على النقاط الشهرية الأعلى.</p>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
                                 <div>
                                     <label style="color: white; display: block; margin-bottom: 0.5rem;">🏆 نجمة الشهر:</label>
-                                    <select id="starOfMonthSelect" class="password-input glass-morphism" style="width: 100%;">
-                                        <option value="">يتم الاختيار تلقائياً</option>
+                                    <select id="starOfMonthSelect" class="password-input glass-morphism" style="width: 100%;" disabled>
+                                        <option value="">يتم التحديد تلقائياً</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label style="color: white; display: block; margin-bottom: 0.5rem;">👑 نجم الطابور للشهر:</label>
-                                    <select id="queueStarMonthSelect" class="password-input glass-morphism" style="width: 100%;">
-                                        <option value="">يتم الاختيار تلقائياً</option>
+                                    <select id="queueStarMonthSelect" class="password-input glass-morphism" style="width: 100%;" disabled>
+                                        <option value="">يتم التحديد تلقائياً</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div style="text-align: center; margin-top: 1rem;">
-                                <button class="nav-button" onclick="updateMonthlyStars()">تحديث نجوم الشهر (تلقائي)</button>
                             </div>
                         </div>
                     </div>
@@ -699,7 +697,7 @@
 
     <script>
         // =======================================================
-        // 1. إعداد متغيرات النظام للمزامنة (تم تحديث الرابط)
+        // 1. إعداد متغيرات النظام للمزامنة
         // =======================================================
         let teachers = [];
         let classes = [];
@@ -719,6 +717,35 @@
         let currentCameraIndex = 0;
         let availableCameras = [];
         let capturedPhotosData = [];
+        
+        // ===================================================
+        // وظائف المودال (للحفاظ على السياق في الأسفل)
+        // ===================================================
+        function openTeacherModal(id) {
+            const teacher = teachers.find(t => t.id === id);
+            if (!teacher) return;
+            currentEditingTeacherId = id;
+            document.getElementById('editTeacherName').value = teacher.name;
+            document.getElementById('editTeacherClass').value = teacher.class;
+            document.getElementById('editTeacherNotes').value = teacher.notes;
+            document.getElementById('teacherModal').classList.add('active');
+        }
+        function closeTeacherModal() {
+            document.getElementById('teacherModal').classList.remove('active');
+            currentEditingTeacherId = null;
+        }
+        function openClassModal(index) {
+            const classItem = classes[index];
+            if (!classItem) return;
+            currentEditingClassIndex = index;
+            document.getElementById('editClassName').value = classItem.name;
+            document.getElementById('editClassNotes').value = classItem.notes;
+            document.getElementById('classModal').classList.add('active');
+        }
+        function closeClassModal() {
+            document.getElementById('classModal').classList.remove('active');
+            currentEditingClassIndex = null;
+        }
 
         // =======================================================
         // 2. آليات الاتصال بالشيت (READ/WRITE)
@@ -727,6 +754,10 @@
         async function loadDataFromSheet() {
             console.log('🔄 جاري تحميل البيانات من Google Sheet API...');
             
+            document.getElementById('teachersGrid').innerHTML = '<div class="glass-morphism loading" style="padding: 3rem; text-align: center; color: white; grid-column: 1 / -1;">جاري تحميل بيانات المعلمات والصفوف...</div>';
+            document.getElementById('classesGrid').innerHTML = '<div class="glass-morphism loading" style="padding: 3rem; text-align: center; color: white; grid-column: 1 / -1;">جاري تحميل بيانات المعلمات والصفوف...</div>';
+
+
             try {
                 const response = await fetch(SHEET_API_URL, { method: 'GET' });
                 
@@ -748,14 +779,14 @@
                     status: t.Status || 'not-recorded', 
                     timestamp: t.Timestamp || null,
                     notes: t.Notes || '',
-                    // إضافة نقاط شهرية للمعلمات للمقارنة
+                    // إضافة نقاط شهرية للمعلمات للمقارنة 
                     monthlyPoints: Number(t.MonthlyPoints) || 0 
                 }));
                 classes = data.classes.map(c => ({
                     name: c.ClassName, 
                     totalPoints: Number(c.TotalPoints) || 0,
                     dailyPoints: Number(c.DailyPoints) || 0, 
-                    monthlyPoints: Number(c.MonthlyPoints) || 0,
+                    monthlyPoints: Number(c.MonthlyPoints) || 0, // 💡 أهم نقطة: نقاط الشهر
                     quiet: Number(c.Quiet) || 0, 
                     speed: Number(c.Speed) || 0,
                     volume: Number(c.Volume) || 0, 
@@ -769,6 +800,7 @@
                 renderClasses();
                 updateStats();
                 updateStarSelects();
+                updateDataManagement();
                 
                 console.log(`✅ تم تحميل: ${teachers.length} معلمة و ${classes.length} صف.`);
                 return true;
@@ -794,7 +826,6 @@
                     body: JSON.stringify(fullPayload)
                 });
                 
-                // في حالة no-cors، لا يمكن قراءة محتوى الاستجابة، نعتمد على أن الطلب وصل
                 return { status: 'success', message: 'Sync request sent.' }; 
 
             } catch (error) {
@@ -877,13 +908,13 @@
         }
         
         async function resetAllAttendance() {
-            if (confirm('⚠️ هل أنت متأكد من أرشفة سجل حضور اليوم وبدء يوم جديد؟\n\nستتم أرشفة الحضور الحالي ومسح جميع الحالات.')) {
+            if (confirm('⚠️ هل أنت متأكد من أرشفة سجل حضور اليوم وبدء يوم جديد؟\n\nسيتم إرسال طلب أرشفة الحضور ومسح جميع الحالات في الشيت.')) {
                 
                 const response = await syncToSheet('archiveAndReset', { id: 0 }); 
                 
                 if (response.status === 'success') {
                     setTimeout(loadDataFromSheet, 2000); 
-                    alert('✅ تم إرسال طلب أرشفة حضور اليوم بنجاح. سيتم تحديث الصفحة خلال ثوانٍ.');
+                    alert('✅ تم إرسال طلب أرشفة حضور اليوم بنجاح. سيتم تحديث البيانات خلال ثوانٍ.');
                 } else {
                     alert(`❌ فشل في إرسال طلب الأرشفة: ${response.message || 'خطأ غير معروف.'}\nتأكد من إعداد Apps Script بشكل صحيح.`);
                 }
@@ -905,7 +936,8 @@
             const topMonthlyTeacher = teachers.reduce((max, t) => (t.monthlyPoints > (max.monthlyPoints || 0) ? t : max), { monthlyPoints: -1 });
             const starOfMonthName = (topMonthlyTeacher.monthlyPoints > 0) ? `${topMonthlyTeacher.name} (${topMonthlyTeacher.class})` : 'لم يتم الاختيار بعد';
             document.getElementById('starOfMonth').textContent = starOfMonthName;
-            
+            // ملاحظة: لن نحدث الـ Select هنا لأننا قمنا بتعطيله في الإعدادات
+
             // ⭐ نجم الطابور (يومي): الصف الأعلى نقاط يومية
             const topDailyClass = classes.reduce((max, c) => (c.dailyPoints > (max.dailyPoints || 0) ? c : max), { dailyPoints: -1 });
             document.getElementById('queueStar').textContent = (topDailyClass.dailyPoints > 0) ? topDailyClass.name : 'لم يتم الاختيار بعد';
@@ -914,12 +946,9 @@
             const topMonthlyClass = classes.reduce((max, c) => (c.monthlyPoints > (max.monthlyPoints || 0) ? c : max), { monthlyPoints: -1 });
             const queueStarMonthName = (topMonthlyClass.monthlyPoints > 0) ? topMonthlyClass.name : 'لم يتم الاختيار بعد';
             document.getElementById('queueStarMonth').textContent = queueStarMonthName;
+            // ملاحظة: لن نحدث الـ Select هنا لأننا قمنا بتعطيله في الإعدادات
 
-            // تحديث قوائم الاختيار في الإدارة بشكل عاكس (للعرض فقط)
-            if(document.getElementById('starOfMonthSelect')) document.getElementById('starOfMonthSelect').value = starOfMonthName;
-            if(document.getElementById('queueStarMonthSelect')) document.getElementById('queueStarMonthSelect').value = queueStarMonthName;
-            
-            // نرسل تحديثاً إلى الشيت لضمان مزامنة بيانات النجوم الشهرية التلقائية
+            // بما أن نجوم الشهر أصبحت تلقائية، نرسل تحديثاً إلى الشيت لضمان مزامنة البيانات
             syncToSheet('updateMonthlyStars', { starOfMonth: starOfMonthName, queueStarMonth: queueStarMonthName });
         }
         
@@ -1055,9 +1084,7 @@
                      
                      if (selectId === 'starOfMonthSelect' && document.getElementById('starOfMonth').textContent !== 'لم يتم الاختيار بعد') {
                          select.value = document.getElementById('starOfMonth').textContent;
-                     } else if (selectId === 'starOfMonthSelect') {
-                          select.innerHTML = '<option value="">يتم الاختيار تلقائياً</option>';
-                      }
+                     }
                  }
              });
 
@@ -1069,9 +1096,7 @@
                      
                      if (selectId === 'queueStarMonthSelect' && document.getElementById('queueStarMonth').textContent !== 'لم يتم الاختيار بعد') {
                          select.value = document.getElementById('queueStarMonth').textContent;
-                     } else if (selectId === 'queueStarMonthSelect') {
-                           select.innerHTML = '<option value="">يتم الاختيار تلقائياً</option>';
-                      }
+                     }
                  }
              });
         }
@@ -1234,7 +1259,7 @@
              if (!confirm('هل أنت متأكد من إضافة نقاط اليوم إلى نقاط الشهر لجميع الصفوف؟')) return;
 
             classes.forEach(c => {
-                c.monthlyPoints = Number(c.monthlyPoints) + Number(c.dailyPoints);
+                c.monthlyPoints += c.dailyPoints;
             });
             renderClasses();
             updateStarSummaries();
@@ -1303,17 +1328,17 @@
         }
 
         function updateMonthlyStars() {
-            // ❌ تم تعطيل الإدارة اليدوية هنا، فالنجوم الشهرية تُحسب تلقائياً الآن
-            alert('🚫 تنبيه: تم تعطيل الإدارة اليدوية لنجوم الشهر. يتم اختيار النجوم الآن تلقائياً بناءً على النقاط الشهرية.');
-            updateStarSummaries();
+            // 🚫 تم تعطيل الإدارة اليدوية - النجوم الشهرية تُحسب تلقائياً
+            alert('🚫 تنبيه: تم تعطيل الإدارة اليدوية لنجوم الشهر. يتم اختيار النجوم الآن تلقائياً بناءً على النقاط الشهرية.');
+            updateStarSummaries(); 
             return false;
         }
 
         // ===================================================
-        // 5. وظائف الشهادات (المدمجة والمنقحة)
+        // 5. وظائف الشهادات والحفظ
         // ===================================================
 
-        // ⭐️ دالة لحفظ الشهادة كـ PDF (تم دمجها من التحديث الأخير)
+        // ⭐️ دالة لحفظ الشهادة كـ PDF 
         async function saveCertificatePDF(containerId, fileName) {
             const container = document.getElementById(containerId);
             if (!container) {
@@ -1350,7 +1375,6 @@
                 alert('❌ حدث خطأ أثناء حفظ الشهادة');
             }
         }
-
 
         // ⭐️ دالة مُعدّلة لإنشاء الشهادة في الذاكرة مع المعاينة والحفظ الفوري
         async function generateCertificatePreview({ name, icon, isClass = false, starType = 'شكر وتقدير' }) {
@@ -1437,14 +1461,14 @@
                  isClass = false;
                  starType = 'نجمة اليوم';
              } else if (type === 'starOfMonth') {
-                 const selectedStar = document.getElementById('starOfMonth').textContent;
+                 const selectedStar = document.getElementById('starOfMonth').textContent; // القراءة التلقائية
                  if (selectedStar === 'لم يتم الاختيار بعد') return alert('لا توجد معلمة مؤهلة لنجمة الشهر بعد.');
                  name = selectedStar.substring(0, selectedStar.indexOf('(')).trim();
                  icon = '🏆';
                  isClass = false;
                  starType = 'نجمة الشهر';
              } else if (type === 'queueStarMonth') {
-                 const selectedStar = document.getElementById('queueStarMonth').textContent;
+                 const selectedStar = document.getElementById('queueStarMonth').textContent; // القراءة التلقائية
                  if (selectedStar === 'لم يتم الاختيار بعد') return alert('لا يوجد صف مؤهل لنجم الطابور للشهر بعد.');
                  name = selectedStar;
                  icon = '👑';
@@ -1468,7 +1492,7 @@
         }
 
         // ===================================================
-        // 6. وظائف التقارير (لم تتغير)
+        // 6. وظائف التقارير
         // ===================================================
         
         // ⭐️ دالة موحدة لتوليد وعرض وتصدير تقارير النجوم (محدثة للتصدير المباشر)
@@ -1819,13 +1843,3 @@
                     video.play();
                     statusDiv.innerHTML = '<span style="color: green;">✅ الكاميرا قيد التشغيل.</span>';
                     document.getElementById('startCameraBtn').style.display = 'none';
-                    document.getElementById('captureBtn').style.display = 'inline-flex';
-                    document.getElementById('switchCameraBtn').style.display = availableCameras.length > 1 ? 'inline-flex' : 'none';
-                    document.getElementById('stopCameraBtn').style.display = 'inline-flex';
-                    
-                    const currentTrack = cameraStream.getVideoTracks()[0];
-                    const currentCamIndex = availableCameras.findIndex(d => d.deviceId === currentTrack.getSettings().deviceId);
-                    currentCameraIndex = currentCamIndex !== -1 ? currentCamIndex : 0;
-                };
-
-                setInterval(updateCameraDateTime, 1000

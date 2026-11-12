@@ -536,9 +536,9 @@ def hud(x,t):
     # waveform
     f=G['feat'][min(NF-1,int(t*FPS))]; n=len(f); va=a*eo(seg(t,OFF-0.3,OFF+0.3))
     for k in range(n):
-        hh=6+64*f[k]
+        hh=6+56*f[k]
         for sg in (-1,1):
-            xx=W/2+sg*(10+k*16); rrect(x,xx-4,1760-hh/2,8,hh,4,GOLD if k%4==0 else WHITE,va*(0.75-0.45*k/n))
+            xx=W/2+sg*(10+k*16); rrect(x,xx-4,1710-hh/2,8,hh,4,GOLD if k%4==0 else WHITE,va*(0.75-0.45*k/n))
 def outro(x,t):
     if t<OUTRO-0.1: return
     lt=t-OUTRO
@@ -556,26 +556,40 @@ def outro(x,t):
     if kt>0:
         sp=sprite("تابعونا على",64,(246,196,72),b'Bold'); blit(x,sp,540,1085+(1-kt)*30,1,kt)
         glowline(x,[(540-260*kt,1140),(540+260*kt,1140)],GOLD,kt*0.6,3)
-    for j,(ic,kind) in enumerate(((0xf16d,'ig'),(0xe61b,'x'))):
-        kk=seg(lt,1.45+j*0.3,2.15+j*0.3)
-        if kk<=0: continue
-        e=back(kk,1.4); a=eo(kk*1.5); y=1250+j*165; xoff=(1-e)*(-420 if j==0 else 420)
-        x.save(); x.translate(xoff,0)
-        rrect(x,190,y-62+8,700,124,62,(0,0,0),0.25*a); rrect(x,190,y-62,700,124,62,WHITE,a)
-        icx=890-62; r=46
-        if kind=='ig':
-            g=cairo.LinearGradient(icx-r,y+r,icx+r,y-r); g.add_color_stop_rgb(0,0.99,0.69,0.27); g.add_color_stop_rgb(0.5,0.88,0.19,0.42); g.add_color_stop_rgb(1,0.51,0.23,0.71)
-            x.new_path(); x.arc(icx,y,r,0,2*math.pi); x.set_source(g); x.paint_with_alpha(0) ; x.save(); x.arc(icx,y,r,0,2*math.pi); x.clip(); x.set_source(g); x.paint_with_alpha(a); x.restore()
-        else: circle(x,icx,y,r,(0,0,0),a)
-        isp=sprite(chr(ic),52,(255,255,255),kind='fa',rtl=False); blit(x,isp,icx,y,1,a)
-        hs=sprite(HANDLE,58,(14,32,80),b'Bold',rtl=False); blit(x,hs,(190+icx-r)/2,y-4,1,a)
-        # shimmer sweep
-        sw=seg(lt,2.6+j*0.2,3.3+j*0.2)
-        if 0<sw<1:
-            x.save(); rrect(x,190,y-62,700,124,62,WHITE,0); x.new_path(); x.arc(0,0,0,0,0)
-            sx=lerp(150,950,sw); g=cairo.LinearGradient(sx-80,0,sx+80,0); g.add_color_stop_rgba(0,1,0.9,0.6,0); g.add_color_stop_rgba(0.5,1,0.85,0.4,0.45); g.add_color_stop_rgba(1,1,0.9,0.6,0)
-            x.new_path(); x.rectangle(190,y-62,700,124); x.clip(); x.set_source(g); x.paint(); x.restore()
+    kk=seg(lt,1.45,2.25)
+    if kk>0:
+        e=back(kk,1.4); a=eo(kk*1.5)
+        x.save(); x.translate(540,1290); x.scale(max(1e-3,lerp(0.6,1,e)),max(1e-3,lerp(0.6,1,e)))
+        social_row(x,0,0,a,r=50,fs=62,pill=True,t=t,lt=lt)
         x.restore()
+def social_icon(x,kind,cx,cy,r,a):
+    if kind=='ig':
+        g=cairo.LinearGradient(cx-r,cy+r,cx+r,cy-r); g.add_color_stop_rgb(0,0.99,0.69,0.27); g.add_color_stop_rgb(0.5,0.88,0.19,0.42); g.add_color_stop_rgb(1,0.51,0.23,0.71)
+        x.save(); x.new_path(); x.arc(cx,cy,r,0,2*math.pi); x.clip(); x.set_source(g); x.paint_with_alpha(a); x.restore()
+        ic=0xf16d
+    else:
+        circle(x,cx,cy,r,(0,0,0),a); circle(x,cx,cy,r,WHITE,a*0.9,fill=False,lw=max(1.5,r*0.06)); ic=0xe61b
+    isp=sprite(chr(ic),max(12,int(r*1.12)),(255,255,255),kind='fa',rtl=False); blit(x,isp,cx,cy,1,a)
+def social_row(x,cx,cy,a,r,fs,pill=False,t=0,lt=0,col=(14,32,80)):
+    hs=sprite(HANDLE,fs,col,b'Bold',rtl=False); gap=r*0.35; sp=r*0.7
+    total=4*r+gap+sp+hs['adv']; x0=cx-total/2
+    if pill:
+        pw=total+2*r*1.1; ph=2*r+36
+        rrect(x,cx-pw/2,cy-ph/2+8,pw,ph,ph/2,(0,0,0),0.25*a); rrect(x,cx-pw/2,cy-ph/2,pw,ph,ph/2,WHITE,a)
+        sw=seg(lt,2.7,3.5)
+        if 0<sw<1:
+            x.save(); x.new_path(); x.rectangle(cx-pw/2,cy-ph/2,pw,ph); x.clip(); sx=lerp(cx-pw/2-100,cx+pw/2+100,sw)
+            g=cairo.LinearGradient(sx-90,0,sx+90,0); g.add_color_stop_rgba(0,1,0.9,0.6,0); g.add_color_stop_rgba(0.5,1,0.85,0.4,0.45); g.add_color_stop_rgba(1,1,0.9,0.6,0)
+            x.set_source(g); x.paint(); x.restore()
+    # handle on the left, icons on the right (X then Instagram)
+    blit(x,hs,x0+hs['adv']/2,cy-fs*0.06,1,a)
+    ix=x0+hs['adv']+sp+r
+    social_icon(x,'x',ix,cy,r,a); social_icon(x,'ig',ix+2*r+gap,cy,r,a)
+def footer(x,t):
+    a=eo(seg(t,0.6,1.3))*(1-eio(seg(t,OUTRO-0.2,OUTRO+0.3)))
+    if a<=0: return
+    rrect(x,540-250,1838-38,500,76,38,WHITE,0.08*a)
+    social_row(x,540,1838,a*0.95,r=22,fs=34,col=(255,255,255))
 def transition_ring(x,t):
     for si in range(1,5):
         b=scene_span(si)[0]+0.4; k=seg(t,b-0.25,b+0.45)
@@ -600,7 +614,7 @@ def frame(fi):
         SCENE_FN[si](x,t)
         x.restore(); x.pop_group_to_source(); x.paint_with_alpha(alpha)
     transition_ring(x,t)
-    kinetic(x,t); hud(x,t); corner_logo(x,t); outro(x,t)
+    kinetic(x,t); hud(x,t); footer(x,t); corner_logo(x,t); outro(x,t)
     fade=eo(seg(t,0,0.35))*(1-eio(seg(t,DUR-0.6,DUR)))
     if fade<1: x.set_source_rgba(NAVY1[0],NAVY1[1],NAVY1[2],1-fade); x.paint()
     surf.flush(); a=np.ndarray((H,W,4),np.uint8,surf.get_data())

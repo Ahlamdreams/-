@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>حين يغيب الأب</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root{
+    --gold:#E9B825; --gold-soft:#F4D66E; --ivory:#FAF4E4; --white:#FFFFFF;
+    --gray:#2A2A2C; --muted:#8C877A; --bg:#1E1E20;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#0d0d0e;height:100%;overflow:hidden}
+  body{display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Tajawal',sans-serif}
+  #wrap{position:relative;width:1080px;height:1920px;transform-origin:center center;flex:none}
+  #stage{position:absolute;inset:0;overflow:hidden;
+    background:radial-gradient(115% 75% at 50% 38%, #36322A 0%, #252426 52%, #19191B 100%);}
+  #grain{position:absolute;inset:0;opacity:.05;pointer-events:none;
+    background-image:radial-gradient(rgba(255,255,255,.5) 1px, transparent 1px);background-size:5px 5px}
+  #halo{position:absolute;left:50%;top:760px;width:1100px;height:1100px;margin:-550px 0 0 -550px;border-radius:50%;
+    background:radial-gradient(circle, rgba(233,184,37,.22) 0%, rgba(233,184,37,.07) 38%, rgba(233,184,37,0) 68%);opacity:.55}
+  svg#art{position:absolute;inset:0;width:1080px;height:1920px;overflow:visible}
+  .ln{fill:none;stroke:var(--gold);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+  .lt{fill:none;stroke:var(--gold);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+  .li{fill:none;stroke:var(--ivory);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+  .lit{fill:none;stroke:var(--ivory);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+
+  #text{position:absolute;left:140px;width:800px;top:1185px;height:380px}
+  .phrase{position:absolute;inset:0;display:flex;flex-wrap:wrap;justify-content:center;align-content:center;
+    direction:rtl;column-gap:20px;row-gap:4px;line-height:1.45;text-align:center}
+  .w{display:inline-block;font-weight:700;font-size:60px;color:var(--ivory);opacity:0;will-change:transform,opacity,filter}
+  .w.k{font-weight:800;font-size:76px;color:var(--gold);text-shadow:0 0 28px rgba(233,184,37,.35)}
+  .phrase.title .w{font-size:72px}.phrase.title .w.k{font-size:96px}
+  .phrase.dua .w{font-family:'Amiri',serif;font-size:72px;font-weight:700}
+  .phrase.dua .w.k{font-size:88px}
+
+  #logoSmall{position:absolute;left:50%;top:228px;width:96px;height:96px;margin-left:-48px;opacity:0}
+  #logoSmall img,#logoBig img{width:100%;height:100%;object-fit:contain}
+  #outro{position:absolute;inset:0;pointer-events:none}
+  #logoBig{position:absolute;left:50%;top:520px;width:320px;height:320px;margin-left:-160px;opacity:0}
+  .social{position:absolute;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:26px;opacity:0;direction:ltr}
+  .social svg{width:66px;height:66px;flex:none}
+  .social span{font-family:'Tajawal',sans-serif;font-weight:700;font-size:54px;color:var(--ivory);letter-spacing:.5px}
+  #outroLine{position:absolute;left:50%;top:930px;width:380px;height:3px;margin-left:-190px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0)}
+  #outroDua{position:absolute;left:0;right:0;top:1340px;text-align:center;font-family:'Amiri',serif;font-weight:700;font-size:50px;color:var(--gold-soft);opacity:0}
+  .ph-logo{width:100%;height:100%}
+
+  /* preview controls (hidden while rendering) */
+  #ctl{position:fixed;left:0;right:0;bottom:0;height:56px;display:flex;gap:12px;align-items:center;padding:0 16px;background:#111;color:#ddd;direction:ltr;font:14px system-ui}
+  #ctl button{background:var(--gold);border:0;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer}
+  #ctl input{flex:1}
+  body.render #ctl{display:none}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <div id="halo"></div>
+    <svg id="art" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="7" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+        <radialGradient id="lightG"><stop offset="0" stop-color="#FFF3C4" stop-opacity=".95"/><stop offset=".35" stop-color="#F4D66E" stop-opacity=".45"/><stop offset="1" stop-color="#E9B825" stop-opacity="0"/></radialGradient>
+        <linearGradient id="archG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4D66E" stop-opacity=".35"/><stop offset="1" stop-color="#E9B825" stop-opacity="0"/></linearGradient>
+        <pattern id="geo" width="160" height="160" patternUnits="userSpaceOnUse">
+          <g fill="none" stroke="#E9B825" stroke-width="2">
+            <path d="M80 20 L122 38 L140 80 L122 122 L80 140 L38 122 L20 80 L38 38 Z"/>
+            <rect x="37.5" y="37.5" width="85" height="85"/>
+            <rect x="37.5" y="37.5" width="85" height="85" transform="rotate(45 80 80)"/>
+            <circle cx="80" cy="80" r="18"/>
+            <path d="M0 0 L20 20 M160 0 L140 20 M0 160 L20 140 M160 160 L140 140"/>
+          </g>
+        </pattern>
+        <clipPath id="heartClip"><path id="heartClipPath"/></clipPath>
+      </defs>
+      <g id="geoLayer" opacity="0"><rect x="-300" y="-300" width="1680" height="2520" fill="url(#geo)"/></g>
+      <g id="dust"></g>
+      <g id="scenes"></g>
+    </svg>
+    <div id="text"></div>
+    <div id="logoSmall"></div>
+    <div id="outro">
+      <div id="logoBig"></div>
+      <div id="outroLine"></div>
+      <div class="social" id="igRow" style="top:1000px">
+        <svg viewBox="0 0 66 66"><rect x="5" y="5" width="56" height="56" rx="17" fill="none" stroke="#E9B825" stroke-width="5"/><circle cx="33" cy="33" r="13" fill="none" stroke="#E9B825" stroke-width="5"/><circle cx="48.5" cy="17.5" r="3.6" fill="#E9B825"/></svg>
+        <span id="igHandle"></span>
+      </div>
+      <div class="social" id="xRow" style="top:1120px">
+        <svg viewBox="0 0 66 66"><rect x="3" y="3" width="60" height="60" rx="16" fill="#E9B825"/><g transform="translate(15 15) scale(1.5)"><path fill="#1E1E20" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></g></svg>
+        <span id="xHandle"></span>
+      </div>
+    </div>
+    <div id="grain"></div>
+  </div>
+</div>
+<div id="ctl"><button id="play">▶ تشغيل</button><input id="scrub" type="range" min="0" max="1000" value="0"><span id="clock">0.0s</span></div>
+<audio id="voice" preload="auto"></audio>
+<audio id="music" preload="auto"></audio>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/DrawSVGPlugin.min.js"></script>
+<script src="vendor/MorphSVGPlugin.min.js"></script>
+<script src="config.js"></script>
+<script src="timeline.js"></script>
+<script>
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin);
+const RENDER = location.search.includes("render");
+if (RENDER) document.body.classList.add("render");
+const TL = window.TIMELINE, PH = TL.phrases, C = window.CONFIG;
+const GOLD = "#E9B825", GOLD2 = "#F4D66E", IVORY = "#FAF4E4", MUTED = "#8C877A", BG = "#232325";
+const NS = "http://www.w3.org/2000/svg";
+const tl = gsap.timeline({ paused: true });
+
+/* ---------- helpers ---------- */
+function S(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const order = [...new Set(PH.map(p => p.scene))];
+const phOf = s => PH.filter(p => p.scene === s);
+const sStart = s => phOf(s)[0].start;
+const sEnd = s => { const i = order.indexOf(s); return i + 1 < order.length ? sStart(order[i + 1]) : TL.outro; };
+const K = (s, n = 0) => { const ks = phOf(s).flatMap(p => p.words.filter(w => w.k)); return (ks[n] || ks[ks.length - 1]).t; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+function draw(el, t, dur = 1, ease = "power2.inOut") {
+  const els = [].concat(el);
+  els.forEach(e => gsap.set(e, { drawSVG: "0%" }));
+  tl.to(els, { drawSVG: "100%", duration: dur, ease, stagger: els.length > 1 ? dur * 0.25 : 0 }, t);
+}
+function undash(el, t) { tl.set(el, { strokeDasharray: "none", strokeDashoffset: 0 }, t); }
+function fadeIn(el, t, dur = .6, extra = {}) { gsap.set(el, { opacity: 0 }); tl.to(el, { opacity: 1, duration: dur, ease: "sine.out", ...extra }, t); }
+function fadeOut(el, t, dur = .6, extra = {}) { tl.to(el, { opacity: 0, duration: dur, ease: "sine.inOut", ...extra }, t); }
+function sceneGroup(name) {
+  const g = S("g", { "data-scene": name, opacity: 0 }, document.getElementById("scenes"));
+  tl.to(g, { opacity: 1, duration: .5, ease: "sine.out" }, Math.max(0, sStart(name) - .45));
+  tl.to(g, { opacity: 0, duration: .55, ease: "sine.inOut" }, sEnd(name) - .45);
+  return g;
+}
+function pulse(el, t, s = 1.08, dur = .7) {
+  tl.to(el, { scale: s, duration: dur / 2, ease: "sine.out", yoyo: true, repeat: 1, svgOrigin: el._origin || undefined, transformOrigin: el._origin ? undefined : "50% 50%" }, t);
+}
+
+/* ---------- shapes ---------- */
+function heartD(cx, cy, s) {
+  const p = (x, y) => `${(cx + x * s).toFixed(1)},${(cy + y * s).toFixed(1)}`;
+  return `M${p(0, .85)} C${p(-.35, .55)} ${p(-.95, .2)} ${p(-.9, -.3)} C${p(-.85, -.8)} ${p(-.2, -.9)} ${p(0, -.45)} C${p(.2, -.9)} ${p(.85, -.8)} ${p(.9, -.3)} C${p(.95, .2)} ${p(.35, .55)} ${p(0, .85)} Z`;
+}
+function circleD(cx, cy, r) { return `M${cx - r},${cy} A${r},${r} 0 1,1 ${cx + r},${cy} A${r},${r} 0 1,1 ${cx - r},${cy} Z`; }
+function shieldD(cx, cy, s) {
+  const p = (x, y) => `${(cx + x * s).toFixed(1)},${(cy + y * s).toFixed(1)}`;
+  return `M${p(0, -1)} L${p(.8, -.72)} L${p(.78, .05)} C${p(.72, .58)} ${p(.32, .86)} ${p(0, 1)} C${p(-.32, .86)} ${p(-.72, .58)} ${p(-.78, .05)} L${p(-.8, -.72)} Z`;
+}
+function houseD(cx, cy, s) {
+  const p = (x, y) => `${(cx + x * s).toFixed(1)},${(cy + y * s).toFixed(1)}`;
+  return `M${p(-.85, .75)} L${p(-.85, -.12)} L${p(0, -.92)} L${p(.85, -.12)} L${p(.85, .75)} Z`;
+}
+function canopyD(cx, cy, s) {
+  const p = (x, y) => `${(cx + x * s).toFixed(1)},${(cy + y * s).toFixed(1)}`;
+  return `M${p(-.9, -.1)} C${p(-1.1, -.5)} ${p(-.6, -.9)} ${p(-.3, -.75)} C${p(-.2, -1.1)} ${p(.3, -1.1)} ${p(.35, -.75)} C${p(.7, -.9)} ${p(1.1, -.5)} ${p(.9, -.1)} C${p(1.05, .2)} ${p(.7, .42)} ${p(.4, .3)} C${p(.2, .45)} ${p(-.2, .45)} ${p(-.4, .3)} C${p(-.7, .42)} ${p(-1.05, .2)} ${p(-.9, -.1)} Z`;
+}
+function eyeD(cx, cy, w, h) { return `M${cx - w},${cy} Q${cx},${cy - h * 2} ${cx + w},${cy} Q${cx},${cy + h * 2} ${cx - w},${cy} Z`; }
+function eyeClosedD(cx, cy, w, h) { return `M${cx - w},${cy} Q${cx},${cy + h * .9} ${cx + w},${cy} Q${cx},${cy + h * 1.1} ${cx - w},${cy} Z`; }
+function bodyD(cx, base, h) {
+  const r = h * .11, w = h * .2, sy = base - h + r * 2.45;
+  return `M${cx - w},${base} L${cx - w},${sy + r * .9} Q${cx - w},${sy} ${cx - w + r * 1.1},${sy} L${cx + w - r * 1.1},${sy} Q${cx + w},${sy} ${cx + w},${sy + r * .9} L${cx + w},${base}`;
+}
+function figure(parent, cx, base, h, cls = "ln", extra = {}) {
+  const g = S("g", extra, parent);
+  const r = h * .11;
+  g.head = S("circle", { cx, cy: base - h + r, r, class: cls }, g);
+  g.body = S("path", { d: bodyD(cx, base, h), class: cls }, g);
+  g.parts = [g.head, g.body];
+  g.headY = base - h + r; g.cx = cx; g.base = base; g.h = h;
+  return g;
+}
+function silhouette(parent, cx, base, h, fill) {
+  const g = S("g", {}, parent);
+  const r = h * .11;
+  S("circle", { cx, cy: base - h + r, r: r * 1.05, fill }, g);
+  S("path", { d: bodyD(cx, base, h) + " Z", fill }, g);
+  return g;
+}
+function smallHeart(parent, cx, cy, s, fill = GOLD) { return S("path", { d: heartD(cx, cy, s), fill }, parent); }
+function sparkle(parent, cx, cy, s, fill = GOLD2) {
+  return S("path", { d: `M${cx},${cy - s} Q${cx + s * .18},${cy - s * .18} ${cx + s},${cy} Q${cx + s * .18},${cy + s * .18} ${cx},${cy + s} Q${cx - s * .18},${cy + s * .18} ${cx - s},${cy} Q${cx - s * .18},${cy - s * .18} ${cx},${cy - s} Z`, fill }, parent);
+}
+
+/* ---------- text: kinetic typography ---------- */
+const textBox = document.getElementById("text");
+const DUA = new Set(["dua-mercy", "dua-light", "dua-company", "dua-rise", "dua-garden", "dua-reunite", "closing"]);
+PH.forEach((p, i) => {
+  const d = document.createElement("div");
+  d.className = "phrase" + (p.scene === "intro" ? " title" : "") + (DUA.has(p.scene) ? " dua" : "");
+  textBox.appendChild(d);
+  const spans = p.words.map(w => {
+    const s = document.createElement("span");
+    s.className = "w" + (w.k ? " k" : "");
+    s.textContent = w.w;
+    d.appendChild(s);
+    return s;
+  });
+  p.words.forEach((w, j) => {
+    const s = spans[j], t0 = Math.max(0, w.t - .06);
+    if (w.k) {
+      gsap.set(s, { opacity: 0, y: 26, scale: 1.35, filter: "blur(10px)" });
+      tl.to(s, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: .7, ease: "back.out(1.6)" }, t0);
+    } else {
+      gsap.set(s, { opacity: 0, y: 30, filter: "blur(8px)" });
+      tl.to(s, { opacity: 1, y: 0, filter: "blur(0px)", duration: .55, ease: "power3.out" }, t0);
+    }
+  });
+  const next = PH[i + 1];
+  const outT = next ? Math.max(p.end + .02, next.start - .5) : TL.outro - .3;
+  tl.to(spans, { opacity: 0, y: -26, filter: "blur(6px)", duration: .3, ease: "power2.in", stagger: { each: .012, from: "end" } }, outT);
+});
+
+/* breathing light during silences ("…" pauses and phrase gaps) */
+const halo = document.getElementById("halo");
+PH.forEach((p, i) => {
+  p.words.forEach((w, j) => {
+    const nxt = p.words[j + 1] ? p.words[j + 1].t : (PH[i + 1] ? PH[i + 1].start : null);
+    if (nxt && nxt - w.e > .55) {
+      tl.to(halo, { opacity: .95, scale: 1.08, duration: (nxt - w.e) / 2, ease: "sine.inOut", yoyo: true, repeat: 1 }, w.e);
+    }
+  });
+});
+
+/* ---------- shared actors ---------- */
+const root = document.getElementById("scenes");
+const FAM_BASE = 960;
+const family = S("g", { opacity: 0 }, root);
+const dad = figure(family, 420, FAM_BASE, 300);
+const kid1 = figure(family, 560, FAM_BASE, 190);
+const kid2 = figure(family, 660, FAM_BASE, 150);
+const dadGlow = figure(family, 420, FAM_BASE, 300, "ln", { filter: "url(#soft)", opacity: 0 });
+const hero = S("path", { d: circleD(540, 740, 195), class: "ln", opacity: 0 }, root);
+
+/* ===== intro: حين يغيب الأب… يبقى أثره ===== */
+(() => {
+  const s = "intro", g = sceneGroup(s);
+  // opening: soft line + small logo
+  const line = S("path", { d: "M300,1100 L780,1100", class: "lt", opacity: .6 }, g);
+  draw(line, .2, 1.4);
+  gsap.set(family, { opacity: 1 });
+  gsap.set([kid2.head, kid2.body], { opacity: 0 });
+  gsap.set(dad, { x: 50 }); gsap.set(dadGlow, { x: 50 }); gsap.set(kid1, { x: 60 });
+  draw(dad.parts, K(s, 0) - .15, 1.1);
+  draw(kid1.parts, K(s, 0) + .45, .9);
+  const hand = S("path", { d: "M532,880 Q556,906 580,880", class: "lt" }, family);
+  draw(hand, K(s, 0) + 1.1, .4);
+  tl.to(dadGlow, { opacity: .85, duration: 1.2, ease: "sine.inOut" }, K(s, 1) - .1);
+  // trace: glowing dots trailing from the father upward
+  const dots = [];
+  for (let i = 0; i < 9; i++) dots.push(S("circle", { cx: 470 - i * 22, cy: 640 - i * 38, r: 6 - i * .45, fill: GOLD2, opacity: 0 }, g));
+  tl.to(dots, { opacity: (i) => .9 - i * .08, duration: .4, stagger: .09, ease: "sine.out" }, K(s, 1));
+  tl.to(dadGlow, { opacity: 0, duration: .6 }, sEnd(s) - .4);
+  tl.to(hand, { opacity: 0, duration: .4 }, sEnd(s) - .4);
+})();
+
+/* ===== loss: أصعب ما في فقد الأب… ===== */
+(() => {
+  const s = "loss", g = sceneGroup(s);
+  const ghost = figure(g, 470, FAM_BASE, 300, "lit", { "stroke-dasharray": "3 16", opacity: 0 });
+  tl.to(dad, { opacity: 0, duration: 1.0, ease: "sine.inOut" }, K(s) - .1);
+  tl.to(ghost, { opacity: .7, duration: 1.0 }, K(s) - .1);
+  // particles leaving the father's outline
+  const ps = [];
+  for (let i = 0; i < 22; i++) {
+    const a = (i / 22) * Math.PI * 2;
+    const x = 470 + Math.cos(a) * (i % 2 ? 60 : 33), y = 693 + Math.sin(a) * 33 + (i % 3) * 70;
+    ps.push(S("circle", { cx: x, cy: y, r: 3 + (i % 3), fill: GOLD2, opacity: 0 }, g));
+  }
+  ps.forEach((c, i) => {
+    tl.fromTo(c, { opacity: 0, y: 0 }, { opacity: .9, duration: .3, immediateRender: false }, K(s) + i * .05);
+    tl.to(c, { opacity: 0, y: -160 - (i % 5) * 30, x: (i % 2 ? 1 : -1) * (20 + i * 3), duration: 1.8, ease: "sine.out" }, K(s) + .3 + i * .05);
+  });
+  tl.to(family, { opacity: 0, scale: .92, svgOrigin: "540 960", duration: .6 }, sEnd(s) - .45);
+})();
+
+/* ===== life: أن الحياة تستمر، ===== */
+const hands = S("g", { opacity: 0 }, root);
+const hHour = S("line", { x1: 540, y1: 740, x2: 540, y2: 650, class: "li", "stroke-width": 9 }, hands);
+const hMin = S("line", { x1: 540, y1: 740, x2: 540, y2: 590, class: "li" }, hands);
+const hDot = S("circle", { cx: 540, cy: 740, r: 9, fill: GOLD }, hands);
+(() => {
+  const s = "life", g = sceneGroup(s);
+  tl.set(hero, { opacity: 1, attr: { d: circleD(540, 740, 195) } }, sStart(s) - .3);
+  draw(hero, sStart(s) - .3, 1.0);
+  undash(hero, sStart(s) + .75);
+  const ticks = [];
+  for (let i = 0; i < 12; i++) {
+    const a = i / 12 * Math.PI * 2, r1 = 160, r2 = i % 3 ? 172 : 180;
+    ticks.push(S("line", { x1: 540 + Math.sin(a) * r1, y1: 740 - Math.cos(a) * r1, x2: 540 + Math.sin(a) * r2, y2: 740 - Math.cos(a) * r2, class: "lt" }, g));
+  }
+  draw(ticks, sStart(s) + .1, .9);
+  fadeIn(hands, K(s) - .2, .5);
+  // time keeps going: hands spin until "توقّف"
+  const stopT = K("stopped", 1);
+  const spin = stopT - K(s);
+  tl.fromTo(hMin, { rotation: 0 }, { rotation: 360 * spin * .9, svgOrigin: "540 740", duration: spin, ease: "none", immediateRender: false }, K(s));
+  tl.fromTo(hHour, { rotation: 0 }, { rotation: 30 * spin * .9 + 0, svgOrigin: "540 740", duration: spin, ease: "none", immediateRender: false }, K(s));
+  // flowing "days" — small dots travelling around the dial
+  const orb = S("circle", { cx: 540, cy: 520, r: 8, fill: GOLD2, filter: "url(#glow)", opacity: 0 }, g);
+  tl.to(orb, { opacity: 1, duration: .3 }, K(s));
+  tl.fromTo(orb, { rotation: 0 }, { rotation: 720, svgOrigin: "540 740", duration: sEnd(s) - K(s) + .4, ease: "none", immediateRender: false }, K(s));
+})();
+
+/* ===== stopped: بينما يبقى في القلب شيءٌ توقّف عند لحظة رحيله. ===== */
+(() => {
+  const s = "stopped", g = sceneGroup(s);
+  tl.to(hero, { morphSVG: heartD(540, 730, 250), duration: 1.1, ease: "power2.inOut" }, K(s, 0) - .1);
+  tl.to(hands, { scale: .72, svgOrigin: "540 740", duration: 1.0, ease: "power2.inOut" }, K(s, 0));
+  // stop: hands snap to rest, heart beats once, ring expands
+  const stopT = K(s, 1);
+  tl.to([hMin], { rotation: "+=6", svgOrigin: "540 740", duration: .12, yoyo: true, repeat: 1, ease: "sine.out" }, stopT);
+  const ring = S("circle", { cx: 540, cy: 740, r: 60, class: "lt", opacity: 0 }, g);
+  tl.fromTo(ring, { opacity: .9, attr: { r: 40 } }, { opacity: 0, attr: { r: 300 }, duration: 1.2, ease: "power2.out", immediateRender: false }, stopT);
+  tl.to(hero, { scale: 1.06, transformOrigin: "50% 50%", duration: .2, yoyo: true, repeat: 1, ease: "sine.out" }, stopT);
+  // departure: heart dims, a light leaves upward
+  const t3 = K(s, 2);
+  tl.to(hero, { stroke: MUTED, duration: 1.4, ease: "sine.inOut" }, t3);
+  tl.to(hands, { opacity: .25, duration: 1.2 }, t3);
+  const path = S("path", { d: "M540,600 C560,540 520,470 545,400", class: "lt", "stroke-dasharray": "2 14", opacity: .8 }, g);
+  draw(path, t3 + .1, 1.0, "sine.out");
+  const soul = S("circle", { cx: 540, cy: 600, r: 9, fill: GOLD2, filter: "url(#glow)", opacity: 0 }, g);
+  tl.to(soul, { opacity: 1, duration: .2 }, t3 + .1);
+  tl.to(soul, { attr: { cy: 380 }, opacity: 0, duration: 1.6, ease: "sine.inOut" }, t3 + .2);
+  tl.to(hands, { opacity: 0, duration: .5 }, sEnd(s) - .4);
+})();
+
+/* ===== father: فالأب ليس مجرد شخصٍ نحبّه… ===== */
+(() => {
+  const s = "father", g = sceneGroup(s);
+  const t0 = sStart(s) - .3;
+  tl.to(hero, { morphSVG: heartD(540, 470, 52), stroke: GOLD, fill: GOLD, duration: 1.0, ease: "power2.inOut" }, t0);
+  gsap.set(hero, { fill: "rgba(233,184,37,0)" });
+  // family returns (complete, with the second child)
+  tl.set(family, { opacity: 1, scale: 1, x: 0, svgOrigin: "540 960" }, t0);
+  tl.set(dad, { opacity: 1, x: 0 }, t0);
+  tl.set(dadGlow, { x: 0 }, t0);
+  tl.set(kid1, { x: 0 }, t0);
+  tl.set([kid2.head, kid2.body], { opacity: 1 }, t0);
+  [dad, kid1, kid2].forEach((f, i) => {
+    tl.fromTo(f.parts, { drawSVG: "0%" }, { drawSVG: "100%", duration: .9, ease: "power2.inOut", immediateRender: false }, t0 + .1 + i * .25);
+  });
+  const hs = [[400, 600], [560, 720], [680, 760], [480, 640], [620, 690]].map(([x, y], i) => smallHeart(g, x, y, 14 + (i % 2) * 4, i % 2 ? GOLD2 : GOLD));
+  hs.forEach((h, i) => {
+    gsap.set(h, { opacity: 0 });
+    tl.to(h, { opacity: .95, duration: .3 }, K(s) + i * .12);
+    tl.to(h, { y: -150 - i * 18, x: (i % 2 ? 18 : -18), opacity: 0, duration: 2.0, ease: "sine.out" }, K(s) + .25 + i * .12);
+  });
+  tl.to(hero, { scale: 1.25, transformOrigin: "50% 50%", duration: .35, yoyo: true, repeat: 1, ease: "sine.out" }, K(s));
+})();
+
+/* ===== safety: بل هو أمانٌ نسكن إليه، ===== */
+(() => {
+  const s = "safety", g = sceneGroup(s);
+  tl.to(hero, { morphSVG: shieldD(540, 790, 280), fill: "rgba(233,184,37,0.06)", duration: 1.0, ease: "power2.inOut" }, K(s, 0) - .15);
+  const glow = S("ellipse", { cx: 540, cy: 820, rx: 230, ry: 200, fill: "url(#lightG)", opacity: 0 }, g);
+  g.parentNode.insertBefore(g, root.firstChild); // behind family
+  tl.to(glow, { opacity: .35, duration: 1.2 }, K(s, 0));
+  tl.to(hero, { morphSVG: houseD(540, 752, 280), duration: 1.0, ease: "power2.inOut" }, K(s, 1) - .1);
+  const chimney = S("path", { d: "M690,560 L690,500 L730,500 L730,598", class: "ln" }, g);
+  draw(chimney, K(s, 1) + .7, .5);
+  tl.to(glow, { opacity: .6, duration: 1 }, K(s, 1) + .3);
+})();
+
+/* ===== shade: وظلٌّ نستريح تحته، ===== */
+(() => {
+  const s = "shade", g = sceneGroup(s);
+  root.insertBefore(g, family);
+  const t = K(s);
+  tl.to(hero, { morphSVG: canopyD(540, 600, 240), fill: "rgba(233,184,37,0.10)", duration: 1.1, ease: "power2.inOut" }, t - .25);
+  tl.to([dad, dadGlow, kid1, kid2], { x: 90, duration: 1.0, ease: "power2.inOut" }, t - .2);
+  tl.to(family, { scale: .85, svgOrigin: "540 960", duration: 1.0, ease: "power2.inOut" }, t - .2);
+  const trunk = S("path", { d: "M360,965 C366,880 382,790 450,705 M400,812 C428,782 462,764 500,748", class: "ln" }, g);
+  draw(trunk, t + .3, .9);
+  const ground = S("path", { d: "M200,966 L880,966", class: "lt", opacity: .7 }, g);
+  draw(ground, t + .2, .9);
+  const shadow = S("ellipse", { cx: 560, cy: 975, rx: 330, ry: 26, fill: GOLD, opacity: 0 }, g);
+  tl.to(shadow, { opacity: .16, duration: 1 }, t + .4);
+  const leaves = [];
+  for (let i = 0; i < 6; i++) {
+    const lf = S("path", { d: "M0,0 Q10,-14 0,-28 Q-10,-14 0,0 Z", fill: GOLD2, opacity: 0, transform: `translate(${360 + i * 72},${545 + (i % 2) * 70}) rotate(${-30 + i * 14})` }, g);
+    leaves.push(lf);
+  }
+  tl.to(leaves, { opacity: .8, duration: .4, stagger: .1 }, t + .8);
+  tl.to(hero, { rotation: 1.6, svgOrigin: "540 720", duration: 1.4, yoyo: true, repeat: 3, ease: "sine.inOut" }, t + .9);
+})();
+
+/* ===== voice: وصوتٌ كانت معه الحياة أكثر طمأنينة. ===== */
+(() => {
+  const s = "voice", g = sceneGroup(s);
+  const t0 = sStart(s) - .4;
+  tl.to(hero, { opacity: 0, duration: .7 }, t0);
+  tl.to([dad, dadGlow, kid1, kid2], { x: 0, duration: 1.0, ease: "power2.inOut" }, t0);
+  tl.to(family, { scale: 1, svgOrigin: "540 960", duration: 1.0, ease: "power2.inOut" }, t0);
+  const hx = 420, hy = dad.headY;
+  const arcs = [70, 110, 150, 190].map(r => S("path", {
+    d: `M${hx + r * Math.cos(-0.6)},${hy + r * Math.sin(-0.6)} A${r},${r} 0 0,1 ${hx + r * Math.cos(0.6)},${hy + r * Math.sin(0.6)}`, class: "lt", opacity: 0 }, g));
+  arcs.forEach((a, i) => {
+    tl.fromTo(a, { opacity: 0 }, { opacity: .9 - i * .15, duration: .5, repeat: 2, yoyo: true, ease: "sine.inOut", immediateRender: false }, K(s, 0) + i * .18);
+  });
+  const calm = S("path", { d: "", class: "ln", filter: "url(#glow)" }, g);
+  let d = "M220,1080";
+  for (let x = 220; x <= 860; x += 10) d += ` L${x},${1080 + Math.sin((x - 220) / 640 * Math.PI * 4) * 14}`;
+  calm.setAttribute("d", d);
+  draw(calm, K(s, 1) - .4, 1.4, "sine.inOut");
+  tl.to(arcs, { opacity: .35, duration: .8 }, K(s, 1) + .2);
+})();
+
+/* ===== leaving: وحين يرحل… ===== */
+(() => {
+  const s = "leaving", g = sceneGroup(s);
+  root.insertBefore(g, family);
+  const t0 = sStart(s) - .4;
+  const horizon = S("path", { d: "M220,640 L860,640", class: "lt", opacity: .6 }, g);
+  draw(horizon, t0, 1.0);
+  const gate = S("ellipse", { cx: 540, cy: 630, rx: 140, ry: 90, fill: "url(#lightG)", opacity: 0 }, g);
+  tl.to(gate, { opacity: .9, duration: 1.2 }, t0 + .3);
+  const sil = silhouette(g, 420, FAM_BASE, 300, IVORY);
+  gsap.set(sil, { opacity: 0 });
+  tl.to(dad, { opacity: 0, duration: .6 }, t0 + .2);
+  tl.to(sil, { opacity: .85, duration: .6 }, t0 + .2);
+  const kids = [kid1, kid2];
+  tl.to(kids, { x: 60, duration: 1.0, ease: "power2.inOut" }, t0 + .2);
+  const walkT = K(s) - .1, walkD = Math.max(2.4, sEnd(s) - walkT + .2);
+  tl.to(sil, { x: 120, y: -330, scale: .28, svgOrigin: "420 960", opacity: .0, duration: walkD, ease: "sine.in" }, walkT);
+  // long shadow trailing
+  const sh = S("ellipse", { cx: 420, cy: 968, rx: 80, ry: 12, fill: "#000", opacity: .35 }, g);
+  tl.to(sh, { attr: { cx: 540, cy: 645, rx: 20, ry: 4 }, opacity: 0, duration: walkD, ease: "sine.in" }, walkT);
+})();
+
+/* ===== absence: ندرك أن بعض الغياب لا يُعوّض، ===== */
+(() => {
+  const s = "absence", g = sceneGroup(s);
+  root.insertBefore(g, family);
+  const gapGlow = S("ellipse", { cx: 420, cy: 820, rx: 130, ry: 190, fill: "url(#lightG)", opacity: 0 }, g);
+  const empty = figure(g, 420, FAM_BASE, 300, "lit", { "stroke-dasharray": "4 14", opacity: 0 });
+  tl.to(empty, { opacity: .85, duration: 1.0 }, K(s, 0) - .1);
+  tl.to(gapGlow, { opacity: .55, duration: .8, yoyo: true, repeat: 3, ease: "sine.inOut" }, K(s, 1) - .1);
+  tl.to([kid1.parts, kid2.parts].flat(), { stroke: "#C9A64A", duration: .8 }, K(s, 1));
+  tl.to(family, { opacity: 0, duration: .55 }, sEnd(s) - .45);
+})();
+
+/* ===== places: وأن هناك أماكن في القلب… لا يملؤها أحد. ===== */
+(() => {
+  const s = "places", g = sceneGroup(s);
+  const hd = heartD(540, 740, 270);
+  document.getElementById("heartClipPath").setAttribute("d", hd);
+  const fillG = S("g", { "clip-path": "url(#heartClip)" }, g);
+  const water = S("rect", { x: 200, y: 1000, width: 680, height: 620, fill: GOLD, opacity: .45 }, fillG);
+  const hollow = silhouette(fillG, 540, 900, 250, BG);
+  const hollowLine = figure(g, 540, 900, 250, "lt", { "stroke-dasharray": "3 12", opacity: 0 });
+  const heart = S("path", { d: hd, class: "ln" }, g);
+  draw(heart, sStart(s) - .2, 1.2);
+  tl.to(water, { attr: { y: 470 }, duration: Math.max(2.5, sEnd(s) - K(s, 0) - .2), ease: "sine.inOut" }, K(s, 0));
+  tl.to(hollowLine, { opacity: 1, duration: .8 }, K(s, 0) + .5);
+  tl.to(hollowLine, { opacity: .3, duration: .5, yoyo: true, repeat: 3, ease: "sine.inOut" }, K(s, 1));
+})();
+
+/* ===== features: قد تغيب ملامحه عن أعيننا… ===== */
+(() => {
+  const s = "features", g = sceneGroup(s);
+  const frame = S("ellipse", { cx: 540, cy: 780, rx: 200, ry: 255, class: "ln" }, g);
+  const frame2 = S("ellipse", { cx: 540, cy: 780, rx: 222, ry: 277, class: "lt", opacity: .5 }, g);
+  draw([frame, frame2], sStart(s) - .3, 1.1);
+  const face = S("g", {}, g);
+  const p = figure(face, 540, 1010, 340, "li");
+  const fy = p.headY;
+  const feat = S("g", {}, face);
+  S("path", { d: `M${522},${fy - 4} q4,-5 8,0 M${550},${fy - 4} q4,-5 8,0`, class: "lit" }, feat);
+  S("path", { d: `M${526},${fy + 14} q14,10 28,0`, class: "lit" }, feat);
+  draw(p.parts, sStart(s), 1.0);
+  fadeIn(feat, sStart(s) + .8, .5);
+  tl.to(feat, { opacity: 0, filter: "blur(4px)", duration: 1.2 }, K(s, 0));
+  tl.to(face, { opacity: .35, duration: 1.4 }, K(s, 0) + .2);
+  const eye = S("path", { d: eyeD(540, 430, 95, 34), class: "ln" }, g);
+  const iris = S("circle", { cx: 540, cy: 430, r: 22, fill: GOLD, opacity: 0 }, g);
+  draw(eye, K(s, 1) - .3, .7);
+  undash(eye, K(s, 1) + .45);
+  tl.to(iris, { opacity: 1, duration: .3 }, K(s, 1) + .2);
+  tl.to(eye, { morphSVG: eyeClosedD(540, 430, 95, 34), duration: .6, ease: "power2.inOut" }, K(s, 1) + .7);
+  tl.to(iris, { opacity: 0, scaleY: .1, transformOrigin: "50% 50%", duration: .4 }, K(s, 1) + .7);
+})();
+
+/* ===== memories: لكن ذكراه لا تغيب عن أرواحنا، ===== */
+(() => {
+  const s = "memories", g = sceneGroup(s);
+  const spots = [[320, 560, -9], [760, 590, 8], [300, 930, 7], [780, 950, -6]];
+  const frames = spots.map(([x, y, r], i) => {
+    const fg = S("g", { transform: `translate(${x},${y}) rotate(${r})` }, g);
+    const outer = S("rect", { x: -95, y: -115, width: 190, height: 230, rx: 10, class: "lt" }, fg);
+    const inner = S("rect", { x: -75, y: -95, width: 150, height: 150, rx: 6, class: "lit", opacity: .6 }, fg);
+    const mini = figure(fg, i % 2 ? 0 : -20, 55, 110, "lit");
+    if (i % 2 === 0) figure(fg, 40, 55, 70, "lit");
+    fg._parts = [outer, inner];
+    return fg;
+  });
+  frames.forEach((f, i) => {
+    draw(f._parts, sStart(s) - .2 + i * .25, .8);
+    tl.to(f, { y: (i % 2 ? -1 : 1) * 14, duration: 1.4, yoyo: true, repeat: 2, ease: "sine.inOut" }, sStart(s));
+    tl.to(f, { opacity: .25, duration: .6, yoyo: true, repeat: 1, ease: "sine.inOut" }, K(s, 0) + .2 + i * .3);
+  });
+  const center = S("g", {}, g);
+  const cf = S("rect", { x: 420, y: 615, width: 240, height: 290, rx: 12, class: "ln" }, center);
+  figure(center, 515, 860, 170, "li");
+  figure(center, 590, 860, 105, "li");
+  draw(cf, K(s, 0) - .3, .8);
+  fadeIn([...center.querySelectorAll("g")], K(s, 0) + .2, .5);
+  tl.to(cf, { filter: "url(#glow)", duration: .01 }, K(s, 0) + .5);
+  // converging light into the soul
+  const core = smallHeart(g, 540, 760, 70, GOLD);
+  gsap.set(core, { opacity: 0, scale: .4, transformOrigin: "50% 50%" });
+  const motes = [];
+  for (let i = 0; i < 16; i++) {
+    const a = i / 16 * Math.PI * 2, R = 380 + (i % 3) * 40;
+    motes.push(S("circle", { cx: 540 + Math.cos(a) * R, cy: 760 + Math.sin(a) * R * .9, r: 5, fill: GOLD2, opacity: 0 }, g));
+  }
+  const t2 = K(s, 1);
+  tl.to(frames, { opacity: 0, duration: .6 }, t2 - .2);
+  tl.to(center, { opacity: 0, duration: .5 }, t2);
+  tl.to(motes, { opacity: 1, duration: .25, stagger: .03 }, t2 - .1);
+  tl.to(motes, { attr: { cx: 540, cy: 760 }, opacity: 0, duration: 1.1, ease: "power2.in", stagger: .03 }, t2 + .1);
+  tl.to(core, { opacity: .95, scale: 1, duration: .8, ease: "back.out(1.7)" }, t2 + .7);
+})();
+
+/* ===== prayer: ويبقى الدعاء أجمل ما نصله به. ===== */
+const geo = document.getElementById("geoLayer");
+const prayHands = S("g", { opacity: 0 }, root);
+(() => {
+  const mitten = "M-45,0 C-55,-60 -60,-130 -55,-180 C-50,-226 -10,-236 3,-214 C18,-236 56,-226 55,-180 L50,-62 C49,-32 40,-6 35,0";
+  const thumb = "M50,-92 C76,-112 98,-108 90,-82 C84,-58 64,-40 44,-28";
+  const fing = "M-20,-200 L-17,-118 M18,-206 L15,-124";
+  const mk = (tx, sx, rot) => {
+    const h = S("g", { transform: `translate(${tx},1060) scale(${sx},1) rotate(${rot})` }, prayHands);
+    return [mitten, thumb, fing].map(d => S("path", { d, class: d === fing ? "lt" : "ln" }, h));
+  };
+  const L = mk(462, 1, -12), R = mk(618, -1, -12);
+  const s = "prayer", g = sceneGroup(s);
+  const light = S("ellipse", { cx: 540, cy: 760, rx: 260, ry: 220, fill: "url(#lightG)", opacity: 0 }, g);
+  root.insertBefore(g, prayHands);
+  tl.to(geo, { opacity: .07, duration: 2 }, sStart(s) - .4);
+  tl.to(geo, { rotation: 8, svgOrigin: "540 960", duration: TL.outro - sStart(s), ease: "none" }, sStart(s) - .4);
+  tl.set(prayHands, { opacity: 1 }, K(s, 0) - .4);
+  draw([...L, ...R], K(s, 0) - .4, 1.3);
+  tl.to(light, { opacity: .9, duration: 1.4, ease: "sine.inOut" }, K(s, 0) + .3);
+  const rays = [];
+  for (let i = 0; i < 9; i++) {
+    const a = -Math.PI / 2 + (i - 4) * .17;
+    rays.push(S("line", { x1: 540 + Math.cos(a) * 170, y1: 790 + Math.sin(a) * 170, x2: 540 + Math.cos(a) * 270, y2: 790 + Math.sin(a) * 270, class: "lt", opacity: .7 }, g));
+  }
+  draw(rays, K(s, 0) + .5, .7);
+  const thread = S("path", { d: "M540,770 L540,360", class: "lt", filter: "url(#glow)" }, g);
+  draw(thread, K(s, 1) - .2, 1.2, "sine.inOut");
+  const bead = S("circle", { cx: 540, cy: 770, r: 10, fill: "#FFF3C4", filter: "url(#glow)", opacity: 0 }, g);
+  tl.to(bead, { opacity: 1, duration: .2 }, K(s, 1) - .2);
+  tl.to(bead, { attr: { cy: 360 }, duration: 1.6, ease: "sine.inOut" }, K(s, 1) - .2);
+  tl.to(bead, { opacity: 0, duration: .3 }, K(s, 1) + 1.4);
+  // hands settle lower & smaller for the supplications
+  tl.to(prayHands, { scale: .55, y: 120, svgOrigin: "540 1060", opacity: .55, duration: 1.0, ease: "power2.inOut" }, sEnd(s) - .4);
+  tl.to(prayHands, { opacity: 0, duration: .6 }, sStart("dua-garden") - .5);
+})();
+
+/* ===== dua-mercy: اللهم ارحم آباءنا… واغفر لهم ===== */
+(() => {
+  const s = "dua-mercy", g = sceneGroup(s);
+  const star = S("g", {}, g);
+  const R = 200, cx = 540, cy = 690;
+  const sq1 = S("rect", { x: cx - R * .72, y: cy - R * .72, width: R * 1.44, height: R * 1.44, class: "ln" }, star);
+  const sq2 = S("rect", { x: cx - R * .72, y: cy - R * .72, width: R * 1.44, height: R * 1.44, class: "ln", transform: `rotate(45 ${cx} ${cy})` }, star);
+  const c1 = S("circle", { cx, cy, r: R * .55, class: "lt" }, star);
+  const c2 = S("circle", { cx, cy, r: R * 1.08, class: "lt", opacity: .5 }, star);
+  const rose = S("path", { d: heartD(cx, cy + 4, 30), fill: GOLD, opacity: 0 }, star);
+  draw([sq1, sq2], K(s, 0) - .3, 1.3);
+  draw([c1, c2], K(s, 0) + .4, 1.0);
+  tl.to(rose, { opacity: 1, duration: .6 }, K(s, 0) + 1.0);
+  tl.to(star, { rotation: 22.5, svgOrigin: `${cx} ${cy}`, duration: sEnd(s) - K(s, 0), ease: "sine.inOut" }, K(s, 0));
+  const rays = [];
+  for (let i = 0; i < 16; i++) {
+    const a = i / 16 * Math.PI * 2;
+    rays.push(S("line", { x1: cx + Math.cos(a) * 240, y1: cy + Math.sin(a) * 240, x2: cx + Math.cos(a) * (i % 2 ? 290 : 320), y2: cy + Math.sin(a) * (i % 2 ? 290 : 320), class: "lt" }, g));
+  }
+  draw(rays, K(s, 1) - .2, .8, "power2.out");
+  const glow = S("circle", { cx, cy, r: 230, fill: "url(#lightG)", opacity: 0 }, g);
+  g.insertBefore(glow, g.firstChild);
+  tl.to(glow, { opacity: .7, duration: 1.0 }, K(s, 1));
+})();
+
+/* ===== dua-light: ونوّر قبورهم ===== */
+(() => {
+  const s = "dua-light", g = sceneGroup(s);
+  const cx = 540;
+  const glow = S("circle", { cx, cy: 720, r: 300, fill: "url(#lightG)", opacity: 0 }, g);
+  const parts = [
+    S("path", { d: `M${cx},360 L${cx},470`, class: "lt" }, g),
+    S("circle", { cx, cy: 485, r: 14, class: "lt" }, g),
+    S("path", { d: `M${cx - 70},560 L${cx},500 L${cx + 70},560 Z`, class: "ln" }, g),
+    S("path", { d: `M${cx - 80},570 L${cx + 80},570 L${cx + 100},700 L${cx + 70},850 L${cx - 70},850 L${cx - 100},700 Z`, class: "ln" }, g),
+    S("path", { d: `M${cx - 50},590 L${cx - 62},700 L${cx - 45},830 M${cx + 50},590 L${cx + 62},700 L${cx + 45},830 M${cx},580 L${cx},840`, class: "lt", opacity: .7 }, g),
+    S("path", { d: `M${cx - 55},850 L${cx + 55},850 L${cx + 30},895 L${cx - 30},895 Z`, class: "ln" }, g),
+  ];
+  draw(parts, sStart(s) - .3, .9);
+  const flame = S("path", { d: `M${cx},655 C${cx + 34},700 ${cx + 26},760 ${cx},770 C${cx - 26},760 ${cx - 34},700 ${cx},655 Z`, fill: "#FFF3C4", filter: "url(#glow)", opacity: 0 }, g);
+  tl.to(flame, { opacity: 1, duration: .5 }, K(s) - .1);
+  tl.to(glow, { opacity: 1, duration: 1.2, ease: "sine.out" }, K(s));
+  tl.to(flame, { scaleY: 1.12, transformOrigin: "50% 100%", duration: .4, yoyo: true, repeat: 5, ease: "sine.inOut" }, K(s) + .4);
+})();
+
+/* ===== dua-company: وآنس وحشتهم ===== */
+(() => {
+  const s = "dua-company", g = sceneGroup(s);
+  const moon = S("path", { d: "M600,520 A190,190 0 1,0 600,900 A150,150 0 1,1 600,520 Z", class: "ln" }, g);
+  const mglow = S("circle", { cx: 520, cy: 710, r: 260, fill: "url(#lightG)", opacity: 0 }, g);
+  g.insertBefore(mglow, moon);
+  draw(moon, sStart(s) - .3, 1.1);
+  undash(moon, sStart(s) + .85);
+  tl.to(moon, { fill: "rgba(244,214,110,.18)", duration: .8 }, K(s));
+  tl.to(mglow, { opacity: .7, duration: 1 }, K(s));
+  const stars = [[690, 560, 22], [770, 680, 14], [720, 820, 18], [640, 450, 12], [820, 560, 10]].map(([x, y, r]) => sparkle(g, x, y, r));
+  stars.forEach((st, i) => {
+    gsap.set(st, { opacity: 0, scale: .2, transformOrigin: "50% 50%" });
+    tl.to(st, { opacity: 1, scale: 1, duration: .4, ease: "back.out(2)" }, K(s) + .1 + i * .14);
+    tl.to(st, { opacity: .35, duration: .35, yoyo: true, repeat: 3, ease: "sine.inOut" }, K(s) + .7 + i * .14);
+  });
+})();
+
+/* ===== dua-rise: وارفع درجاتهم في جنات النعيم ===== */
+(() => {
+  const s = "dua-rise", g = sceneGroup(s);
+  let d = "M260,1000", x = 260, y = 1000;
+  for (let i = 0; i < 6; i++) { y -= 80; d += ` L${x},${y}`; x += 80; d += ` L${x},${y}`; }
+  const steps = S("path", { d, class: "ln" }, g);
+  draw(steps, K(s, 0) - .3, 1.3, "power1.inOut");
+  const dot = S("circle", { cx: 290, cy: 990, r: 11, fill: "#FFF3C4", filter: "url(#glow)", opacity: 0 }, g);
+  tl.to(dot, { opacity: 1, duration: .2 }, K(s, 0));
+  const pts = []; x = 300; y = 960;
+  for (let i = 0; i < 6; i++) { y -= 80; pts.push([x, y]); x += 80; }
+  pts.forEach(([px, py], i) => tl.to(dot, { attr: { cx: px, cy: py }, duration: .32, ease: "power2.out" }, K(s, 0) + .1 + i * .3));
+  const gx = 790, gy = 520;
+  const gate = S("path", { d: `M${gx - 70},${gy} L${gx - 70},${gy - 110} Q${gx - 70},${gy - 190} ${gx},${gy - 230} Q${gx + 70},${gy - 190} ${gx + 70},${gy - 110} L${gx + 70},${gy}`, class: "ln" }, g);
+  const gfill = S("path", { d: `M${gx - 70},${gy} L${gx - 70},${gy - 110} Q${gx - 70},${gy - 190} ${gx},${gy - 230} Q${gx + 70},${gy - 190} ${gx + 70},${gy - 110} L${gx + 70},${gy} Z`, fill: "url(#archG)", opacity: 0 }, g);
+  draw(gate, K(s, 1) - .4, .9);
+  tl.to(gfill, { opacity: 1, duration: .8 }, K(s, 1));
+  const lv = [[-40, -40], [40, -60], [0, -140]].map(([ox, oy], i) => S("path", { d: `M${gx + ox},${gy + oy} q14,-18 0,-36 q-14,18 0,36 Z`, fill: GOLD2, opacity: 0 }, g));
+  tl.to(lv, { opacity: .9, duration: .4, stagger: .12 }, K(s, 1) + .4);
+})();
+
+/* ===== dua-garden & dua-reunite: shared arch (mihrab) ===== */
+const arch = S("g", { opacity: 0 }, root);
+const ARCH = "M300,1010 L300,620 C300,470 420,400 540,330 C660,400 780,470 780,620 L780,1010";
+const archPath = S("path", { d: ARCH, class: "ln" }, arch);
+const archIn = S("path", { d: "M330,1010 L330,630 C330,500 440,440 540,375 C640,440 750,500 750,630 L750,1010", class: "lt", opacity: .5 }, arch);
+const archFill = S("path", { d: ARCH + " Z", fill: "url(#archG)", opacity: 0 }, arch);
+arch.insertBefore(archFill, archPath);
+(() => {
+  const s = "dua-garden", g = sceneGroup(s);
+  const t0 = sStart(s) - .4;
+  tl.set(arch, { opacity: 1 }, t0);
+  draw([archPath, archIn], t0, 1.3);
+  const ground = S("path", { d: "M250,1010 L830,1010", class: "lt" }, g);
+  draw(ground, t0 + .3, .8);
+  const stems = [];
+  const blooms = [];
+  [[360, 150], [420, 220], [480, 170], [600, 190], [660, 230], [720, 160], [540, 120]].forEach(([x, h], i) => {
+    const bend = (i % 2 ? 1 : -1) * 18;
+    stems.push(S("path", { d: `M${x},1010 Q${x + bend},${1010 - h / 2} ${x},${1010 - h}`, class: "lt" }, g));
+    stems.push(S("path", { d: `M${x + bend / 2},${1010 - h * .45} q${(i % 2 ? 1 : -1) * 34},-10 ${(i % 2 ? 1 : -1) * 44},-40 q${(i % 2 ? -1 : 1) * 30},4 ${(i % 2 ? -1 : 1) * 44},40 Z`, class: "lt" }, g));
+    const b = S("g", {}, g);
+    for (let k = 0; k < 5; k++) {
+      const a = k / 5 * Math.PI * 2;
+      S("circle", { cx: x + Math.cos(a) * 11, cy: 1010 - h + Math.sin(a) * 11, r: 9, fill: k % 2 ? GOLD : GOLD2 }, b);
+    }
+    S("circle", { cx: x, cy: 1010 - h, r: 6, fill: "#FFF3C4" }, b);
+    blooms.push(b);
+  });
+  draw(stems, K(s, 0) - .3, .9, "power2.out");
+  blooms.forEach((b, i) => {
+    gsap.set(b, { opacity: 0, scale: 0, transformOrigin: "50% 50%" });
+    tl.to(b, { opacity: 1, scale: 1, duration: .5, ease: "back.out(2)" }, K(s, 0) + .6 + i * .1);
+  });
+  tl.to(archFill, { opacity: 1, duration: 1.2 }, K(s, 1));
+  tl.to(archPath, { filter: "url(#glow)", duration: .01 }, K(s, 1));
+})();
+(() => {
+  const s = "dua-reunite", g = sceneGroup(s);
+  const t0 = sStart(s) - .4;
+  const f = figure(g, 200, 1010, 270, "ln");
+  const c = figure(g, 880, 1010, 170, "ln");
+  draw([...f.parts, ...c.parts], t0, 1.0);
+  tl.to(f, { x: 270, duration: 1.6, ease: "power2.inOut" }, K(s, 0) - .2);
+  tl.to(c, { x: -270, duration: 1.6, ease: "power2.inOut" }, K(s, 0) - .2);
+  const halo2 = S("ellipse", { cx: 540, cy: 600, rx: 220, ry: 260, fill: "url(#lightG)", opacity: 0 }, g);
+  g.insertBefore(halo2, g.firstChild);
+  tl.to(halo2, { opacity: .85, duration: 1.2 }, K(s, 1));
+  const sp = [[420, 520, 18], [660, 500, 22], [540, 420, 26], [460, 640, 12], [620, 620, 14]].map(([x, y, r]) => sparkle(g, x, y, r));
+  sp.forEach((st, i) => {
+    gsap.set(st, { opacity: 0, scale: .2, transformOrigin: "50% 50%" });
+    tl.to(st, { opacity: 1, scale: 1, duration: .4, ease: "back.out(2)" }, K(s, 1) + .2 + i * .12);
+  });
+  // light rising gently on the last line
+  const rise = [];
+  for (let i = 0; i < 14; i++) rise.push(S("circle", { cx: 340 + i * 30, cy: 1000 - (i % 4) * 30, r: 3 + (i % 3), fill: GOLD2, opacity: 0 }, g));
+  const t2 = phOf(s)[1] ? phOf(s)[1].start : K(s, 1) + 1;
+  rise.forEach((c2, i) => {
+    tl.to(c2, { opacity: .9, duration: .3 }, t2 + i * .08);
+    tl.to(c2, { attr: { cy: 420 + (i % 5) * 30 }, opacity: 0, duration: 2.4, ease: "sine.out" }, t2 + .2 + i * .08);
+  });
+  tl.to(arch, { opacity: 0, duration: .6 }, sEnd(s) - .45);
+  tl.to(geo, { opacity: 0, duration: 1.2 }, sEnd(s) - .6);
+})();
+
+/* ===== closing: رحم الله أبًا غاب عن العين… ولم يغب عن القلب يومًا. ===== */
+(() => {
+  const s = "closing", g = sceneGroup(s);
+  const eye = S("path", { d: eyeD(540, 740, 200, 70), class: "ln" }, g);
+  const iris = S("circle", { cx: 540, cy: 740, r: 52, class: "ln" }, g);
+  const pupil = S("circle", { cx: 540, cy: 740, r: 20, fill: GOLD }, g);
+  draw(eye, K(s, 0) - .4, .9);
+  undash(eye, K(s, 0) + .55);
+  draw(iris, K(s, 0), .5);
+  fadeIn(pupil, K(s, 0) + .3, .3);
+  tl.to(eye, { morphSVG: eyeClosedD(540, 740, 200, 70), duration: .7, ease: "power2.inOut" }, K(s, 0) + .8);
+  tl.to([iris, pupil], { opacity: 0, duration: .4 }, K(s, 0) + .8);
+  const t2 = K(s, 1);
+  tl.to(eye, { morphSVG: heartD(540, 730, 260), fill: "rgba(233,184,37,0.10)", duration: 1.1, ease: "power2.inOut" }, t2 - .4);
+  const inner = S("g", { opacity: 0 }, g);
+  const fd = figure(inner, 495, 900, 230, "li");
+  const fc = figure(inner, 600, 900, 140, "li");
+  S("path", { d: "M570,825 Q560,850 540,838", class: "lit" }, inner);
+  tl.to(inner, { opacity: 1, duration: .5 }, t2 + .25);
+  draw([...fd.parts, ...fc.parts], t2 + .25, .6);
+  const glow = S("circle", { cx: 540, cy: 740, r: 320, fill: "url(#lightG)", opacity: 0 }, g);
+  g.insertBefore(glow, g.firstChild);
+  tl.to(glow, { opacity: .7, duration: 1.4 }, t2 + .3);
+  tl.to(eye, { filter: "url(#glow)", duration: .01 }, t2 + .7);
+  tl.to(eye, { scale: 1.05, transformOrigin: "50% 50%", duration: .6, yoyo: true, repeat: 3, ease: "sine.inOut" }, t2 + 1.2);
+})();
+
+/* ===== logo + outro ===== */
+const logoSmall = document.getElementById("logoSmall"), logoBig = document.getElementById("logoBig");
+function placeholderLogo() {
+  return `<svg class="ph-logo" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="${GOLD}" stroke-width="3"/><circle cx="50" cy="50" r="38" fill="none" stroke="${GOLD}" stroke-width="1" opacity=".5"/><text x="50" y="58" text-anchor="middle" font-family="Tajawal" font-weight="800" font-size="22" fill="${GOLD}">شعار</text></svg>`;
+}
+const logoReady = new Promise(res => {
+  const img = new Image();
+  img.onload = () => { logoSmall.innerHTML = `<img src="${C.logo}">`; logoBig.innerHTML = `<img src="${C.logo}">`; res(); };
+  img.onerror = () => { logoSmall.innerHTML = placeholderLogo(); logoBig.innerHTML = placeholderLogo(); res(); };
+  img.src = C.logo;
+});
+document.getElementById("igHandle").textContent = "@" + C.instagram;
+document.getElementById("xHandle").textContent = C.x ? "@" + C.x : "@حسابك_في_X";
+tl.to(logoSmall, { opacity: .85, duration: 1.0 }, .4);
+tl.to(halo, { opacity: .55, duration: 1.2 }, 0);
+(() => {
+  const t = TL.outro;
+  tl.to(logoSmall, { opacity: 0, duration: .5 }, t - .3);
+  tl.to(root, { opacity: 0, scale: .9, svgOrigin: "540 760", duration: .7, ease: "power2.in" }, t - .4);
+  tl.fromTo(logoBig, { opacity: 0, scale: .7, filter: "blur(14px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.1, ease: "back.out(1.4)", immediateRender: true }, t + .1);
+  tl.to("#outroLine", { scaleX: 1, duration: .8, ease: "power2.out" }, t + .7);
+  tl.fromTo("#igRow", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: .7, ease: "power3.out", immediateRender: true }, t + 1.0);
+  tl.fromTo("#xRow", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: .7, ease: "power3.out", immediateRender: true }, t + 1.25);
+  tl.to(halo, { opacity: .9, duration: 1.5 }, t);
+  tl.set({}, {}, TL.duration);
+})();
+
+/* ---------- ambient dust (deterministic in time) ---------- */
+const dust = document.getElementById("dust");
+const motes = [];
+for (let i = 0; i < 34; i++) {
+  const r = (n) => (Math.sin(i * 127.1 + n * 311.7) * 43758.5453) % 1;
+  const rnd = n => Math.abs(r(n));
+  motes.push({ el: S("circle", { r: 1.5 + rnd(1) * 2.5, fill: GOLD2 }, dust), x: rnd(2) * 1080, y: rnd(3) * 1920, v: 12 + rnd(4) * 26, ph: rnd(5) * 6.28, a: .15 + rnd(6) * .35 });
+}
+function updateDust(t) {
+  for (const m of motes) {
+    const y = ((m.y - t * m.v) % 1920 + 1920) % 1920;
+    m.el.setAttribute("cx", (m.x + Math.sin(t * .4 + m.ph) * 18).toFixed(1));
+    m.el.setAttribute("cy", y.toFixed(1));
+    m.el.setAttribute("opacity", (m.a * (.6 + .4 * Math.sin(t * 1.3 + m.ph))).toFixed(3));
+  }
+}
+
+/* ---------- playback / render API ---------- */
+window.DURATION = TL.duration;
+window.seekTo = (t) => { tl.time(t, false); updateDust(t); };
+window.READY = Promise.all([document.fonts.ready, logoReady,
+  document.fonts.load("800 76px Tajawal", "الأب"), document.fonts.load("700 60px Tajawal", "الأب"), document.fonts.load("700 72px Amiri", "اللهم")])
+  .then(() => { seekTo(0); return true; });
+
+if (!RENDER) {
+  const wrap = document.getElementById("wrap");
+  const fit = () => { const s = Math.min(innerWidth / 1080, (innerHeight - 64) / 1920); wrap.style.transform = `scale(${s})`; wrap.style.margin = `${(1920 * s - 1920) / 2}px ${(1080 * s - 1080) / 2}px`; wrap.style.marginTop = `${(1920 * s - 1920) / 2 - 28}px`; };
+  addEventListener("resize", fit); fit();
+  const voice = document.getElementById("voice"), music = document.getElementById("music");
+  if (TL.audio) voice.src = TL.audio;
+  music.src = C.music; music.volume = .12;
+  const btn = document.getElementById("play"), scrub = document.getElementById("scrub"), clock = document.getElementById("clock");
+  let playing = false, t0 = 0, wall = 0;
+  const now = () => TL.audio && !voice.error ? voice.currentTime : (performance.now() - wall) / 1000 + t0;
+  btn.onclick = () => {
+    playing = !playing; btn.textContent = playing ? "❚❚ إيقاف" : "▶ تشغيل";
+    if (playing) { wall = performance.now(); if (TL.audio) voice.play().catch(() => {}); music.currentTime = now(); music.play().catch(() => {}); }
+    else { t0 = now(); voice.pause(); music.pause(); }
+  };
+  scrub.oninput = () => { t0 = scrub.value / 1000 * TL.duration; voice.currentTime = t0; music.currentTime = t0; wall = performance.now(); seekTo(t0); };
+  gsap.ticker.add(() => {
+    if (!playing) return;
+    const t = now();
+    if (t >= TL.duration) { btn.click(); return; }
+    seekTo(t); scrub.value = t / TL.duration * 1000; clock.textContent = t.toFixed(1) + "s";
+  });
+}
+</script>
+</body>
+</html>

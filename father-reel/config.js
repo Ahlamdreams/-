@@ -1,7 +1,7 @@
 // إعدادات الهوية — عدّلها ثم أعد التصدير
 window.CONFIG = {
   instagram: "ahlamtrainer",
-  x: "",                 // ← ضع اسم حسابك في X هنا بدون @ (فارغ = يظهر نص مؤقت)
+  x: "ahlamtrainer",
   logo: "assets/logo.png", // ضع ملف الشعار هنا (PNG شفاف يفضَّل). إن لم يوجد يظهر شعار مؤقت
   music: "assets/music.m4a", // موسيقى خلفية هادئة (اختيارية)
 };

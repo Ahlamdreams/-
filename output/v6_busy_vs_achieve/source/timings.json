@@ -1,0 +1,760 @@
+{
+ "offset": 1.0,
+ "phrases": [
+  {
+   "text": "هل فكرت يومًا",
+   "start": 1.04,
+   "end": 2.38,
+   "words": [
+    {
+     "word": "هل",
+     "start": 1.05,
+     "end": 1.37,
+     "key": false
+    },
+    {
+     "word": "فكرت",
+     "start": 1.37,
+     "end": 1.96,
+     "key": true
+    },
+    {
+     "word": "يومًا",
+     "start": 1.96,
+     "end": 2.38,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "لماذا ننشغل كثيرًا",
+   "start": 2.79,
+   "end": 4.6,
+   "words": [
+    {
+     "word": "لماذا",
+     "start": 2.8,
+     "end": 3.38,
+     "key": false
+    },
+    {
+     "word": "ننشغل",
+     "start": 3.38,
+     "end": 3.98,
+     "key": true
+    },
+    {
+     "word": "كثيرًا",
+     "start": 3.98,
+     "end": 4.6,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "ومع ذلك لا نحقق دائمًا ما نطمح إليه؟",
+   "start": 4.8,
+   "end": 8.46,
+   "words": [
+    {
+     "word": "ومع",
+     "start": 4.81,
+     "end": 5.14,
+     "key": false
+    },
+    {
+     "word": "ذلك",
+     "start": 5.14,
+     "end": 5.89,
+     "key": false
+    },
+    {
+     "word": "لا",
+     "start": 5.89,
+     "end": 6.15,
+     "key": false
+    },
+    {
+     "word": "نحقق",
+     "start": 6.15,
+     "end": 6.78,
+     "key": false
+    },
+    {
+     "word": "دائمًا",
+     "start": 6.78,
+     "end": 7.3,
+     "key": false
+    },
+    {
+     "word": "ما",
+     "start": 7.3,
+     "end": 7.56,
+     "key": false
+    },
+    {
+     "word": "نطمح",
+     "start": 7.56,
+     "end": 8.05,
+     "key": true
+    },
+    {
+     "word": "إليه؟",
+     "start": 8.05,
+     "end": 8.46,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "لأن الانشغال لا يعني بالضرورة الإنجاز!",
+   "start": 9.06,
+   "end": 12.28,
+   "words": [
+    {
+     "word": "لأن",
+     "start": 9.07,
+     "end": 9.39,
+     "key": false
+    },
+    {
+     "word": "الانشغال",
+     "start": 9.39,
+     "end": 10.07,
+     "key": true
+    },
+    {
+     "word": "لا",
+     "start": 10.07,
+     "end": 10.44,
+     "key": false
+    },
+    {
+     "word": "يعني",
+     "start": 10.44,
+     "end": 10.84,
+     "key": false
+    },
+    {
+     "word": "بالضرورة",
+     "start": 10.84,
+     "end": 11.58,
+     "key": false
+    },
+    {
+     "word": "الإنجاز!",
+     "start": 11.58,
+     "end": 12.28,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "قد تمتلئ جداولنا بالمهام",
+   "start": 12.92,
+   "end": 15.06,
+   "words": [
+    {
+     "word": "قد",
+     "start": 12.93,
+     "end": 13.3,
+     "key": false
+    },
+    {
+     "word": "تمتلئ",
+     "start": 13.3,
+     "end": 13.8,
+     "key": false
+    },
+    {
+     "word": "جداولنا",
+     "start": 13.8,
+     "end": 14.43,
+     "key": false
+    },
+    {
+     "word": "بالمهام",
+     "start": 14.43,
+     "end": 15.06,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "وتزدحم أيامنا بالاجتماعات",
+   "start": 15.47,
+   "end": 17.76,
+   "words": [
+    {
+     "word": "وتزدحم",
+     "start": 15.48,
+     "end": 16.14,
+     "key": false
+    },
+    {
+     "word": "أيامنا",
+     "start": 16.14,
+     "end": 16.73,
+     "key": false
+    },
+    {
+     "word": "بالاجتماعات",
+     "start": 16.73,
+     "end": 17.76,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "وتتوالى الأعمال",
+   "start": 18.28,
+   "end": 19.65,
+   "words": [
+    {
+     "word": "وتتوالى",
+     "start": 18.29,
+     "end": 19.01,
+     "key": false
+    },
+    {
+     "word": "الأعمال",
+     "start": 19.02,
+     "end": 19.64,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "لكن يبقى السؤال",
+   "start": 20.25,
+   "end": 21.79,
+   "words": [
+    {
+     "word": "لكن",
+     "start": 20.26,
+     "end": 20.65,
+     "key": false
+    },
+    {
+     "word": "يبقى",
+     "start": 20.65,
+     "end": 21.15,
+     "key": false
+    },
+    {
+     "word": "السؤال",
+     "start": 21.15,
+     "end": 21.79,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "ما الذي أحدث فرقًا حقيقيًا؟",
+   "start": 22.36,
+   "end": 24.83,
+   "words": [
+    {
+     "word": "ما",
+     "start": 22.37,
+     "end": 22.59,
+     "key": false
+    },
+    {
+     "word": "الذي",
+     "start": 22.59,
+     "end": 23.05,
+     "key": false
+    },
+    {
+     "word": "أحدث",
+     "start": 23.05,
+     "end": 23.67,
+     "key": false
+    },
+    {
+     "word": "فرقًا",
+     "start": 23.67,
+     "end": 24.12,
+     "key": true
+    },
+    {
+     "word": "حقيقيًا؟",
+     "start": 24.13,
+     "end": 24.83,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "هنا تبدأ الإدارة الواعية للوقت والأولويات",
+   "start": 25.35,
+   "end": 29.33,
+   "words": [
+    {
+     "word": "هنا",
+     "start": 25.36,
+     "end": 25.65,
+     "key": false
+    },
+    {
+     "word": "تبدأ",
+     "start": 25.66,
+     "end": 26.42,
+     "key": false
+    },
+    {
+     "word": "الإدارة",
+     "start": 26.42,
+     "end": 27.06,
+     "key": false
+    },
+    {
+     "word": "الواعية",
+     "start": 27.06,
+     "end": 27.64,
+     "key": true
+    },
+    {
+     "word": "للوقت",
+     "start": 27.65,
+     "end": 28.15,
+     "key": false
+    },
+    {
+     "word": "والأولويات",
+     "start": 28.15,
+     "end": 29.33,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "جرّب أن تسأل نفسك ثلاثة أسئلة",
+   "start": 30.04,
+   "end": 33.25,
+   "words": [
+    {
+     "word": "جرّب",
+     "start": 30.05,
+     "end": 30.38,
+     "key": false
+    },
+    {
+     "word": "أن",
+     "start": 30.38,
+     "end": 30.77,
+     "key": false
+    },
+    {
+     "word": "تسأل",
+     "start": 30.77,
+     "end": 31.25,
+     "key": false
+    },
+    {
+     "word": "نفسك",
+     "start": 31.25,
+     "end": 31.96,
+     "key": false
+    },
+    {
+     "word": "ثلاثة",
+     "start": 31.96,
+     "end": 32.59,
+     "key": true
+    },
+    {
+     "word": "أسئلة",
+     "start": 32.59,
+     "end": 33.25,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "قبل أن تبدأ يومك",
+   "start": 33.39,
+   "end": 34.63,
+   "words": [
+    {
+     "word": "قبل",
+     "start": 33.4,
+     "end": 33.7,
+     "key": false
+    },
+    {
+     "word": "أن",
+     "start": 33.7,
+     "end": 33.98,
+     "key": false
+    },
+    {
+     "word": "تبدأ",
+     "start": 33.98,
+     "end": 34.32,
+     "key": false
+    },
+    {
+     "word": "يومك",
+     "start": 34.32,
+     "end": 34.63,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "أولًا: ما المهمة التي ستصنع الأثر الأكبر؟",
+   "start": 35.36,
+   "end": 39.15,
+   "words": [
+    {
+     "word": "أولًا:",
+     "start": 35.37,
+     "end": 35.75,
+     "key": false
+    },
+    {
+     "word": "ما",
+     "start": 35.75,
+     "end": 36.38,
+     "key": false
+    },
+    {
+     "word": "المهمة",
+     "start": 36.38,
+     "end": 36.82,
+     "key": false
+    },
+    {
+     "word": "التي",
+     "start": 36.82,
+     "end": 37.22,
+     "key": false
+    },
+    {
+     "word": "ستصنع",
+     "start": 37.22,
+     "end": 37.81,
+     "key": false
+    },
+    {
+     "word": "الأثر",
+     "start": 37.81,
+     "end": 38.39,
+     "key": true
+    },
+    {
+     "word": "الأكبر؟",
+     "start": 38.39,
+     "end": 39.15,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "ثانيًا: ما العمل الذي يمكن تفويضه أو الاستغناء عنه؟",
+   "start": 39.83,
+   "end": 44.35,
+   "words": [
+    {
+     "word": "ثانيًا:",
+     "start": 39.84,
+     "end": 40.33,
+     "key": false
+    },
+    {
+     "word": "ما",
+     "start": 40.33,
+     "end": 40.97,
+     "key": false
+    },
+    {
+     "word": "العمل",
+     "start": 40.97,
+     "end": 41.38,
+     "key": false
+    },
+    {
+     "word": "الذي",
+     "start": 41.38,
+     "end": 41.78,
+     "key": false
+    },
+    {
+     "word": "يمكن",
+     "start": 41.78,
+     "end": 42.18,
+     "key": false
+    },
+    {
+     "word": "تفويضه",
+     "start": 42.18,
+     "end": 42.87,
+     "key": true
+    },
+    {
+     "word": "أو",
+     "start": 42.87,
+     "end": 43.27,
+     "key": false
+    },
+    {
+     "word": "الاستغناء",
+     "start": 43.27,
+     "end": 44.07,
+     "key": true
+    },
+    {
+     "word": "عنه؟",
+     "start": 44.07,
+     "end": 44.35,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "ثالثًا: كيف سأعرف أنني حققت نتيجة فعلية؟",
+   "start": 45.03,
+   "end": 49.48,
+   "words": [
+    {
+     "word": "ثالثًا:",
+     "start": 45.04,
+     "end": 46.12,
+     "key": false
+    },
+    {
+     "word": "كيف",
+     "start": 46.13,
+     "end": 46.54,
+     "key": false
+    },
+    {
+     "word": "سأعرف",
+     "start": 46.54,
+     "end": 47.17,
+     "key": false
+    },
+    {
+     "word": "أنني",
+     "start": 47.17,
+     "end": 47.56,
+     "key": false
+    },
+    {
+     "word": "حققت",
+     "start": 47.56,
+     "end": 48.29,
+     "key": false
+    },
+    {
+     "word": "نتيجة",
+     "start": 48.29,
+     "end": 48.99,
+     "key": true
+    },
+    {
+     "word": "فعلية؟",
+     "start": 48.99,
+     "end": 49.48,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "تذكّر",
+   "start": 50.03,
+   "end": 50.49,
+   "words": [
+    {
+     "word": "تذكّر",
+     "start": 50.04,
+     "end": 50.49,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "ليست قيمة يومك في عدد المهام التي أنجزتها",
+   "start": 51.0,
+   "end": 54.73,
+   "words": [
+    {
+     "word": "ليست",
+     "start": 51.01,
+     "end": 51.38,
+     "key": false
+    },
+    {
+     "word": "قيمة",
+     "start": 51.38,
+     "end": 51.96,
+     "key": false
+    },
+    {
+     "word": "يومك",
+     "start": 51.96,
+     "end": 52.33,
+     "key": false
+    },
+    {
+     "word": "في",
+     "start": 52.33,
+     "end": 52.72,
+     "key": false
+    },
+    {
+     "word": "عدد",
+     "start": 52.72,
+     "end": 53.03,
+     "key": true
+    },
+    {
+     "word": "المهام",
+     "start": 53.03,
+     "end": 53.55,
+     "key": false
+    },
+    {
+     "word": "التي",
+     "start": 53.55,
+     "end": 54.02,
+     "key": false
+    },
+    {
+     "word": "أنجزتها",
+     "start": 54.02,
+     "end": 54.73,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "بل في قيمة النتائج التي صنعتها",
+   "start": 55.16,
+   "end": 57.83,
+   "words": [
+    {
+     "word": "بل",
+     "start": 55.17,
+     "end": 55.38,
+     "key": false
+    },
+    {
+     "word": "في",
+     "start": 55.38,
+     "end": 55.74,
+     "key": false
+    },
+    {
+     "word": "قيمة",
+     "start": 55.74,
+     "end": 56.14,
+     "key": false
+    },
+    {
+     "word": "النتائج",
+     "start": 56.14,
+     "end": 56.8,
+     "key": true
+    },
+    {
+     "word": "التي",
+     "start": 56.8,
+     "end": 57.22,
+     "key": false
+    },
+    {
+     "word": "صنعتها",
+     "start": 57.22,
+     "end": 57.83,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "فلا تنشغل فقط",
+   "start": 58.35,
+   "end": 59.47,
+   "words": [
+    {
+     "word": "فلا",
+     "start": 58.36,
+     "end": 58.6,
+     "key": false
+    },
+    {
+     "word": "تنشغل",
+     "start": 58.6,
+     "end": 59.03,
+     "key": true
+    },
+    {
+     "word": "فقط",
+     "start": 59.03,
+     "end": 59.47,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "بل أنجز ما يستحق!",
+   "start": 60.01,
+   "end": 61.81,
+   "words": [
+    {
+     "word": "بل",
+     "start": 60.02,
+     "end": 60.25,
+     "key": false
+    },
+    {
+     "word": "أنجز",
+     "start": 60.25,
+     "end": 60.74,
+     "key": true
+    },
+    {
+     "word": "ما",
+     "start": 60.74,
+     "end": 61.26,
+     "key": false
+    },
+    {
+     "word": "يستحق!",
+     "start": 61.26,
+     "end": 61.81,
+     "key": true
+    }
+   ]
+  }
+ ],
+ "scenes": [
+  [
+   "الانشغال",
+   0,
+   3
+  ],
+  [
+   "الزحام",
+   4,
+   8
+  ],
+  [
+   "الأولويات",
+   9,
+   11
+  ],
+  [
+   "ثلاثة أسئلة",
+   12,
+   14
+  ],
+  [
+   "الخلاصة",
+   15,
+   19
+  ]
+ ]
+}

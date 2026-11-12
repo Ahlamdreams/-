@@ -1,0 +1,609 @@
+{
+ "offset": 1.0,
+ "phrases": [
+  {
+   "text": "هل كل مبادرة ننفذها",
+   "start": 1.02,
+   "end": 3.36,
+   "words": [
+    {
+     "word": "هل",
+     "start": 1.03,
+     "end": 1.44,
+     "key": false
+    },
+    {
+     "word": "كل",
+     "start": 1.44,
+     "end": 1.78,
+     "key": false
+    },
+    {
+     "word": "مبادرة",
+     "start": 1.78,
+     "end": 2.57,
+     "key": true
+    },
+    {
+     "word": "ننفذها",
+     "start": 2.57,
+     "end": 3.36,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "تصنع أثرًا؟",
+   "start": 3.78,
+   "end": 4.69,
+   "words": [
+    {
+     "word": "تصنع",
+     "start": 3.79,
+     "end": 4.21,
+     "key": false
+    },
+    {
+     "word": "أثرًا؟",
+     "start": 4.21,
+     "end": 4.69,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "ليس بالضرورة!",
+   "start": 5.18,
+   "end": 6.26,
+   "words": [
+    {
+     "word": "ليس",
+     "start": 5.19,
+     "end": 5.53,
+     "key": false
+    },
+    {
+     "word": "بالضرورة!",
+     "start": 5.53,
+     "end": 6.26,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "فقد نمتلك فكرة جميلة",
+   "start": 6.91,
+   "end": 8.81,
+   "words": [
+    {
+     "word": "فقد",
+     "start": 6.92,
+     "end": 7.27,
+     "key": false
+    },
+    {
+     "word": "نمتلك",
+     "start": 7.27,
+     "end": 7.94,
+     "key": false
+    },
+    {
+     "word": "فكرة",
+     "start": 7.94,
+     "end": 8.38,
+     "key": true
+    },
+    {
+     "word": "جميلة",
+     "start": 8.38,
+     "end": 8.81,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "ونصمم شعارًا جذابًا",
+   "start": 9.26,
+   "end": 11.24,
+   "words": [
+    {
+     "word": "ونصمم",
+     "start": 9.27,
+     "end": 9.9,
+     "key": false
+    },
+    {
+     "word": "شعارًا",
+     "start": 9.9,
+     "end": 10.53,
+     "key": true
+    },
+    {
+     "word": "جذابًا",
+     "start": 10.53,
+     "end": 11.24,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "وننفذ أنشطة متعددة",
+   "start": 11.68,
+   "end": 13.89,
+   "words": [
+    {
+     "word": "وننفذ",
+     "start": 11.69,
+     "end": 12.37,
+     "key": false
+    },
+    {
+     "word": "أنشطة",
+     "start": 12.37,
+     "end": 13.07,
+     "key": true
+    },
+    {
+     "word": "متعددة",
+     "start": 13.07,
+     "end": 13.89,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "لكن يبقى السؤال الأهم",
+   "start": 14.51,
+   "end": 16.74,
+   "words": [
+    {
+     "word": "لكن",
+     "start": 14.52,
+     "end": 14.9,
+     "key": false
+    },
+    {
+     "word": "يبقى",
+     "start": 14.9,
+     "end": 15.73,
+     "key": false
+    },
+    {
+     "word": "السؤال",
+     "start": 15.73,
+     "end": 16.27,
+     "key": true
+    },
+    {
+     "word": "الأهم",
+     "start": 16.27,
+     "end": 16.74,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "ما الذي تغيّر فعلًا؟",
+   "start": 17.33,
+   "end": 19.03,
+   "words": [
+    {
+     "word": "ما",
+     "start": 17.35,
+     "end": 17.6,
+     "key": false
+    },
+    {
+     "word": "الذي",
+     "start": 17.6,
+     "end": 18.17,
+     "key": false
+    },
+    {
+     "word": "تغيّر",
+     "start": 18.17,
+     "end": 18.63,
+     "key": true
+    },
+    {
+     "word": "فعلًا؟",
+     "start": 18.63,
+     "end": 19.04,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "المبادرة الناجحة لا تبدأ بالسؤال",
+   "start": 19.71,
+   "end": 22.72,
+   "words": [
+    {
+     "word": "المبادرة",
+     "start": 19.72,
+     "end": 20.49,
+     "key": false
+    },
+    {
+     "word": "الناجحة",
+     "start": 20.49,
+     "end": 21.15,
+     "key": true
+    },
+    {
+     "word": "لا",
+     "start": 21.15,
+     "end": 21.53,
+     "key": false
+    },
+    {
+     "word": "تبدأ",
+     "start": 21.53,
+     "end": 22.06,
+     "key": false
+    },
+    {
+     "word": "بالسؤال",
+     "start": 22.06,
+     "end": 22.72,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "ماذا سننفذ؟",
+   "start": 22.92,
+   "end": 24.08,
+   "words": [
+    {
+     "word": "ماذا",
+     "start": 22.93,
+     "end": 23.41,
+     "key": false
+    },
+    {
+     "word": "سننفذ؟",
+     "start": 23.41,
+     "end": 24.08,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "بل تبدأ بثلاثة أسئلة",
+   "start": 24.68,
+   "end": 26.94,
+   "words": [
+    {
+     "word": "بل",
+     "start": 24.69,
+     "end": 24.94,
+     "key": false
+    },
+    {
+     "word": "تبدأ",
+     "start": 24.94,
+     "end": 25.47,
+     "key": false
+    },
+    {
+     "word": "بثلاثة",
+     "start": 25.47,
+     "end": 26.33,
+     "key": true
+    },
+    {
+     "word": "أسئلة",
+     "start": 26.33,
+     "end": 26.94,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "ما المشكلة التي نريد حلّها؟",
+   "start": 27.72,
+   "end": 29.98,
+   "words": [
+    {
+     "word": "ما",
+     "start": 27.73,
+     "end": 27.98,
+     "key": false
+    },
+    {
+     "word": "المشكلة",
+     "start": 27.98,
+     "end": 28.72,
+     "key": true
+    },
+    {
+     "word": "التي",
+     "start": 28.72,
+     "end": 29.17,
+     "key": false
+    },
+    {
+     "word": "نريد",
+     "start": 29.17,
+     "end": 29.58,
+     "key": false
+    },
+    {
+     "word": "حلّها؟",
+     "start": 29.58,
+     "end": 29.98,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "ما التغيير الذي نسعى إلى تحقيقه؟",
+   "start": 30.62,
+   "end": 33.22,
+   "words": [
+    {
+     "word": "ما",
+     "start": 30.63,
+     "end": 30.97,
+     "key": false
+    },
+    {
+     "word": "التغيير",
+     "start": 30.97,
+     "end": 31.52,
+     "key": true
+    },
+    {
+     "word": "الذي",
+     "start": 31.52,
+     "end": 31.89,
+     "key": false
+    },
+    {
+     "word": "نسعى",
+     "start": 31.89,
+     "end": 32.23,
+     "key": false
+    },
+    {
+     "word": "إلى",
+     "start": 32.23,
+     "end": 32.55,
+     "key": false
+    },
+    {
+     "word": "تحقيقه؟",
+     "start": 32.55,
+     "end": 33.22,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "وكيف سنقيس هذا التغيير؟",
+   "start": 33.84,
+   "end": 36.03,
+   "words": [
+    {
+     "word": "وكيف",
+     "start": 33.85,
+     "end": 34.3,
+     "key": false
+    },
+    {
+     "word": "سنقيس",
+     "start": 34.3,
+     "end": 34.88,
+     "key": true
+    },
+    {
+     "word": "هذا",
+     "start": 34.88,
+     "end": 35.18,
+     "key": false
+    },
+    {
+     "word": "التغيير؟",
+     "start": 35.18,
+     "end": 36.03,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "تذكّر",
+   "start": 36.68,
+   "end": 37.2,
+   "words": [
+    {
+     "word": "تذكّر",
+     "start": 36.69,
+     "end": 37.2,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "الإنجاز ليس في عدد المبادرات",
+   "start": 37.76,
+   "end": 40.31,
+   "words": [
+    {
+     "word": "الإنجاز",
+     "start": 37.77,
+     "end": 38.4,
+     "key": true
+    },
+    {
+     "word": "ليس",
+     "start": 38.4,
+     "end": 38.81,
+     "key": false
+    },
+    {
+     "word": "في",
+     "start": 38.81,
+     "end": 39.07,
+     "key": false
+    },
+    {
+     "word": "عدد",
+     "start": 39.07,
+     "end": 39.47,
+     "key": true
+    },
+    {
+     "word": "المبادرات",
+     "start": 39.47,
+     "end": 40.31,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "بل في حجم الأثر الذي تتركه",
+   "start": 40.92,
+   "end": 43.17,
+   "words": [
+    {
+     "word": "بل",
+     "start": 40.93,
+     "end": 41.13,
+     "key": false
+    },
+    {
+     "word": "في",
+     "start": 41.13,
+     "end": 41.36,
+     "key": false
+    },
+    {
+     "word": "حجم",
+     "start": 41.36,
+     "end": 41.62,
+     "key": true
+    },
+    {
+     "word": "الأثر",
+     "start": 41.62,
+     "end": 42.18,
+     "key": true
+    },
+    {
+     "word": "الذي",
+     "start": 42.18,
+     "end": 42.5,
+     "key": false
+    },
+    {
+     "word": "تتركه",
+     "start": 42.5,
+     "end": 43.17,
+     "key": false
+    }
+   ]
+  },
+  {
+   "text": "فلا تجعل مبادرتك مجرد نشاط ينتهي",
+   "start": 43.78,
+   "end": 47.17,
+   "words": [
+    {
+     "word": "فلا",
+     "start": 43.79,
+     "end": 44.22,
+     "key": false
+    },
+    {
+     "word": "تجعل",
+     "start": 44.22,
+     "end": 44.68,
+     "key": false
+    },
+    {
+     "word": "مبادرتك",
+     "start": 44.68,
+     "end": 45.54,
+     "key": false
+    },
+    {
+     "word": "مجرد",
+     "start": 45.54,
+     "end": 46.0,
+     "key": false
+    },
+    {
+     "word": "نشاط",
+     "start": 46.0,
+     "end": 46.54,
+     "key": false
+    },
+    {
+     "word": "ينتهي",
+     "start": 46.54,
+     "end": 47.17,
+     "key": true
+    }
+   ]
+  },
+  {
+   "text": "بل أثرًا يبدأ ويستمر!",
+   "start": 47.67,
+   "end": 50.48,
+   "words": [
+    {
+     "word": "بل",
+     "start": 47.68,
+     "end": 48.07,
+     "key": false
+    },
+    {
+     "word": "أثرًا",
+     "start": 48.07,
+     "end": 48.85,
+     "key": true
+    },
+    {
+     "word": "يبدأ",
+     "start": 48.85,
+     "end": 49.45,
+     "key": false
+    },
+    {
+     "word": "ويستمر!",
+     "start": 49.45,
+     "end": 50.48,
+     "key": true
+    }
+   ]
+  }
+ ],
+ "scenes": [
+  [
+   "الأثر",
+   0,
+   2
+  ],
+  [
+   "الأنشطة",
+   3,
+   7
+  ],
+  [
+   "البداية",
+   8,
+   10
+  ],
+  [
+   "ثلاثة أسئلة",
+   11,
+   13
+  ],
+  [
+   "الخلاصة",
+   14,
+   18
+  ]
+ ]
+}

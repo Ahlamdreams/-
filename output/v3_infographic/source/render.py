@@ -518,12 +518,12 @@ def background(x,t):
 def corner_logo(x,t):
     k=back(seg(t,0.15,0.85)); ko=eio(seg(t,OUTRO-0.1,OUTRO+0.5))
     if k<=0 or ko>=1: return
-    lg=logo_surface(150); bw,bh=lg['w']+28,lg['h']+24
-    cx=W-40-bw/2; cy=46+bh/2
+    lg=logo_surface(138); R=92
+    cx=W-40-R; cy=44+R
     x.save(); x.translate(cx,cy); s=max(1e-3,k*(1-ko)); x.scale(s,s)
-    rrect(x,-bw/2,-bh/2+6,bw,bh,28,(0,0,0),0.25)
-    rrect(x,-bw/2,-bh/2,bw,bh,28,WHITE,1); rrect(x,-bw/2,-bh/2,bw,bh,28,GOLD,1,fill=False,lw=4)
-    x.set_source_surface(lg['s'],-lg['w']/2,-lg['h']/2); x.paint(); x.restore()
+    circle(x,0,7,R,(0,0,0),0.28)
+    circle(x,0,0,R,WHITE,1); circle(x,0,0,R,GOLD,1,fill=False,lw=5)
+    x.set_source_surface(lg['s'],-lg['w']/2,-lg['h']/2+2); x.paint(); x.restore()
 def hud(x,t):
     a=eo(seg(t,0.4,1.0))*(1-eio(seg(t,OUTRO-0.2,OUTRO+0.3)))
     if a<=0: return

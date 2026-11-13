@@ -39,7 +39,7 @@
   .card .sh{position:absolute;top:0;bottom:0;width:180px;left:-220px;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg)}
   #conn{position:absolute;left:876px;width:5px;margin-left:-2px;top:894px;height:220px;border-radius:3px;background:linear-gradient(180deg,var(--cyan),var(--violet));box-shadow:0 0 14px var(--cyan);transform-origin:top;transform:scaleY(0)}
 
-  #qarib{position:absolute;left:0;right:0;top:878px;text-align:center;font-weight:900;font-size:76px;color:#fff;letter-spacing:8px;opacity:0;text-shadow:0 0 30px rgba(255,226,122,.7)}
+  #qarib{position:absolute;left:0;right:0;top:1345px;text-align:center;font-weight:900;font-size:56px;color:#fff;letter-spacing:8px;opacity:0;text-shadow:0 0 30px rgba(255,226,122,.7)}
 
   #brandTop{position:absolute;left:50%;top:300px;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;background:#fff;opacity:0;
     box-shadow:0 0 0 4px rgba(231,181,60,.95),0 0 0 10px rgba(111,227,255,.18),0 0 44px rgba(111,227,255,.45);display:flex;align-items:center;justify-content:center}
@@ -55,6 +55,7 @@
   .sub{font-weight:400;font-size:30px;color:#C9D3EE;margin-top:2px}
   #line{position:absolute;left:50%;top:812px;width:440px;height:3px;margin-left:-220px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0)}
   #fade{position:absolute;inset:0;background:#000;opacity:0}
+  #dim{position:absolute;inset:0;background:#02040c;opacity:0;pointer-events:none}
 
   #ctl{position:fixed;left:0;right:0;bottom:0;height:52px;display:flex;gap:12px;align-items:center;padding:0 14px;background:#111;color:#ddd;direction:ltr;font:14px system-ui}
   #ctl button{background:var(--gold);border:0;border-radius:6px;padding:7px 14px;font-weight:700}
@@ -89,6 +90,7 @@
     <svg viewBox="0 0 54 54"><rect x="2" y="2" width="50" height="50" rx="14" fill="#FFE27A"/><g transform="translate(12 12) scale(1.25)"><path fill="#0A1638" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></g></svg>
     <span>edugovnbt2264</span>
   </div>
+  <div id="dim"></div>
   <div id="fade"></div>
 </div></div>
 <div id="ctl"><button id="play">▶</button><input id="scrub" type="range" min="0" max="1000" value="0"><span id="clock">0.0</span></div>
@@ -119,8 +121,8 @@ for (let k = 0; k < 3; k++) ring(3.5 + k * .3, 540, 900, 300, 820, 1.8, "169,139
 for (let k = 0; k < 2; k++) ring(7.2 + k * .3, 540, 700, 120, 520, 1.4, "111,227,255", 3);
 C.cards.forEach((t, k) => ring(t + .1, 876, 894 + k * 110, 38, 160, .9, "111,227,255", 3));
 ring(C.hit1, 540, 1270, 120, 760, 1.6, "255,226,122", 4);
-ring(C.hit2, 540, 760, 160, 1100, 1.8, "255,226,122", 5);
-C.rings.forEach((t, k) => { ring(t, 540, 1140, 100, 900, 2.0, k % 2 ? "169,139,255" : "111,227,255", 4); ring(t + .18, 540, 1140, 100, 700, 1.6, "255,226,122", 2); });
+ring(C.hit2, 540, 800, 200, 1200, 1.8, "255,226,122", 5);
+C.rings.forEach((t, k) => { ring(t, 540, 1270, 120, 900, 2.0, k % 2 ? "169,139,255" : "111,227,255", 4); ring(t + .18, 540, 1270, 120, 700, 1.6, "255,226,122", 2); });
 
 function neonPath(pts, w, col, blur) { g.save(); g.lineJoin = g.lineCap = "round"; g.shadowColor = `rgba(${col},1)`; g.shadowBlur = blur; g.strokeStyle = `rgba(${col},1)`; g.lineWidth = w; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); g.restore(); }
 function drawCircle(cx, cy, r, col, a, w, blur = 18) { if (a <= 0 || r <= 0) return; g.save(); g.globalAlpha = a; g.shadowColor = `rgba(${col},1)`; g.shadowBlur = blur; g.strokeStyle = `rgba(${col},1)`; g.lineWidth = w; g.beginPath(); g.arc(cx, cy, r, 0, 6.2832); g.stroke(); g.restore(); }
@@ -148,7 +150,7 @@ function draw(t) {
   const va = env(t, 6.2, 8.0, .3, .5);
   if (va > 0) { const p = smooth(clamp((t - 6.2) / 1.0)), off = 260 * (1 - p) + 70; drawCircle(540 - off, 700, 110, "111,227,255", va, 4); drawCircle(540 + off, 700, 110, "169,139,255", va, 4); }
   // equalizer bar under the title
-  const ea = env(t, 5.9, 15.6, .5, .3) * (t < 15.6 ? 1 : 0);
+  const ea = env(t, 5.9, C.end + .2, .5, .5);
   if (ea > 0) {
     const bars = 46, W = 640, x0 = 540 - W / 2, grow = smooth(clamp((t - 5.9) / .8));
     let beat = 0; for (const b of C.beats) if (t >= b && t - b < .35) beat = Math.max(beat, 1 - (t - b) / .35);
@@ -161,11 +163,70 @@ function draw(t) {
     }
     g.shadowBlur = 0; g.globalAlpha = 1;
   }
+  drawForming(t);
   // rings
   for (const [t0, cx, cy, r0, r1, dur, col, w] of RINGS) {
     const p = (t - t0) / dur; if (p < 0 || p > 1) continue;
     drawCircle(cx, cy, r0 + (r1 - r0) * (1 - Math.pow(1 - p, 2)), col, (1 - p) * .9, w);
   }
+}
+
+
+/* ---------- "forming" layer: borders draw, light converges, the idea assembles ---------- */
+const CARD_TOP = [848, 958, 1068], ICX = 876;
+function rrPoint(x, y, w, h, r, u) { // point at fraction u along a rounded-rect perimeter (starting top-right, going counter-clockwise like RTL reading)
+  const L = [w - 2 * r, Math.PI * r / 2, h - 2 * r, Math.PI * r / 2, w - 2 * r, Math.PI * r / 2, h - 2 * r, Math.PI * r / 2];
+  let d = u * L.reduce((a, b) => a + b);
+  const segs = [s => [x + w - r - s, y], s => { const a = -Math.PI / 2 - s / r; return [x + r + Math.cos(a) * r, y + r + Math.sin(a) * r]; },
+    s => [x, y + r + s], s => { const a = Math.PI - s / r; return [x + r + Math.cos(a) * r, y + h - r + Math.sin(a) * r]; },
+    s => [x + r + s, y + h], s => { const a = Math.PI / 2 - s / r; return [x + w - r + Math.cos(a) * r, y + h - r + Math.sin(a) * r]; },
+    s => [x + w, y + h - r - s], s => { const a = -s / r; return [x + w - r + Math.cos(a) * r, y + r + Math.sin(a) * r]; }];
+  for (let i = 0; i < 8; i++) { if (d <= L[i]) return segs[i](d); d -= L[i]; }
+  return [x + w - r, y];
+}
+function drawRR(x, y, w, h, r, p, col, a, wdt = 3, spark = true) {
+  if (a <= 0 || p <= 0) return;
+  const pts = []; const n = Math.max(2, Math.floor(160 * p));
+  for (let i = 0; i <= n; i++) pts.push(rrPoint(x, y, w, h, r, p * i / n));
+  g.save(); g.globalAlpha = a; neonPath(pts, wdt, col, 16);
+  if (spark && p < 1) { const [hx, hy] = pts[pts.length - 1]; g.fillStyle = "#fff"; g.shadowColor = "rgba(255,226,122,1)"; g.shadowBlur = 24; g.beginPath(); g.arc(hx, hy, 6, 0, 6.28); g.fill(); }
+  g.restore();
+}
+function spark(x, y, r, a, col = "255,226,122") { if (a <= 0) return; g.save(); g.globalAlpha = a; g.fillStyle = "#fff"; g.shadowColor = `rgba(${col},1)`; g.shadowBlur = 18; g.beginPath(); g.arc(x, y, r, 0, 6.28); g.fill(); g.restore(); }
+const RF = mulberry(77);
+const CONV = C.cards.map(() => Array.from({ length: 20 }, () => ({ a: RF() * 6.28, r: 160 + RF() * 260, d: RF() * .15 })));
+// light that travels from every element of the idea into "ترقبوا"
+const ANCH = [[540, 520], [540, 600], [440, 690], [640, 690], [540, 770], [ICX, 894], [ICX, 1004], [ICX, 1114], [300, 894], [300, 1004], [300, 1114]];
+const GATHER = Array.from({ length: 90 }, (_, i) => ({ src: ANCH[i % ANCH.length], ox: (RF() - .5) * 120, oy: (RF() - .5) * 30, tx: 540 + (RF() - .5) * 520, ty: 1272 + (RF() - .5) * 90, d: RF() * .35, bend: (RF() - .5) * 400 }));
+const SPINE = [[540, 705], [ICX, 805], [ICX, 1114], [700, 1200], [540, 1240]];
+function along(path, u) { const segL = []; let tot = 0; for (let i = 1; i < path.length; i++) { const l = Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]); segL.push(l); tot += l; } let d = u * tot; for (let i = 0; i < segL.length; i++) { if (d <= segL[i]) { const f = d / segL[i]; return [path[i][0] + (path[i + 1][0] - path[i][0]) * f, path[i][1] + (path[i + 1][1] - path[i][1]) * f]; } d -= segL[i]; } return path[path.length - 1]; }
+function drawForming(t) {
+  // 1) each card: its outline draws itself, light converges into its icon, then the card materialises
+  C.cards.forEach((c, k) => {
+    const y = CARD_TOP[k], p = smooth(clamp((t - (c - .7)) / .55));
+    drawRR(150, y, 780, 92, 30, p, "111,227,255", env(t, c - .7, c + .45, .05, .3));
+    for (const q of CONV[k]) {
+      const u = clamp((t - (c - .55 + q.d)) / .45); if (u <= 0 || u >= 1) continue;
+      const e = 1 - Math.pow(1 - u, 3), r = q.r * (1 - e), a = q.a + e * 2.2;
+      spark(ICX + Math.cos(a) * r, y + 46 + Math.sin(a) * r, 3.2, Math.sin(Math.PI * u));
+    }
+  });
+  // 2) the frame of the whole idea draws around everything, then stays
+  const fp = smooth(clamp((t - 12.3) / .75));
+  drawRR(110, 395, 860, 1030, 44, fp, "231,181,60", env(t, 12.3, C.end + .1, .05, .4) * .75, 3);
+  // 3) the spine linking the parts down to "ترقبوا"
+  const sp = smooth(clamp((t - 12.4) / .6)), sa = env(t, 12.4, C.end + .1, .05, .4);
+  if (sa > 0 && sp > 0) { const pts = []; for (let i = 0; i <= 60; i++) pts.push(along(SPINE, sp * i / 60)); g.save(); g.globalAlpha = sa * .5; g.setLineDash([6, 10]); neonPath(pts, 2.5, "169,139,255", 10); g.restore(); }
+  // 4) light gathers from every element and FORMS the word
+  for (const q of GATHER) {
+    const u = clamp((t - (12.35 + q.d)) / .6); if (u <= 0 || u >= 1) continue;
+    const e = u * u * (3 - 2 * u), sx = q.src[0] + q.ox, sy = q.src[1] + q.oy, mx = (sx + q.tx) / 2 + q.bend, my = (sy + q.ty) / 2;
+    const x = (1 - e) * (1 - e) * sx + 2 * (1 - e) * e * mx + e * e * q.tx, y = (1 - e) * (1 - e) * sy + 2 * (1 - e) * e * my + e * e * q.ty;
+    spark(x, y, 3, Math.sin(Math.PI * u) * .95);
+  }
+  // 5) after the word is formed, pulses run through the spine on every beat / ring
+  const pulses = [...C.beats.filter(b => b > C.hit1), C.hit2, ...C.rings];
+  for (const pt of pulses) { const u = (t - pt) / .7; if (u < 0 || u > 1) continue; const [x, y] = along(SPINE, u); spark(x, y, 6, 1 - u * .3, "111,227,255"); }
 }
 
 /* ---------- DOM timeline ---------- */
@@ -186,7 +247,7 @@ tl.to(["#brandTop", "#brandBottom"], { opacity: 1, duration: .7 }, 5.5);
 E("#eqLabel", { opacity: 0, y: 20, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: .7, ease: "power3.out" }, 7.3);
 // cards slide in one by one, the connector grows between their icons
 C.cards.forEach((t, k) => {
-  E(`#c${k + 1}`, { opacity: 0, x: 160, scale: .96 }, { opacity: 1, x: 0, scale: 1, duration: .6, ease: "power3.out" }, t - .15);
+  E(`#c${k + 1}`, { opacity: 0, scale: .98, filter: "blur(6px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: .45, ease: "power2.out" }, t - .2);
   E(`#c${k + 1} .ic`, { scale: .3, rotation: -40 }, { scale: 1, rotation: 0, duration: .6, ease: "back.out(2.2)" }, t - .05);
   E(`#c${k + 1} .tx`, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: .5, ease: "power2.out" }, t + .15);
   E(`#c${k + 1} .no`, { opacity: 0, scale: .4 }, { opacity: 1, scale: 1, duration: .4, ease: "back.out(2)" }, t + .3);
@@ -197,19 +258,21 @@ tl.to("#conn", { scaleY: 1, duration: .5, ease: "power2.inOut" }, C.cards[2] - .
 // "ترقبوا" lands under the list
 calIn("tq", C.hit1 - .1);
 tl.to("#tq .f", { scale: 1.04, duration: .8, yoyo: true, repeat: 1, ease: "sine.inOut" }, C.hit1 + .9);
-// reveal: everything clears, ترقبوا centre stage, logo below with resonance rings
-tl.to(["#title", "#eqLabel", "#conn"], { opacity: 0, duration: .35 }, C.cut);
-["#c1", "#c2", "#c3"].forEach((c, k) => tl.to(c, { opacity: 0, x: -200, duration: .35, ease: "power2.in" }, C.cut + k * .04));
-tl.to("#tq", { opacity: 0, duration: .15 }, C.cut);
-tl.set("#tq", { y: -520, scale: 1.25 }, C.hit2 - .02);
-tl.to("#tq", { opacity: 1, duration: .01 }, C.hit2);
-E("#tq .f", { opacity: 0, scale: 1.8, filter: "blur(24px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: .55, ease: "expo.out" }, C.hit2);
-document.querySelectorAll("#tq .e").forEach((e, k) => C.rings.forEach(rt => E(e, { opacity: .6, scale: 1, x: 0 }, { opacity: 0, scale: 1.3, x: (k ? -1 : 1) * 60, duration: 1, ease: "power2.out" }, rt + k * .15)));
-E("#qarib", { opacity: 0, letterSpacing: "40px", filter: "blur(10px)" }, { opacity: 1, letterSpacing: "8px", filter: "blur(0px)", duration: .9, ease: "power3.out" }, C.rings[0]);
-tl.to("#brandTop", { y: 840, scale: 1.45, duration: .9, ease: "power3.inOut" }, C.hit2 + .1);
-C.rings.forEach(rt => tl.fromTo("#brandTop", { boxShadow: "0 0 0 4px rgba(231,181,60,.95),0 0 0 10px rgba(111,227,255,.18),0 0 90px rgba(255,226,122,.9)" }, { boxShadow: "0 0 0 4px rgba(231,181,60,.95),0 0 0 10px rgba(111,227,255,.18),0 0 44px rgba(111,227,255,.45)", duration: .7, immediateRender: false }, rt));
+// finale: the idea is complete — "ترقبوا" appears together with every element, all pulsing as one
+tl.to("#dim", { opacity: .5, duration: .25 }, C.cut);
+tl.to("#dim", { opacity: 0, duration: .08 }, C.hit2 - .02);
+const ALL = ["#title", "#eqLabel", "#c1", "#c2", "#c3", "#conn"];
+E(ALL, { filter: "brightness(2.1)" }, { filter: "brightness(1)", duration: .9, ease: "power2.out" }, C.hit2);
+E("#tq .f", { scale: 1.25, filter: "blur(10px)" }, { scale: 1, filter: "blur(0px)", duration: .55, ease: "expo.out" }, C.hit2);
+document.querySelectorAll("#tq .e").forEach((e, k) => [C.hit2, ...C.rings].forEach(rt => E(e, { opacity: .6, scale: 1, x: 0 }, { opacity: 0, scale: 1.3, x: (k ? -1 : 1) * 60, duration: 1, ease: "power2.out" }, rt + k * .15)));
+E("#qarib", { opacity: 0, letterSpacing: "40px", filter: "blur(10px)" }, { opacity: 1, letterSpacing: "8px", filter: "blur(0px)", duration: .9, ease: "power3.out" }, C.rings[0] - .3);
+C.rings.forEach((rt, k) => {
+  E(["#c1", "#c2", "#c3"], { filter: "brightness(1.6)" }, { filter: "brightness(1)", duration: .6, stagger: .1, ease: "sine.out" }, rt + .25);
+  [1, 2, 3].forEach((n, i) => E(`#c${n} .sh`, { left: -220 }, { left: 900, duration: .6, ease: "power1.inOut" }, rt + .2 + i * .1));
+  tl.fromTo("#brandTop", { boxShadow: "0 0 0 4px rgba(231,181,60,.95),0 0 0 10px rgba(111,227,255,.18),0 0 90px rgba(255,226,122,.9)" }, { boxShadow: "0 0 0 4px rgba(231,181,60,.95),0 0 0 10px rgba(111,227,255,.18),0 0 44px rgba(111,227,255,.45)", duration: .7, immediateRender: false }, rt);
+});
 // credits
-tl.to(["#tq", "#qarib"], { opacity: 0, y: "-=40", duration: .5, ease: "power2.in" }, C.end - .2);
+tl.to([...ALL, "#tq", "#qarib"], { opacity: 0, scale: "*=0.5", y: "-=180", duration: .6, ease: "power3.in", stagger: .03 }, C.end - .3);
 tl.to("#brandTop", { y: 120, scale: 1.75, duration: 1.0, ease: "power3.inOut" }, C.end);
 E("#cSchool", { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: .7, ease: "power3.out" }, C.names[0]);
 tl.to("#line", { scaleX: 1, duration: .7, ease: "power2.out" }, C.names[0] + .3);

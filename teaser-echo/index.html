@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>من الصوت إلى الصدى</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root{ --navy:#06102A; --navy2:#0C1F4D; --gold:#D9A92E; --glow:#FFE070; --white:#FFFFFF; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#000;height:100%;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center;font-family:'Kufi',sans-serif}
+  #wrap{position:relative;width:1080px;height:1920px;flex:none;transform-origin:center}
+  #stage{position:absolute;inset:0;overflow:hidden;background:radial-gradient(90% 60% at 50% 46%, #10265A 0%, #081536 45%, #030817 100%)}
+  #beat{position:absolute;inset:0;background:radial-gradient(55% 35% at 50% 46%, rgba(255,224,112,.16), rgba(255,224,112,0) 70%);opacity:0}
+  canvas{position:absolute;inset:0;width:1080px;height:1920px}
+  svg#fx{position:absolute;inset:0;width:1080px;height:1920px;overflow:visible}
+  .t{position:absolute;left:0;right:0;text-align:center;direction:rtl;white-space:nowrap;opacity:0;line-height:1.25;transform:translateY(-50%)}
+  .gold{background:linear-gradient(180deg,#FFF3B8 0%,#FFE070 35%,#D9A92E 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 22px rgba(255,214,90,.45))}
+  .white{color:#fff;text-shadow:0 0 26px rgba(255,236,170,.45)}
+  #dark{position:absolute;inset:0;background:#01030A;opacity:0}
+  #flash{position:absolute;inset:0;background:#FFF6D6;opacity:0;mix-blend-mode:screen}
+  #vignette{position:absolute;inset:0;background:radial-gradient(75% 55% at 50% 50%, transparent 55%, rgba(0,0,0,.65) 100%);pointer-events:none}
+
+  /* persistent brand */
+  #brandTop{position:absolute;left:50%;top:300px;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;background:#fff;
+    box-shadow:0 0 0 4px rgba(217,169,46,.9),0 0 0 9px rgba(217,169,46,.22),0 0 40px rgba(255,224,112,.35);display:flex;align-items:center;justify-content:center;opacity:0}
+  #brandTop img{width:78%;height:78%;object-fit:contain}
+  #brandBottom{position:absolute;left:0;right:0;top:1452px;display:flex;justify-content:center;align-items:center;gap:18px;direction:ltr;opacity:0}
+  #brandBottom svg{width:54px;height:54px}
+  #brandBottom span{font-family:'Kufi';font-weight:600;font-size:40px;color:#fff;letter-spacing:1px;margin-left:8px}
+
+  /* end card */
+  .card{position:absolute;left:0;right:0;text-align:center;opacity:0}
+  .school{top:735px;font-weight:800;font-size:54px;color:#fff}
+  .role{font-weight:600;font-size:32px;color:var(--glow);letter-spacing:.5px}
+  .name{font-weight:800;font-size:46px;color:#fff;margin-top:2px}
+  .sub{font-weight:400;font-size:30px;color:#C9D3EE;margin-top:2px}
+  #line{position:absolute;left:50%;top:815px;width:420px;height:3px;margin-left:-210px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0)}
+
+  #ctl{position:fixed;left:0;right:0;bottom:0;height:52px;display:flex;gap:12px;align-items:center;padding:0 14px;background:#111;color:#ddd;direction:ltr;font:14px system-ui}
+  #ctl button{background:var(--gold);border:0;border-radius:6px;padding:7px 14px;font-weight:700}
+  #ctl input{flex:1}
+  body.render #ctl{display:none}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <div id="beat"></div>
+  <div id="dark"></div>
+  <canvas id="cv" width="1080" height="1920"></canvas>
+  <svg id="fx" viewBox="0 0 1080 1920"></svg>
+  <div class="t gold"  id="tSawt"  style="top:880px;font-size:180px;font-weight:900">الصَّوت</div>
+  <div class="t gold"  id="tSada"  style="top:880px;font-size:180px;font-weight:900">الصَّدى</div>
+  <div class="t white" id="tTitle1" style="top:800px;font-size:118px;font-weight:900">من الصَّوت</div>
+  <div class="t gold"  id="tTitle2" style="top:960px;font-size:118px;font-weight:900">إلى الصَّدى</div>
+  <div class="t gold"  id="tShar1" style="top:820px;font-size:150px;font-weight:900">شراكةٌ</div>
+  <div class="t white" id="tShar2" style="top:990px;font-size:100px;font-weight:800">تتجاوز المدى</div>
+  <div class="t white" id="tMub"   style="top:820px;font-size:96px;font-weight:800">مبادراتٌ تُلهم…</div>
+  <div class="t gold"  id="tHiw"   style="top:960px;font-size:96px;font-weight:800">وحواراتٌ تُثري…</div>
+  <div class="t white" id="tTarq"  style="top:860px;font-size:205px;font-weight:900">تَرَقَّبُوا…</div>
+  <div class="t gold"  id="tQarib" style="top:1085px;font-size:130px;font-weight:900">قريبًا</div>
+  <div class="card school" id="cSchool">مدرسة أم مالك الأنصارية للبنات</div>
+  <div id="line"></div>
+  <div class="card" id="cN1" style="top:860px"><div class="role">مديرة المدرسة</div><div class="name">الأستاذة أحلام الحمدانية</div></div>
+  <div class="card" id="cN2" style="top:1010px"><div class="role">مساعدة مديرة المدرسة</div><div class="name">الأستاذة فاطمة البادية</div></div>
+  <div class="card" id="cN3" style="top:1160px"><div class="role">إشراف</div><div class="name">الأستاذ علي البريكي</div><div class="sub">مشرف تنمية علاقات مجتمعية</div></div>
+  <div id="vignette"></div>
+  <div id="brandTop"><img src="assets/emblem.png" alt=""></div>
+  <div id="brandBottom">
+    <svg viewBox="0 0 54 54"><rect x="4" y="4" width="46" height="46" rx="14" fill="none" stroke="#FFE070" stroke-width="4.5"/><circle cx="27" cy="27" r="10.5" fill="none" stroke="#FFE070" stroke-width="4.5"/><circle cx="39.5" cy="14.5" r="3" fill="#FFE070"/></svg>
+    <svg viewBox="0 0 54 54"><rect x="2" y="2" width="50" height="50" rx="14" fill="#FFE070"/><g transform="translate(12 12) scale(1.25)"><path fill="#06102A" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></g></svg>
+    <span>edugovnbt2264</span>
+  </div>
+  <div id="flash"></div>
+</div></div>
+<div id="ctl"><button id="play">▶</button><input id="scrub" type="range" min="0" max="1000" value="0"><span id="clock">0.0</span></div>
+<audio id="aud" src="assets/soundtrack.m4a" preload="auto"></audio>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="cues.js"></script>
+<script>
+const RENDER = location.search.includes("render");
+if (RENDER) document.body.classList.add("render");
+const C = window.CUES, D = C.duration;
+const tl = gsap.timeline({ paused: true });
+const $ = id => document.getElementById(id);
+const CX = 540, CY = 880;
+
+/* ---------------- deterministic random ---------------- */
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const R = mulberry(2264);
+const N = 1800;
+const P = Array.from({ length: N }, () => ({ s: R(), a: R() * Math.PI * 2, b: R(), c: R(), sz: .55 + R() * .9 }));
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+
+/* ---------------- formations: f(i,t) -> [x,y,alpha,size,color] (color 0 gold,1 glow,2 white) ---------------- */
+const tmp = [0, 0, 0, 0, 0];
+function out(x, y, a, s, c) { tmp[0] = x; tmp[1] = y; tmp[2] = a; tmp[3] = s; tmp[4] = c; return tmp; }
+
+function textForm(lines, color = 1, step = 3) {
+  const cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1920;
+  const g = cv.getContext("2d");
+  g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "middle"; g.direction = "rtl";
+  for (const L of lines) { g.font = `${L.w} ${L.size}px Kufi`; g.fillText(L.text, 540, L.y); }
+  const d = g.getImageData(0, 0, 1080, 1920).data, pts = [];
+  for (let y = 0; y < 1920; y += step) for (let x = 0; x < 1080; x += step) if (d[(y * 1080 + x) * 4 + 3] > 140) pts.push([x, y]);
+  const r = mulberry(pts.length);
+  for (let i = pts.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [pts[i], pts[j]] = [pts[j], pts[i]]; }
+  return (i, t) => { const p = pts[i % pts.length], P_ = P[i]; return out(p[0] + Math.sin(t * 2 + P_.a) * .8, p[1] + Math.cos(t * 2.3 + P_.a) * .8, i < pts.length * 1.4 ? .95 : 0, .8, color); };
+}
+const dot = (cx = CX, cy = CY, spread = 7) => (i, t) => { const p = P[i]; return out(cx + Math.cos(p.a) * p.b * spread, cy + Math.sin(p.a) * p.b * spread, .9, .7, 1); };
+function wave3d(i, t) {
+  const cols = 45, u = (i % cols) / (cols - 1) * 2 - 1, v = Math.floor(i / cols) / 39 * 2 - 1;
+  const r = Math.hypot(u, v), z = Math.sin(r * 11 - t * 7) * Math.exp(-r * 1.6) * (1 - clamp(r - .9, 0, 1));
+  const x = CX + u * 420, y = CY + v * 170 - z * 95;
+  return out(x, y, clamp(.25 + z * .9 + (1 - r) * .4, .05, 1) * (r < 1.05 ? 1 : 0), .6 + z * .5, z > .2 ? 1 : 0);
+}
+const rings = (t0, color = 1, cx = CX, cy = CY, K = 7, sp = 70, speed = 260, maxR = 520) => (i, t) => {
+  const k = i % K, ang = (Math.floor(i / K) / (N / K)) * Math.PI * 2 + k * .3;
+  const rr = (Math.max(0, t - t0) * speed + k * sp) % maxR + 20;
+  return out(cx + Math.cos(ang) * rr, cy + Math.sin(ang) * rr, clamp(1.1 - rr / maxR) * .9, .7, color);
+};
+// network
+const NODES = (() => { const r = mulberry(7), a = []; for (let k = 0; k < 34; k++) { const rad = 380 * Math.sqrt((k + .5) / 34), th = k * 2.39996; a.push([CX + Math.cos(th) * rad + (r() - .5) * 30, CY + Math.sin(th) * rad * .95 + (r() - .5) * 30]); } return a; })();
+const EDGES = (() => { const e = []; NODES.forEach((p, i) => { const ds = NODES.map((q, j) => [Math.hypot(p[0] - q[0], p[1] - q[1]), j]).sort((a, b) => a[0] - b[0]); for (let n = 1; n <= 3; n++) { const j = ds[n][1]; if (!e.some(x => (x[0] === j && x[1] === i))) e.push([i, j]); } }); return e; })();
+function network(i, t) {
+  const p = P[i];
+  if (i % 5 < 3) { const n = NODES[i % NODES.length]; const r = 4 + p.b * 9; return out(n[0] + Math.cos(p.a + t) * r, n[1] + Math.sin(p.a + t) * r, .95, .8, i % 2 ? 1 : 2); }
+  const e = EDGES[i % EDGES.length], A = NODES[e[0]], B = NODES[e[1]], u = (p.c + t * .25) % 1;
+  return out(A[0] + (B[0] - A[0]) * u, A[1] + (B[1] - A[1]) * u, .55, .5, 0);
+}
+// people linked in an arc
+const PEOPLE = Array.from({ length: 7 }, (_, k) => { const x = 160 + k * 126; return [x, 930 + Math.pow((x - CX) / 380, 2) * -70 + 40]; });
+function people(i, t) {
+  const p = P[i], k = i % 7, [x, y] = PEOPLE[k], bob = Math.sin(t * 2.2 + k) * 4, s = (k === 3 ? 1.15 : 1);
+  const m = Math.floor(i / 7) % 10;
+  if (m < 3) { const a = p.c * Math.PI * 2; return out(x + Math.cos(a) * 21 * s, y - 78 * s + bob + Math.sin(a) * 21 * s, .95, .75, 1); }
+  if (m < 8) { const a = Math.PI + p.c * Math.PI; return out(x + Math.cos(a) * 42 * s, y + bob + Math.sin(a) * 46 * s, .9, .75, 2); }
+  if (k < 6) { const [x2, y2] = PEOPLE[k + 1], u = p.c; return out(x + 30 + (x2 - 30 - x - 30) * u, y - 10 + (y2 - y) * u + Math.sin(u * Math.PI) * 16 + bob, .7, .55, 0); }
+  return out(x, y + bob, 0, .5, 0);
+}
+function horizon(i, t) {
+  const p = P[i], col = (i % 21) - 10, z0 = (Math.floor(i / 21) % 14) / 14 * 12 + p.c * .85;
+  const z = ((z0 - t * 1.4) % 12 + 12) % 12, sc = 1 / (1 + z * .55);
+  const x = CX + col * 150 * sc, y = 700 + 760 * sc - 260;
+  return out(x, y, clamp(sc * 1.3) * .9, .45 + sc, i % 3 ? 0 : 1);
+}
+function bulb(i, t) {
+  const p = P[i], m = i % 12, cx = CX, cy = 830;
+  if (m < 6) { const a = (125 + p.c * 290) * Math.PI / 180; return out(cx + Math.cos(a) * 150, cy + Math.sin(a) * 150, .95, .8, 1); }
+  if (m < 8) { const side = p.b < .5 ? -1 : 1, u = p.c; return out(cx + side * (86 - u * 24), cy + 123 + u * 63, .9, .75, 1); }
+  if (m < 10) { const row = Math.floor(p.b * 3); return out(cx - 62 + p.c * 124, cy + 186 + row * 22, .9, .75, 0); }
+  if (m < 11) { const u = p.c; return out(cx - 40 + u * 80, cy + 20 + Math.sin(u * Math.PI * 4) * 24, .95, .9, 2); }
+  const rr = Math.sqrt(p.b) * 135, a = p.a; const fl = .35 + .25 * Math.sin(t * 9 + i);
+  return out(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr, fl, .6, 1);
+}
+function bubbles(i, t) {
+  const p = P[i], left = i % 2 === 0;
+  const bx = left ? 380 : 700, by = (left ? 830 : 1000) + Math.sin(t * 2.4 + (left ? 0 : 2)) * 12, w = 260, h = 160, r = 46;
+  const m = Math.floor(i / 2) % 10;
+  if (m < 8) { // rounded-rect perimeter
+    const per = 2 * (w - 2 * r) + 2 * (h - 2 * r) + 2 * Math.PI * r; let s = p.c * per;
+    const segs = [[w - 2 * r, (s) => [bx - w / 2 + r + s, by - h / 2]], [Math.PI * r / 2, s => { const a = -Math.PI / 2 + s / r; return [bx + w / 2 - r + Math.cos(a) * r, by - h / 2 + r + Math.sin(a) * r]; }],
+      [h - 2 * r, s => [bx + w / 2, by - h / 2 + r + s]], [Math.PI * r / 2, s => { const a = s / r; return [bx + w / 2 - r + Math.cos(a) * r, by + h / 2 - r + Math.sin(a) * r]; }],
+      [w - 2 * r, s => [bx + w / 2 - r - s, by + h / 2]], [Math.PI * r / 2, s => { const a = Math.PI / 2 + s / r; return [bx - w / 2 + r + Math.cos(a) * r, by + h / 2 - r + Math.sin(a) * r]; }],
+      [h - 2 * r, s => [bx - w / 2, by + h / 2 - r - s]], [Math.PI * r / 2, s => { const a = Math.PI + s / r; return [bx - w / 2 + r + Math.cos(a) * r, by - h / 2 + r + Math.sin(a) * r]; }]];
+    for (const [L, f] of segs) { if (s <= L) { const q = f(s); return out(q[0], q[1], .95, .8, left ? 1 : 2); } s -= L; }
+  }
+  if (m === 8) { const u = p.c, sx = left ? 1 : -1; return out(bx + sx * (-60 + u * -40), by + h / 2 + u * 50, .9, .8, left ? 1 : 2); }
+  const d = Math.floor(p.c * 3), ph = Math.sin(t * 6 - d * .9) * 8; return out(bx - 50 + d * 50 + Math.cos(p.a) * 6, by - ph * .5 + Math.sin(p.a) * 6, .95, .8, 0);
+}
+function scatter(base, t0, speed = 520) {
+  return (i, t) => { const b = base(i, t0).slice(), p = P[i], dt = Math.max(0, t - t0); return out(b[0] + Math.cos(p.a) * dt * speed * p.b, b[1] + Math.sin(p.a) * dt * speed * p.b - dt * dt * 60, b[2] * clamp(1 - dt / .9), .5 + (1 - p.b) * .5, 1); };
+}
+const burst = t0 => (i, t) => { const p = P[i], dt = Math.max(0, t - t0), r = (1 - Math.exp(-dt * 4)) * (250 + p.b * 650); return out(CX + Math.cos(p.a) * r, 870 + Math.sin(p.a) * r * .8, clamp(1 - dt / 1.3) * .9, .9, p.b > .6 ? 2 : 1); };
+const ambient = (i, t) => { const p = P[i]; return out(p.c * 1080, ((p.b * 1920 - t * (14 + p.s * 30)) % 1920 + 1920) % 1920, i % 4 ? 0 : .35 + .25 * Math.sin(t * 2 + p.a), .45, i % 3 ? 0 : 1); };
+const hidden = (i, t) => out(CX, CY, 0, .5, 1);
+
+/* ---------------- particle key-frames (aligned to cues) ---------------- */
+const T1 = [{ text: "الصَّوت", size: 180, w: 900, y: 880 }];
+const T2 = [{ text: "الصَّدى", size: 180, w: 900, y: 880 }];
+const TT = [{ text: "من الصَّوت", size: 118, w: 900, y: 800 }, { text: "إلى الصَّدى", size: 118, w: 900, y: 960 }];
+const TS = [{ text: "شراكةٌ", size: 150, w: 900, y: 820 }, { text: "تتجاوز المدى", size: 100, w: 800, y: 990 }];
+const TM = [{ text: "مبادراتٌ تُلهم…", size: 96, w: 800, y: 820 }];
+const TH = [{ text: "وحواراتٌ تُثري…", size: 96, w: 800, y: 960 }];
+const TMH = [...TM, ...TH];
+let KEYS = [];
+function buildKeys() {
+  const fMH = textForm(TMH, 1);
+  KEYS = [
+    { t: 0.0, f: hidden, d: .01 },
+    { t: 0.35, f: dot(), d: .25 },
+    { t: 0.6, f: wave3d, d: .8, spread: .4, swirl: 30 },
+    { t: 1.3, f: textForm(T1, 1), d: .75, spread: .35, swirl: 60 },
+    { t: 2.55, f: rings(2.55), d: .55, spread: .2, swirl: 40 },
+    { t: 3.3, f: textForm(T2, 1), d: .7, spread: .35, swirl: 60 },
+    { t: 4.3, f: textForm(TT, 1, 3), d: .5, spread: .25, swirl: 40 },
+    { t: 5.4, f: rings(5.4, 0), d: .55, spread: .2, swirl: 50 },
+    { t: 5.95, f: network, d: .55, spread: .2, swirl: 40 },
+    { t: 7.0, f: people, d: .5, spread: .2, swirl: 50 },
+    { t: 8.0, f: horizon, d: .45, spread: .2, swirl: 40 },
+    { t: 8.8, f: textForm(TS, 1), d: .6, spread: .3, swirl: 50 },
+    { t: 10.15, f: bulb, d: .45, spread: .2, swirl: 60 },
+    { t: 11.0, f: textForm(TM, 1), d: .55, spread: .3, swirl: 40 },
+    { t: 11.95, f: bubbles, d: .4, spread: .15, swirl: 60 },
+    { t: 12.6, f: textForm(TH, 1), d: .5, spread: .3, swirl: 40 },
+    { t: 13.6, f: fMH, d: .45, spread: .2, swirl: 30 },
+    { t: C.sizzle, f: scatter(fMH, C.sizzle), d: .01 },
+    { t: C.cut, f: hidden, d: .01 },
+    { t: C.dot, f: dot(CX, 870, 5), d: .01 },
+    { t: C.hit1, f: burst(C.hit1), d: .01 },
+    { t: C.stop, f: hidden, d: .01 },
+    { t: C.end + .3, f: ambient, d: 1.2, spread: .5 },
+  ];
+}
+// dim particles while crisp text shows (by window)
+const DIM = [[2.0, 2.55], [3.95, 4.3], [4.75, 5.35], [9.35, 10.1], [11.45, 11.95], [13.0, 13.55], [13.95, 14.35]];
+const dimAt = t => { for (const [a, b] of DIM) { if (t > a - .15 && t < b + .15) return .35 + .65 * (1 - Math.min(clamp((t - a + .15) / .3), clamp((b + .15 - t) / .3))); } return 1; };
+
+/* ---------------- canvas renderer ---------------- */
+const cv = $("cv"), ctx = cv.getContext("2d");
+function sprite(rgb) { const s = document.createElement("canvas"); s.width = s.height = 32; const g = s.getContext("2d"); const gr = g.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, `rgba(255,255,255,1)`); gr.addColorStop(.18, `rgba(${rgb},1)`); gr.addColorStop(.45, `rgba(${rgb},.35)`); gr.addColorStop(1, `rgba(${rgb},0)`); g.fillStyle = gr; g.fillRect(0, 0, 32, 32); return s; }
+const SPR = [sprite("217,169,46"), sprite("255,224,112"), sprite("235,242,255")];
+const pos = new Float32Array(N * 5);
+function computeParticles(t) {
+  let k = -1; for (let j = 0; j < KEYS.length; j++) if (KEYS[j].t <= t) k = j;
+  if (k < 0) return 0;
+  const K = KEYS[k], F = k > 0 ? KEYS[k - 1] : K, spread = K.spread || 0, sw = K.swirl || 0;
+  for (let i = 0; i < N; i++) {
+    const p = P[i], e = ease(clamp((t - K.t - p.s * spread) / K.d));
+    const b = K.f(i, t).slice();
+    let x = b[0], y = b[1], a = b[2], s = b[3], c = b[4];
+    if (e < 1 && F !== K) {
+      const f = F.f(i, Math.min(t, K.t + .001));
+      const w = Math.sin(Math.PI * e) * sw;
+      x = f[0] + (x - f[0]) * e + Math.cos(p.a * 3) * w; y = f[1] + (y - f[1]) * e + Math.sin(p.a * 3) * w;
+      a = f[2] + (a - f[2]) * e; s = f[3] + (s - f[3]) * e; c = e < .5 ? f[4] : c;
+    }
+    pos[i * 5] = x; pos[i * 5 + 1] = y; pos[i * 5 + 2] = a; pos[i * 5 + 3] = s; pos[i * 5 + 4] = c;
+  }
+  return 1;
+}
+function lineAlpha(t, a, b) { return clamp((t - a) / .4) * clamp((b - t) / .35); }
+function draw(t) {
+  ctx.clearRect(0, 0, 1080, 1920);
+  if (!computeParticles(t)) return;
+  ctx.globalCompositeOperation = "lighter";
+  // network edges
+  const na = lineAlpha(t, 6.35, 7.15);
+  if (na > 0) { ctx.strokeStyle = `rgba(217,169,46,${.45 * na})`; ctx.lineWidth = 1.6; ctx.beginPath(); for (const [i, j] of EDGES) { ctx.moveTo(...NODES[i]); ctx.lineTo(...NODES[j]); } ctx.stroke(); }
+  const ha = lineAlpha(t, 8.3, 8.95);
+  if (ha > 0) {
+    ctx.strokeStyle = `rgba(217,169,46,${.35 * ha})`; ctx.lineWidth = 1.4; ctx.beginPath();
+    for (let col = -10; col <= 10; col++) { ctx.moveTo(CX + col * 150, 1200); ctx.lineTo(CX, 440 + 0); }
+    for (let r = 0; r < 9; r++) { const z = ((r * 1.33 - t * 1.4) % 12 + 12) % 12, sc = 1 / (1 + z * .55), y = 700 + 760 * sc - 260; ctx.moveTo(CX - 1500 * sc, y); ctx.lineTo(CX + 1500 * sc, y); }
+    ctx.stroke();
+  }
+  const dim = dimAt(t);
+  for (let i = 0; i < N; i++) {
+    const a = pos[i * 5 + 2] * dim; if (a <= .01) continue;
+    const s = pos[i * 5 + 3] * P[i].sz * 13;
+    ctx.globalAlpha = Math.min(1, a);
+    ctx.drawImage(SPR[pos[i * 5 + 4] | 0], pos[i * 5] - s / 2, pos[i * 5 + 1] - s / 2, s, s);
+  }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+}
+
+/* ---------------- SVG fx ---------------- */
+const NS = "http://www.w3.org/2000/svg", fx = $("fx");
+const S = (tag, at, par = fx) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); par.appendChild(e); return e; };
+S("defs", {}).innerHTML = `<radialGradient id="gd"><stop offset="0" stop-color="#FFF8D8"/><stop offset=".35" stop-color="#FFE070"/><stop offset="1" stop-color="#D9A92E" stop-opacity="0"/></radialGradient>
+<filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+
+/* ---------------- timeline ---------------- */
+function textIn(el, t, dur = .55, from = {}) { tl.fromTo(el, { opacity: 0, scale: 1.08, filter: "blur(14px)", ...from }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: dur, ease: "power3.out", immediateRender: false }, t); }
+function textOut(el, t, dur = .35) { tl.to(el, { opacity: 0, filter: "blur(12px)", scale: 1.04, duration: dur, ease: "power2.in" }, t); }
+gsap.set(".t", { opacity: 0 });
+// scene 1
+textIn($("tSawt"), 1.95); textOut($("tSawt"), 2.5);
+textIn($("tSada"), 3.9); textOut($("tSada"), 4.3, .3);
+textIn($("tTitle1"), 4.7, .6, { y: 30 }); textIn($("tTitle2"), 4.85, .6, { y: 30 });
+textOut($("tTitle1"), 5.35); textOut($("tTitle2"), 5.4);
+// scene 2
+textIn($("tShar1"), 9.3, .6); textIn($("tShar2"), 9.45, .6, { y: 24 });
+textOut($("tShar1"), 10.05); textOut($("tShar2"), 10.1);
+// scene 3
+textIn($("tMub"), 11.4); textOut($("tMub"), 11.95);
+textIn($("tHiw"), 13.0); textOut($("tHiw"), 13.5);
+textIn($("tMub"), 13.9, .35); textIn($("tHiw"), 13.95, .35);
+tl.to(["#tMub", "#tHiw"], { opacity: 0, filter: "blur(18px)", scale: 1.15, duration: .4, ease: "power2.in" }, C.sizzle - .05);
+// impact circles around the two lines
+for (let k = 0; k < 3; k++) {
+  const c = S("circle", { cx: CX, cy: 890, r: 120, fill: "none", stroke: "#FFE070", "stroke-width": 3, opacity: 0 });
+  tl.fromTo(c, { attr: { r: 140 }, opacity: .8 }, { attr: { r: 560 }, opacity: 0, duration: 1.1, ease: "power2.out", immediateRender: false }, 13.6 + k * .22);
+}
+// beat glow (calm pulses that speed up)
+C.beats.forEach((b, i) => tl.fromTo("#beat", { opacity: .25 + .5 * i / C.beats.length }, { opacity: 0, duration: .45, ease: "sine.out", immediateRender: false }, b));
+// scene 4: blackout, golden dot, accelerating pulses
+tl.to("#dark", { opacity: .92, duration: .06 }, C.cut);
+const coreHalo = S("circle", { cx: CX, cy: 870, r: 220, fill: "url(#gd)", opacity: 0 });
+const core = S("circle", { cx: CX, cy: 870, r: 16, fill: "#FFE070", opacity: 0, filter: "url(#gl)" });
+tl.to(coreHalo, { opacity: .55, duration: .4 }, C.dot);
+C.pulse4.forEach((pt, k) => tl.fromTo(coreHalo, { opacity: .9 }, { opacity: .45, duration: .25, immediateRender: false }, pt));
+tl.to(coreHalo, { opacity: 0, duration: .2 }, C.hit1);
+tl.to(core, { opacity: 1, attr: { r: 26 }, duration: .25, ease: "power2.out" }, C.dot);
+C.pulse4.forEach((pt, k) => {
+  const ring = S("circle", { cx: CX, cy: 870, r: 30, fill: "none", stroke: "#FFE070", "stroke-width": 4, opacity: 0 });
+  tl.fromTo(ring, { attr: { r: 26 }, opacity: .95 }, { attr: { r: 260 + k * 30 }, opacity: 0, duration: .6, ease: "power2.out", immediateRender: false }, pt);
+  tl.fromTo(core, { attr: { r: 26 + k * 2 } }, { attr: { r: 36 + k * 3 }, duration: .08, yoyo: true, repeat: 1, immediateRender: false }, pt);
+});
+tl.to(core, { attr: { r: 120 }, opacity: 0, duration: .25, ease: "power3.out" }, C.hit1 - .02);
+tl.fromTo("#flash", { opacity: .85 }, { opacity: 0, duration: .5, immediateRender: false }, C.hit1);
+tl.fromTo("#tTarq", { opacity: 0, scale: 2.4, filter: "blur(30px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: .45, ease: "expo.out", immediateRender: false }, C.hit1);
+tl.to("#tTarq", { x: 6, duration: .04, yoyo: true, repeat: 5, ease: "none" }, C.hit1 + .05);
+tl.to("#tTarq", { scale: 1.06, duration: C.stop - C.hit1 - .45, ease: "none" }, C.hit1 + .45);
+tl.fromTo("#tQarib", { opacity: 0, y: 60, clipPath: "inset(100% 0 0 0)" }, { opacity: 1, y: 0, clipPath: "inset(0% 0 0 0)", duration: .4, ease: "expo.out", immediateRender: false }, C.hit2);
+tl.fromTo("#flash", { opacity: .45 }, { opacity: 0, duration: .35, immediateRender: false }, C.hit2);
+tl.set(["#tTarq", "#tQarib"], { opacity: 0 }, C.stop);
+const slit = S("rect", { x: 0, y: 868, width: 1080, height: 4, fill: "#FFF6D6", opacity: 0 });
+tl.fromTo(slit, { opacity: 1, attr: { x: 0, width: 1080 } }, { opacity: 0, attr: { x: 540, width: 0 }, duration: .22, ease: "power3.in", immediateRender: false }, C.stop);
+// brand: persistent, dimmed during the blackout, then grows into the end card
+tl.to(["#brandTop", "#brandBottom"], { opacity: 1, duration: .8, ease: "sine.out" }, .3);
+tl.to(["#brandTop", "#brandBottom"], { opacity: .3, duration: .06 }, C.cut);
+tl.to(["#brandTop", "#brandBottom"], { opacity: 1, duration: .5 }, C.end);
+tl.to("#dark", { opacity: .35, duration: .6 }, C.end);
+tl.to("#brandTop", { scale: 1.75, y: 205, duration: 1.0, ease: "power3.inOut" }, C.end);
+tl.fromTo("#cSchool", { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: .7, ease: "power3.out", immediateRender: false }, C.names[0]);
+tl.to("#line", { scaleX: 1, duration: .7, ease: "power2.out" }, C.names[0] + .3);
+["#cN1", "#cN2", "#cN3"].forEach((id, k) => tl.fromTo(id, { opacity: 0, y: 30, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: .7, ease: "power3.out", immediateRender: false }, C.names[k + 1]));
+tl.set({}, {}, D);
+
+/* ---------------- API ---------------- */
+window.DURATION = D;
+window.seekTo = t => { tl.time(t, false); draw(t); };
+window.READY = Promise.all([document.fonts.load("900 180px Kufi", "الصَّوت"), document.fonts.load("800 96px Kufi", "مبادرات"), document.fonts.load("600 40px Kufi", "edugov"), document.fonts.load("400 30px Kufi", "مشرف"),
+  new Promise(r => { const im = $("brandTop").querySelector("img"); im.complete ? r() : (im.onload = im.onerror = r); })])
+  .then(() => document.fonts.ready).then(() => { buildKeys(); seekTo(0); return true; });
+
+if (!RENDER) {
+  const wrap = $("wrap"), fit = () => { const s = Math.min(innerWidth / 1080, (innerHeight - 56) / 1920); wrap.style.transform = `scale(${s})`; wrap.style.margin = `${(1920 * s - 1920) / 2 - 26}px ${(1080 * s - 1080) / 2}px`; };
+  addEventListener("resize", fit); fit();
+  const aud = $("aud"), btn = $("play"), sc = $("scrub"), clk = $("clock");
+  let playing = false, t0 = 0, w0 = 0;
+  const now = () => aud.readyState > 1 && !aud.paused ? aud.currentTime : t0 + (playing ? (performance.now() - w0) / 1000 : 0);
+  btn.onclick = () => { if (playing) { t0 = now(); aud.pause(); } else { w0 = performance.now(); aud.currentTime = t0; aud.play().catch(() => {}); } playing = !playing; btn.textContent = playing ? "❚❚" : "▶"; };
+  sc.oninput = () => { t0 = sc.value / 1000 * D; aud.currentTime = t0; w0 = performance.now(); READY.then(() => seekTo(t0)); };
+  gsap.ticker.add(() => { if (!playing) return; const t = now(); if (t >= D) { btn.click(); return; } seekTo(t); sc.value = t / D * 1000; clk.textContent = t.toFixed(1); });
+}
+</script>
+</body>
+</html>

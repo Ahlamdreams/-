@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>من الصوت إلى الصدى</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root{ --gold:#E7B53C; --glow:#FFE27A; --cyan:#6FE3FF; --violet:#A98BFF; --white:#fff; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#000;height:100%;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center;font-family:'Kufi',sans-serif}
+  #wrap{position:relative;width:1080px;height:1920px;flex:none;transform-origin:center}
+  #stage{position:absolute;inset:0;overflow:hidden;
+    background:radial-gradient(80% 45% at 30% 8%, #0E4B5E 0%, rgba(14,75,94,0) 70%),
+               radial-gradient(90% 50% at 70% 95%, #3B2A78 0%, rgba(59,42,120,0) 70%),
+               linear-gradient(180deg,#071B33 0%,#0A1638 50%,#140F33 100%)}
+  #beat{position:absolute;inset:0;background:radial-gradient(60% 35% at 50% 45%, rgba(111,227,255,.13), transparent 70%);opacity:0}
+  canvas{position:absolute;inset:0;width:1080px;height:1920px}
+  #vig{position:absolute;inset:0;background:radial-gradient(80% 60% at 50% 48%, transparent 55%, rgba(0,0,0,.55) 100%);pointer-events:none}
+
+  /* gold 3D calligraphy */
+  .cal{position:absolute;left:0;right:0;text-align:center;white-space:nowrap;font-family:'Ruqaa',serif;font-weight:700;line-height:1.1;direction:rtl}
+  .cal .f{position:relative;display:inline-block;background:linear-gradient(180deg,#FFF6C8 0%,#FFE27A 30%,#E7B53C 58%,#B9831C 80%,#FFD866 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 0 #6A4410) drop-shadow(0 10px 18px rgba(0,0,0,.55)) drop-shadow(0 0 26px rgba(255,214,90,.35))}
+  .cal .e{position:absolute;left:0;right:0;top:0;color:rgba(255,226,122,.55);filter:blur(4px);opacity:0}
+
+  #title{position:absolute;left:0;right:0;top:0;height:1920px;transform-origin:540px 900px}
+  #eqLabel{position:absolute;left:0;right:0;top:738px;text-align:center;font-weight:800;font-size:48px;color:#fff;opacity:0;text-shadow:0 0 22px rgba(111,227,255,.45)}
+
+  .card{position:absolute;left:150px;width:780px;height:92px;border-radius:30px;opacity:0;overflow:hidden;
+    background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(120,170,255,.10));border:2px solid rgba(160,205,255,.38);
+    box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 10px 30px rgba(0,0,0,.35),0 0 24px rgba(111,227,255,.12);display:flex;align-items:center;direction:rtl;padding:0 14px 0 26px}
+  .card .ic{width:76px;height:76px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 40% 35%,#9FF0FF 0%,#4FA9F0 45%,#6C5BD6 100%);box-shadow:0 0 22px rgba(111,227,255,.75),0 0 0 4px rgba(255,255,255,.18)}
+  .card .ic svg{width:46px;height:46px}
+  .card .tx{flex:1;margin-right:22px;font-weight:800;font-size:42px;color:#fff;text-align:right}
+  .card .no{width:46px;height:46px;flex:none;border-radius:50%;border:2px solid rgba(255,255,255,.55);color:#fff;font-weight:600;font-size:26px;display:flex;align-items:center;justify-content:center}
+  .card .sh{position:absolute;top:0;bottom:0;width:180px;left:-220px;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg)}
+  #conn{position:absolute;left:876px;width:5px;margin-left:-2px;top:894px;height:220px;border-radius:3px;background:linear-gradient(180deg,var(--cyan),var(--violet));box-shadow:0 0 14px var(--cyan);transform-origin:top;transform:scaleY(0)}
+
+  #qarib{position:absolute;left:0;right:0;top:878px;text-align:center;font-weight:900;font-size:76px;color:#fff;letter-spacing:8px;opacity:0;text-shadow:0 0 30px rgba(255,226,122,.7)}
+
+  #brandTop{position:absolute;left:50%;top:300px;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;background:#fff;opacity:0;
+    box-shadow:0 0 0 4px rgba(231,181,60,.95),0 0 0 10px rgba(111,227,255,.18),0 0 44px rgba(111,227,255,.45);display:flex;align-items:center;justify-content:center}
+  #brandTop img{width:78%;height:78%;object-fit:contain}
+  #brandBottom{position:absolute;left:0;right:0;top:1452px;display:flex;justify-content:center;align-items:center;gap:18px;direction:ltr;opacity:0}
+  #brandBottom svg{width:54px;height:54px}
+  #brandBottom span{font-weight:600;font-size:40px;color:#fff;letter-spacing:1px;margin-left:8px}
+
+  .cr{position:absolute;left:0;right:0;text-align:center;opacity:0}
+  .school{top:730px;font-weight:800;font-size:54px;color:#fff}
+  .role{font-weight:600;font-size:32px;color:var(--glow)}
+  .name{font-weight:800;font-size:46px;color:#fff;margin-top:2px}
+  .sub{font-weight:400;font-size:30px;color:#C9D3EE;margin-top:2px}
+  #line{position:absolute;left:50%;top:812px;width:440px;height:3px;margin-left:-220px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0)}
+  #fade{position:absolute;inset:0;background:#000;opacity:0}
+
+  #ctl{position:fixed;left:0;right:0;bottom:0;height:52px;display:flex;gap:12px;align-items:center;padding:0 14px;background:#111;color:#ddd;direction:ltr;font:14px system-ui}
+  #ctl button{background:var(--gold);border:0;border-radius:6px;padding:7px 14px;font-weight:700}
+  #ctl input{flex:1}
+  body.render #ctl{display:none}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <div id="beat"></div>
+  <canvas id="cv" width="1080" height="1920"></canvas>
+  <div id="title">
+    <div class="cal" id="t1" style="top:800px;font-size:160px"><span class="f">من الصَّوت</span><span class="e">من الصَّوت</span><span class="e">من الصَّوت</span></div>
+    <div class="cal" id="t2" style="top:975px;font-size:160px"><span class="f">إلى الصَّدى</span><span class="e">إلى الصَّدى</span><span class="e">إلى الصَّدى</span></div>
+  </div>
+  <div id="eqLabel">شراكةٌ تتجاوز المدى</div>
+  <div id="conn"></div>
+  <div class="card" id="c1" style="top:848px"><div class="ic"><svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6a13 13 0 0 0-7.5 23.6c1.4 1 2.2 2.3 2.2 3.9V35h10.6v-1.5c0-1.6.8-2.9 2.2-3.9A13 13 0 0 0 24 6z"/><path d="M19 40h10M21 44h6M24 18l-3 6h6l-3 6"/></svg></div><div class="tx">مبادراتٌ تُلهم…</div><div class="no">١</div><div class="sh"></div></div>
+  <div class="card" id="c2" style="top:958px"><div class="ic"><svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10h24a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H16l-7 6v-6H6a4 4 0 0 1-4-4V14a4 4 0 0 1 4-4z"/><path d="M38 18h4a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4h-2v5l-6-5H26"/></svg></div><div class="tx">وحواراتٌ تُثري…</div><div class="no">٢</div><div class="sh"></div></div>
+  <div class="card" id="c3" style="top:1068px"><div class="ic"><svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><circle cx="24" cy="24" r="4" fill="#fff"/><path d="M16 16a11 11 0 0 0 0 16M32 16a11 11 0 0 1 0 16M10 10a19 19 0 0 0 0 28M38 10a19 19 0 0 1 0 28"/></svg></div><div class="tx">وأثرٌ يمتد</div><div class="no">٣</div><div class="sh"></div></div>
+  <div class="cal" id="tq" style="top:1180px;font-size:165px"><span class="f">تَرَقَّبُوا</span><span class="e">تَرَقَّبُوا</span><span class="e">تَرَقَّبُوا</span></div>
+  <div id="qarib">قريبًا</div>
+  <div class="cr school" id="cSchool">مدرسة أم مالك الأنصارية للبنات</div>
+  <div id="line"></div>
+  <div class="cr" id="cN1" style="top:855px"><div class="role">مديرة المدرسة</div><div class="name">الأستاذة أحلام الحمدانية</div></div>
+  <div class="cr" id="cN2" style="top:1005px"><div class="role">مساعدة مديرة المدرسة</div><div class="name">الأستاذة فاطمة البادية</div></div>
+  <div class="cr" id="cN3" style="top:1155px"><div class="role">إشراف</div><div class="name">الأستاذ علي البريكي</div><div class="sub">مشرف تنمية علاقات مجتمعية</div></div>
+  <div id="vig"></div>
+  <div id="brandTop"><img src="assets/emblem.png" alt=""></div>
+  <div id="brandBottom">
+    <svg viewBox="0 0 54 54"><rect x="4" y="4" width="46" height="46" rx="14" fill="none" stroke="#FFE27A" stroke-width="4.5"/><circle cx="27" cy="27" r="10.5" fill="none" stroke="#FFE27A" stroke-width="4.5"/><circle cx="39.5" cy="14.5" r="3" fill="#FFE27A"/></svg>
+    <svg viewBox="0 0 54 54"><rect x="2" y="2" width="50" height="50" rx="14" fill="#FFE27A"/><g transform="translate(12 12) scale(1.25)"><path fill="#0A1638" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></g></svg>
+    <span>edugovnbt2264</span>
+  </div>
+  <div id="fade"></div>
+</div></div>
+<div id="ctl"><button id="play">▶</button><input id="scrub" type="range" min="0" max="1000" value="0"><span id="clock">0.0</span></div>
+<audio id="aud" src="assets/soundtrack.m4a" preload="auto"></audio>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="cues.js"></script>
+<script>
+const RENDER = location.search.includes("render");
+if (RENDER) document.body.classList.add("render");
+const C = window.CUES, D = C.duration, $ = id => document.getElementById(id);
+const tl = gsap.timeline({ paused: true });
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const smooth = x => x * x * (3 - 2 * x);
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const R = mulberry(51);
+const STARS = Array.from({ length: 170 }, () => ({ x: R() * 1080, y: R() * 1920, r: .6 + R() * 1.8, p: R() * 6.28, s: .5 + R() * 2 }));
+
+/* ---------- canvas layer (deterministic in t) ---------- */
+const cv = $("cv"), g = cv.getContext("2d");
+// rings: [t0, cx, cy, r0, r1, dur, colour, width]
+const RINGS = [];
+const ring = (t0, cx, cy, r0, r1, dur = 1.4, col = "111,227,255", w = 4) => RINGS.push([t0, cx, cy, r0, r1, dur, col, w]);
+// intro neon circle + ripples
+for (let k = 0; k < 4; k++) ring(1.9 + k * .35, 540, 900, 260, 760, 1.8, k % 2 ? "169,139,255" : "111,227,255", 3);
+for (let k = 0; k < 3; k++) ring(3.5 + k * .3, 540, 900, 300, 820, 1.8, "169,139,255", 3);
+// partnership: two circles converge (drawn separately) then ripple
+for (let k = 0; k < 2; k++) ring(7.2 + k * .3, 540, 700, 120, 520, 1.4, "111,227,255", 3);
+C.cards.forEach((t, k) => ring(t + .1, 876, 894 + k * 110, 38, 160, .9, "111,227,255", 3));
+ring(C.hit1, 540, 1270, 120, 760, 1.6, "255,226,122", 4);
+ring(C.hit2, 540, 760, 160, 1100, 1.8, "255,226,122", 5);
+C.rings.forEach((t, k) => { ring(t, 540, 1140, 100, 900, 2.0, k % 2 ? "169,139,255" : "111,227,255", 4); ring(t + .18, 540, 1140, 100, 700, 1.6, "255,226,122", 2); });
+
+function neonPath(pts, w, col, blur) { g.save(); g.lineJoin = g.lineCap = "round"; g.shadowColor = `rgba(${col},1)`; g.shadowBlur = blur; g.strokeStyle = `rgba(${col},1)`; g.lineWidth = w; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); g.restore(); }
+function drawCircle(cx, cy, r, col, a, w, blur = 18) { if (a <= 0 || r <= 0) return; g.save(); g.globalAlpha = a; g.shadowColor = `rgba(${col},1)`; g.shadowBlur = blur; g.strokeStyle = `rgba(${col},1)`; g.lineWidth = w; g.beginPath(); g.arc(cx, cy, r, 0, 6.2832); g.stroke(); g.restore(); }
+const env = (t, a, b, fi = .4, fo = .4) => clamp((t - a) / fi) * clamp((b - t) / fo);
+
+function draw(t) {
+  g.clearRect(0, 0, 1080, 1920);
+  // stars
+  for (const s of STARS) { g.globalAlpha = .25 + .45 * (.5 + .5 * Math.sin(t * s.s + s.p)); g.fillStyle = "#cfe8ff"; g.beginPath(); g.arc(s.x, (s.y - t * 6 * s.r + 1920) % 1920, s.r, 0, 6.28); g.fill(); }
+  g.globalAlpha = 1;
+  // intro neon circle (draws on), stays until title rises
+  const ca = env(t, .2, 5.6, .3, .5);
+  if (ca > 0) { const p = smooth(clamp((t - .2) / 1.1)); g.save(); g.globalAlpha = ca; g.shadowColor = "rgba(111,227,255,1)"; g.shadowBlur = 26; const gr = g.createLinearGradient(240, 600, 840, 1200); gr.addColorStop(0, "#6FE3FF"); gr.addColorStop(1, "#A98BFF"); g.strokeStyle = gr; g.lineWidth = 5; g.beginPath(); g.arc(540, 900, 300, -Math.PI / 2, -Math.PI / 2 + p * 6.2832); g.stroke(); g.restore(); }
+  // sound waveform → becomes the title (amplitude follows the voice)
+  const wa = env(t, .35, 2.4, .3, .6);
+  if (wa > 0) {
+    const vo = (t > C.voice[0] && t < C.voice[0] + 1.25) ? 1.4 : .7;
+    for (const [col, ph, w] of [["111,227,255", 0, 4], ["255,120,200", 1.7, 3], ["255,226,122", 3.1, 2]]) {
+      const pts = []; for (let x = 0; x <= 1080; x += 6) { const u = (x - 540) / 300, en = Math.exp(-u * u * 1.6); pts.push([x, 900 + Math.sin(x * .045 + t * 9 + ph) * Math.sin(x * .013 - t * 3 + ph) * 120 * en * vo * wa]); }
+      g.globalAlpha = wa; neonPath(pts, w, col, 16);
+    }
+    g.globalAlpha = 1;
+  }
+  // partnership: two circles slide together and overlap
+  const va = env(t, 6.2, 8.0, .3, .5);
+  if (va > 0) { const p = smooth(clamp((t - 6.2) / 1.0)), off = 260 * (1 - p) + 70; drawCircle(540 - off, 700, 110, "111,227,255", va, 4); drawCircle(540 + off, 700, 110, "169,139,255", va, 4); }
+  // equalizer bar under the title
+  const ea = env(t, 5.9, 15.6, .5, .3) * (t < 15.6 ? 1 : 0);
+  if (ea > 0) {
+    const bars = 46, W = 640, x0 = 540 - W / 2, grow = smooth(clamp((t - 5.9) / .8));
+    let beat = 0; for (const b of C.beats) if (t >= b && t - b < .35) beat = Math.max(beat, 1 - (t - b) / .35);
+    for (let i = 0; i < bars; i++) {
+      const u = i / (bars - 1), c = Math.exp(-Math.pow((u - .5) * 2.4, 2));
+      if (Math.abs(u - .5) * 2 > grow) continue;
+      const h = 8 + (14 + 34 * c) * (.45 + .55 * Math.abs(Math.sin(t * 7 + i * .9) * Math.sin(t * 3.1 + i * .37))) * (1 + beat * .6);
+      const x = x0 + u * W; const gr = g.createLinearGradient(0, 690 - h, 0, 690 + h); gr.addColorStop(0, "#ffffff"); gr.addColorStop(1, "#6FE3FF");
+      g.globalAlpha = ea; g.fillStyle = gr; g.shadowColor = "rgba(111,227,255,.9)"; g.shadowBlur = 10; g.fillRect(x - 3.5, 690 - h / 2, 7, h);
+    }
+    g.shadowBlur = 0; g.globalAlpha = 1;
+  }
+  // rings
+  for (const [t0, cx, cy, r0, r1, dur, col, w] of RINGS) {
+    const p = (t - t0) / dur; if (p < 0 || p > 1) continue;
+    drawCircle(cx, cy, r0 + (r1 - r0) * (1 - Math.pow(1 - p, 2)), col, (1 - p) * .9, w);
+  }
+}
+
+/* ---------- DOM timeline ---------- */
+const E = (sel, from, to, at) => tl.fromTo(sel, from, { ...to, immediateRender: false }, at);
+gsap.set(["#t1 .f", "#t2 .f", "#tq .f"], { opacity: 0 });
+// title emerges from the wave (blur + mask sweep), with echo copies drifting outward
+function calIn(id, at) {
+  E(`#${id} .f`, { opacity: 0, scale: .7, filter: "blur(18px)", clipPath: "inset(0 50% 0 50%)" }, { opacity: 1, scale: 1, filter: "blur(0px)", clipPath: "inset(0 0% 0 0%)", duration: .8, ease: "power3.out" }, at);
+  const es = document.querySelectorAll(`#${id} .e`);
+  es.forEach((e, k) => E(e, { opacity: .7, scale: 1, x: 0 }, { opacity: 0, scale: 1.25 + k * .2, x: (k ? -1 : 1) * 40, duration: 1.1, ease: "power2.out" }, at + .45 + k * .18));
+}
+calIn("t1", 1.55); calIn("t2", 3.25);
+// echo pulses of the title on later beats
+[4.6, 13.0].forEach(at => document.querySelectorAll("#t2 .e").forEach((e, k) => E(e, { opacity: .55, scale: 1, x: 0 }, { opacity: 0, scale: 1.3, x: (k ? -1 : 1) * 50, duration: 1, ease: "power2.out" }, at + k * .15)));
+// title rises to the top; logo & handles appear
+tl.to("#title", { y: -432, scale: .68, duration: 1.0, ease: "power3.inOut" }, 5.3);
+tl.to(["#brandTop", "#brandBottom"], { opacity: 1, duration: .7 }, 5.5);
+E("#eqLabel", { opacity: 0, y: 20, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: .7, ease: "power3.out" }, 7.3);
+// cards slide in one by one, the connector grows between their icons
+C.cards.forEach((t, k) => {
+  E(`#c${k + 1}`, { opacity: 0, x: 160, scale: .96 }, { opacity: 1, x: 0, scale: 1, duration: .6, ease: "power3.out" }, t - .15);
+  E(`#c${k + 1} .ic`, { scale: .3, rotation: -40 }, { scale: 1, rotation: 0, duration: .6, ease: "back.out(2.2)" }, t - .05);
+  E(`#c${k + 1} .tx`, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: .5, ease: "power2.out" }, t + .15);
+  E(`#c${k + 1} .no`, { opacity: 0, scale: .4 }, { opacity: 1, scale: 1, duration: .4, ease: "back.out(2)" }, t + .3);
+});
+E("#conn", { scaleY: 0 }, { scaleY: .5, duration: .5, ease: "power2.inOut" }, C.cards[1] - .45);
+tl.to("#conn", { scaleY: 1, duration: .5, ease: "power2.inOut" }, C.cards[2] - .45);
+[1, 2, 3].forEach((k, i) => E(`#c${k} .sh`, { left: -220 }, { left: 900, duration: .7, ease: "power1.inOut" }, C.shimmer + i * .12));
+// "ترقبوا" lands under the list
+calIn("tq", C.hit1 - .1);
+tl.to("#tq .f", { scale: 1.04, duration: .8, yoyo: true, repeat: 1, ease: "sine.inOut" }, C.hit1 + .9);
+// reveal: everything clears, ترقبوا centre stage, logo below with resonance rings
+tl.to(["#title", "#eqLabel", "#conn"], { opacity: 0, duration: .35 }, C.cut);
+["#c1", "#c2", "#c3"].forEach((c, k) => tl.to(c, { opacity: 0, x: -200, duration: .35, ease: "power2.in" }, C.cut + k * .04));
+tl.to("#tq", { opacity: 0, duration: .15 }, C.cut);
+tl.set("#tq", { y: -520, scale: 1.25 }, C.hit2 - .02);
+tl.to("#tq", { opacity: 1, duration: .01 }, C.hit2);
+E("#tq .f", { opacity: 0, scale: 1.8, filter: "blur(24px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: .55, ease: "expo.out" }, C.hit2);
+document.querySelectorAll("#tq .e").forEach((e, k) => C.rings.forEach(rt => E(e, { opacity: .6, scale: 1, x: 0 }, { opacity: 0, scale: 1.3, x: (k ? -1 : 1) * 60, duration: 1, ease: "power2.out" }, rt + k * .15)));
+E("#qarib", { opacity: 0, letterSpacing: "40px", filter: "blur(10px)" }, { opacity: 1, letterSpacing: "8px", filter: "blur(0px)", duration: .9, ease: "power3.out" }, C.rings[0]);
+tl.to("#brandTop", { y: 840, scale: 1.45, duration: .9, ease: "power3.inOut" }, C.hit2 + .1);
+C.rings.forEach(rt => tl.fromTo("#brandTop", { boxShadow: "0 0 0 4px rgba(231,181,60,.95),0 0 0 10px rgba(111,227,255,.18),0 0 90px rgba(255,226,122,.9)" }, { boxShadow: "0 0 0 4px rgba(231,181,60,.95),0 0 0 10px rgba(111,227,255,.18),0 0 44px rgba(111,227,255,.45)", duration: .7, immediateRender: false }, rt));
+// credits
+tl.to(["#tq", "#qarib"], { opacity: 0, y: "-=40", duration: .5, ease: "power2.in" }, C.end - .2);
+tl.to("#brandTop", { y: 120, scale: 1.75, duration: 1.0, ease: "power3.inOut" }, C.end);
+E("#cSchool", { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: .7, ease: "power3.out" }, C.names[0]);
+tl.to("#line", { scaleX: 1, duration: .7, ease: "power2.out" }, C.names[0] + .3);
+["#cN1", "#cN2", "#cN3"].forEach((id, k) => E(id, { opacity: 0, y: 30, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: .7, ease: "power3.out" }, C.names[k + 1]));
+tl.to("#fade", { opacity: 1, duration: .45 }, D - .45);
+// beat glow
+C.beats.forEach((b, i) => E("#beat", { opacity: .3 + .6 * i / C.beats.length }, { opacity: 0, duration: .45, ease: "sine.out" }, b));
+tl.set({}, {}, D);
+
+window.DURATION = D;
+window.seekTo = t => { tl.time(t, false); draw(t); };
+window.READY = Promise.all([document.fonts.load("700 160px Ruqaa", "من الصَّوت"), document.fonts.load("800 44px Kufi", "مبادرات"), document.fonts.load("900 76px Kufi", "قريبًا"), document.fonts.load("600 40px Kufi", "edu"), document.fonts.load("400 30px Kufi", "مشرف"),
+  new Promise(r => { const im = $("brandTop").querySelector("img"); im.complete ? r() : (im.onload = im.onerror = r); })]).then(() => document.fonts.ready).then(() => { seekTo(0); return true; });
+
+if (!RENDER) {
+  const wrap = $("wrap"), fit = () => { const s = Math.min(innerWidth / 1080, (innerHeight - 56) / 1920); wrap.style.transform = `scale(${s})`; wrap.style.margin = `${(1920 * s - 1920) / 2 - 26}px ${(1080 * s - 1080) / 2}px`; };
+  addEventListener("resize", fit); fit();
+  const aud = $("aud"), btn = $("play"), sc = $("scrub"), clk = $("clock"); let playing = false, t0 = 0, w0 = 0;
+  const now = () => aud.readyState > 1 && !aud.paused ? aud.currentTime : t0 + (playing ? (performance.now() - w0) / 1000 : 0);
+  btn.onclick = () => { if (playing) { t0 = now(); aud.pause(); } else { w0 = performance.now(); aud.currentTime = t0; aud.play().catch(() => {}); } playing = !playing; btn.textContent = playing ? "❚❚" : "▶"; };
+  sc.oninput = () => { t0 = sc.value / 1000 * D; aud.currentTime = t0; w0 = performance.now(); READY.then(() => seekTo(t0)); };
+  gsap.ticker.add(() => { if (!playing) return; const t = now(); if (t >= D) { btn.click(); return; } seekTo(t); sc.value = t / D * 1000; clk.textContent = t.toFixed(1); });
+}
+</script>
+</body>
+</html>

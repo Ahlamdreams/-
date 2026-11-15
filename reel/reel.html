@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Reel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800;900&family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#fff}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Cairo',sans-serif;color:#4a1f6e;
+  background:linear-gradient(170deg,#f3e8ff 0%,#ffffff 38%,#e6f7f8 75%,#d3f0f2 100%)}
+.abs{position:absolute}
+.scene{position:absolute;inset:0;opacity:0}
+.ruqaa{font-family:'Aref Ruqaa',serif}
+.grad-text{background:linear-gradient(90deg,#7b2cbf,#c2307f,#7b2cbf);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card{background:rgba(255,255,255,.92);border-radius:40px;box-shadow:0 18px 50px rgba(90,40,140,.18)}
+.caption{position:absolute;left:60px;right:60px;text-align:center;font-weight:900;font-size:66px;line-height:1.35;color:#5a1f86;
+  text-shadow:0 4px 0 #fff,0 0 22px #fff}
+.caption span{display:inline-block}
+.bubble{position:absolute;background:#fff;border-radius:46px;padding:22px 38px;font-weight:800;font-size:46px;color:#4a1f6e;
+  box-shadow:0 10px 30px rgba(90,40,140,.22);border:5px solid #c79bf2;white-space:nowrap}
+.bubble:after{content:"";position:absolute;bottom:-34px;width:0;height:0;border:20px solid transparent;border-top:24px solid #c79bf2}
+.bubble.tl:after{left:70px}.bubble.tr:after{right:70px}
+.why{position:absolute;right:70px;left:70px;height:178px;display:flex;align-items:center;gap:34px;padding:0 34px;border-radius:44px;
+  background:#fff;box-shadow:0 12px 34px rgba(90,40,140,.16);border-right:16px solid #9b4dde}
+.why .ic{width:126px;height:126px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center}
+.why .tx{font-size:50px;font-weight:900;line-height:1.25;color:#46206b}
+.why .tx small{display:block;font-size:34px;font-weight:600;color:#3f8f96}
+.row{display:flex;align-items:center;gap:30px;margin:0 70px 34px;padding:24px 34px;border-radius:34px;background:#f7f0ff}
+.row .ic{width:104px;height:104px;border-radius:30px;flex:none;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#8e3fd4,#19a7ad)}
+.row .tx{font-size:52px;font-weight:900;color:#3e1b62;line-height:1.25}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="bgfx" class="abs" width="1080" height="1920" style="left:0;top:0"></svg>
+
+  <!-- ============ SCENE 1: Title ============ -->
+  <div id="s1" class="scene">
+    <div id="s1logos" class="abs card" style="left:40px;right:40px;top:70px;height:200px;display:flex;align-items:center;justify-content:center">
+      <img src="logos.png" style="width:960px">
+    </div>
+    <div id="s1glow" class="abs" style="left:190px;top:380px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(199,155,242,.55),rgba(255,255,255,0) 70%)"></div>
+    <img id="s1title" class="abs" src="title.png" style="left:210px;top:350px;width:660px">
+    <div id="s1h1" class="abs ruqaa grad-text" style="left:0;right:0;top:1060px;text-align:center;font-size:132px;line-height:1.3">اللقاء التربوي</div>
+    <div id="s1h2" class="abs" style="left:0;right:0;top:1250px;text-align:center;font-size:58px;font-weight:800;color:#1b8f96">بين أولياء الأمور والهيئة التعليمية</div>
+    <div id="s1school" class="abs" style="left:60px;right:60px;top:1400px;height:130px;border-radius:70px;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(90deg,#7b2cbf,#19a7ad);color:#fff;font-size:46px;font-weight:900;white-space:nowrap;box-shadow:0 14px 40px rgba(123,44,191,.35)">مدرسة أم مالك الأنصارية للبنات (٥-٦)</div>
+    <svg id="s1kids" class="abs" width="1080" height="380" style="left:0;top:1560px" viewBox="0 0 1080 380"></svg>
+  </div>
+
+  <!-- ============ SCENE 2: Walk to school ============ -->
+  <div id="s2" class="scene">
+    <svg id="s2svg" class="abs" width="1080" height="1920" viewBox="0 0 1080 1920" style="left:0;top:0"></svg>
+    <div id="s2c1" class="caption" style="top:150px"><span>خطوتك نحو المدرسة..</span></div>
+    <div id="s2c2" class="caption" style="top:250px;color:#16878e"><span>خطوةٌ نحو مستقبل ابنتك</span></div>
+  </div>
+
+  <!-- ============ SCENE 3: Meeting ============ -->
+  <div id="s3" class="scene">
+    <svg id="s3svg" class="abs" width="1080" height="1920" viewBox="0 0 1080 1920" style="left:0;top:0"></svg>
+    <div id="s3b1" class="bubble tl" style="left:70px;top:720px">ابنتكِ متألّقة ✦</div>
+    <div id="s3b2" class="bubble tr" style="right:60px;top:720px">كيف أدعمها أكثر؟</div>
+    <div id="s3b3" class="bubble tl" style="left:70px;top:720px">نتابعها معاً خطوة بخطوة</div>
+    <div id="s3c1" class="caption" style="top:1600px"><span>حين يلتقي البيتُ بالمدرسة..</span></div>
+    <div id="s3c2" class="caption" style="top:1700px;color:#16878e"><span>يكتمل الأثر</span></div>
+  </div>
+
+  <!-- ============ SCENE 4: Why ============ -->
+  <div id="s4" class="scene">
+    <div id="s4h" class="abs ruqaa grad-text" style="left:0;right:0;top:120px;text-align:center;font-size:118px;line-height:1.35">لماذا حضورك مهم؟</div>
+    <div id="w1" class="why" style="top:360px"><div class="ic" style="background:#f1e4ff" data-icon="chart"></div><div class="tx">تتعرّف على مستوى ابنتك<small>الدراسي عن قرب</small></div></div>
+    <div id="w2" class="why" style="top:568px;border-right-color:#19a7ad"><div class="ic" style="background:#dff6f7" data-icon="chat"></div><div class="tx">تتواصل مباشرة مع المعلمات<small>وتسمع منهنّ وتُسمعهنّ</small></div></div>
+    <div id="w3" class="why" style="top:776px;border-right-color:#d0458f"><div class="ic" style="background:#ffe4f1" data-icon="heart"></div><div class="tx">تدعم سلوكها وتحفّزها<small>فتشعر باهتمامك وفخرك بها</small></div></div>
+    <div id="w4" class="why" style="top:984px;border-right-color:#e0a21b"><div class="ic" style="background:#fff3d6" data-icon="team"></div><div class="tx">تبني معنا شراكة ناجحة<small>بين البيت والمدرسة</small></div></div>
+    <svg id="s4svg" class="abs" width="1080" height="760" viewBox="0 0 1080 760" style="left:0;top:1160px"></svg>
+    <div id="s4c" class="caption" style="top:1770px;font-size:58px"><span>اهتمامك اليوم.. ثمرتها غداً</span></div>
+  </div>
+
+  <!-- ============ SCENE 5: Invitation ============ -->
+  <div id="s5" class="scene">
+    <svg id="confetti" class="abs" width="1080" height="1920" style="left:0;top:0"></svg>
+    <div id="s5card" class="abs card" style="left:50px;right:50px;top:170px;padding:70px 0 40px;border:6px solid #d9b8f7">
+      <div style="text-align:center;font-size:54px;font-weight:800;color:#1b8f96">ندعوكم لحضور</div>
+      <div class="ruqaa grad-text" style="text-align:center;font-size:150px;line-height:1.45">اللقاء التربوي</div>
+      <div style="text-align:center;font-size:54px;font-weight:900;color:#5a1f86;margin-bottom:46px">بين أولياء الأمور والهيئة التعليمية</div>
+      <div id="r1" class="row"><div class="ic" data-icon="cal"></div><div class="tx">الخميس<br>١٩ نوفمبر ٢٠٢٦م</div></div>
+      <div id="r2" class="row"><div class="ic" data-icon="clock"></div><div class="tx">من الساعة ٢:٣٠<br>حتى الساعة ٤:٠٠ مساءً</div></div>
+      <div id="r3" class="row"><div class="ic" data-icon="pin"></div><div class="tx">مدرسة أم مالك الأنصارية<br>للبنات (٥-٦)</div></div>
+    </div>
+    <div id="s5c" class="caption" style="top:1660px;font-size:72px"><span>بانتظاركم ♥</span></div>
+  </div>
+
+  <!-- ============ SCENE 6: Outro ============ -->
+  <div id="s6" class="scene">
+    <div id="s6logos" class="abs card" style="left:40px;right:40px;top:60px;height:180px;display:flex;align-items:center;justify-content:center">
+      <img src="logos.png" style="width:900px">
+    </div>
+    <img id="s6title" class="abs" src="title.png" style="left:370px;top:270px;width:340px">
+    <div id="s6slogan" class="abs ruqaa grad-text" style="left:0;right:0;top:640px;text-align:center;font-size:104px;line-height:1.4">حضورك.. يصنع الفرق</div>
+    <svg id="s6svg" class="abs" width="1080" height="520" viewBox="0 0 1080 520" style="left:0;top:820px"></svg>
+    <div id="s6soc" class="abs card" style="left:60px;right:60px;top:1350px;height:170px;display:flex;align-items:center;justify-content:center;gap:22px;padding:0 30px">
+      <div style="font-size:40px;font-weight:800;color:#1b8f96">تابعونا</div>
+      <div id="socicons" style="display:flex;gap:14px"></div>
+      <div id="handle" dir="ltr" style="font-size:44px;font-weight:900;color:#5a1f86"></div>
+    </div>
+    <div id="s6names" class="abs" style="left:60px;right:60px;top:1560px;height:230px;border-radius:40px;display:flex;
+      background:linear-gradient(135deg,#fff8ec,#fdf1ff);border:5px solid #e3c27a;box-shadow:0 12px 34px rgba(150,110,40,.18)">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:3px dashed #e3c27a">
+        <div style="font-size:40px;font-weight:800;color:#1b8f96">مديرة المدرسة</div>
+        <div style="font-size:52px;font-weight:900;color:#4a1f6e">أ. أحلام الحمداني</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-size:40px;font-weight:800;color:#1b8f96">مساعدة المديرة</div>
+        <div style="font-size:52px;font-weight:900;color:#4a1f6e">أ. فاطمة البادي</div></div>
+    </div>
+  </div>
+
+  <div id="flash" class="abs" style="inset:0;background:#fff;opacity:0;pointer-events:none"></div>
+</div>
+
+<script>
+// ===================== CONFIG (edit here) =====================
+const CONFIG = {
+  handle: '@school_account',             // حساب المدرسة
+  socials: ['ig','x','tt','wa']          // الأيقونات المعروضة
+};
+const DURATION = 37;
+
+// ===================== helpers =====================
+const $ = id => document.getElementById(id);
+const clamp = (v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const P = (t,a,b)=>clamp((t-a)/(b-a));
+const eOut = x=>1-Math.pow(1-x,3);
+const eInOut = x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eBack = x=>{const c=1.9;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+function rng(seed){return ()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646}}
+function sceneVis(t,a,b,f=.45){return Math.min(P(t,a-f/2,a+f/2),1-P(t,b-f/2,b+f/2))}
+function pop(el,t,a,d=.55,dy=40){const x=P(t,a,a+d);el.style.opacity=clamp(x*2.2);el.style.transform=`translateY(${(1-eOut(x))*dy}px) scale(${lerp(.6,1,eBack(x))})`}
+function slide(el,t,a,d=.6,dx=0,dy=60){const x=eOut(P(t,a,a+d));el.style.opacity=x;el.style.transform=`translate(${(1-x)*dx}px,${(1-x)*dy}px)`}
+
+// ===================== icons =====================
+const ICONS={
+ chart:`<svg width="80" height="80" viewBox="0 0 80 80"><rect x="8" y="46" width="14" height="26" rx="4" fill="#b07ce8"/><rect x="31" y="32" width="14" height="40" rx="4" fill="#9b4dde"/><rect x="54" y="16" width="14" height="56" rx="4" fill="#7b2cbf"/><path d="M8 34 L30 18 L44 26 L70 6" stroke="#19a7ad" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M58 5 L71 5 L71 18" stroke="#19a7ad" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+ chat:`<svg width="84" height="84" viewBox="0 0 84 84"><path d="M6 14 h44 a8 8 0 0 1 8 8 v22 a8 8 0 0 1 -8 8 h-26 l-12 10 v-10 h-6 a8 8 0 0 1 -8 -8 v-22 a8 8 0 0 1 8 -8z" fill="#19a7ad"/><path d="M36 34 h38 a7 7 0 0 1 7 7 v20 a7 7 0 0 1 -7 7 h-4 v9 l-11 -9 h-23 a7 7 0 0 1 -7 -7 v-20 a7 7 0 0 1 7 -7z" fill="#7fd6da"/><circle cx="48" cy="51" r="4" fill="#fff"/><circle cx="60" cy="51" r="4" fill="#fff"/><circle cx="72" cy="51" r="4" fill="#fff"/></svg>`,
+ heart:`<svg width="84" height="84" viewBox="0 0 84 84"><path d="M42 74 C10 52 4 36 10 24 C17 10 36 10 42 26 C48 10 67 10 74 24 C80 36 74 52 42 74Z" fill="#e0569f"/><path d="M62 4 l4 9 l10 1 l-7.5 6.5 l2.5 10 l-9 -5.5 l-9 5.5 l2.5 -10 l-7.5 -6.5 l10 -1z" fill="#ffc83d"/></svg>`,
+ team:`<svg width="90" height="84" viewBox="0 0 90 84"><circle cx="20" cy="26" r="11" fill="#e6a91c"/><circle cx="70" cy="26" r="11" fill="#e6a91c"/><circle cx="45" cy="20" r="14" fill="#f2b92a"/><path d="M4 70 q0-26 16-26 q16 0 16 26z" fill="#e6a91c"/><path d="M54 70 q0-26 16-26 q16 0 16 26z" fill="#e6a91c"/><path d="M24 74 q0-34 21-34 q21 0 21 34z" fill="#f2b92a"/></svg>`,
+ cal:`<svg width="64" height="64" viewBox="0 0 64 64"><rect x="6" y="12" width="52" height="46" rx="9" fill="#fff"/><rect x="6" y="12" width="52" height="15" rx="7" fill="#ffd0ee"/><rect x="17" y="5" width="6" height="14" rx="3" fill="#fff"/><rect x="41" y="5" width="6" height="14" rx="3" fill="#fff"/><text x="32" y="51" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="24" fill="#7b2cbf">١٩</text></svg>`,
+ clock:`<svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="#fff"/><path d="M32 16 V32 L43 39" stroke="#7b2cbf" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`,
+ pin:`<svg width="64" height="64" viewBox="0 0 64 64"><path d="M32 60 C18 42 12 33 12 24 a20 20 0 0 1 40 0 C52 33 46 42 32 60Z" fill="#fff"/><circle cx="32" cy="24" r="8" fill="#7b2cbf"/></svg>`,
+ ig:`<svg width="74" height="74" viewBox="0 0 74 74"><defs><linearGradient id="igg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f7b733"/><stop offset=".5" stop-color="#e1306c"/><stop offset="1" stop-color="#833ab4"/></linearGradient></defs><rect width="74" height="74" rx="20" fill="url(#igg)"/><rect x="16" y="16" width="42" height="42" rx="13" fill="none" stroke="#fff" stroke-width="6"/><circle cx="37" cy="37" r="10" fill="none" stroke="#fff" stroke-width="6"/><circle cx="51" cy="23" r="3.5" fill="#fff"/></svg>`,
+ x:`<svg width="74" height="74" viewBox="0 0 74 74"><rect width="74" height="74" rx="20" fill="#111"/><path d="M20 18 L54 56 M54 18 L20 56" stroke="#fff" stroke-width="7" stroke-linecap="round"/></svg>`,
+ tt:`<svg width="74" height="74" viewBox="0 0 74 74"><rect width="74" height="74" rx="20" fill="#111"/><path d="M40 16 v30 a9 9 0 1 1 -9 -9" stroke="#25f4ee" stroke-width="7" fill="none" stroke-linecap="round" transform="translate(-2,-2)"/><path d="M40 16 v30 a9 9 0 1 1 -9 -9" stroke="#fe2c55" stroke-width="7" fill="none" stroke-linecap="round" transform="translate(2,2)"/><path d="M40 16 v30 a9 9 0 1 1 -9 -9 M40 16 q2 10 13 11" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"/></svg>`,
+ wa:`<svg width="74" height="74" viewBox="0 0 74 74"><rect width="74" height="74" rx="20" fill="#25d366"/><path d="M37 14 a23 23 0 0 0 -20 34 l-4 12 l12 -4 a23 23 0 1 0 12 -42z" fill="#fff"/><path d="M28 28 q0 18 18 18 l3 -5 l-6 -3 l-3 3 q-6 -3 -9 -9 l3 -3 l-3 -6z" fill="#25d366"/></svg>`
+};
+document.querySelectorAll('[data-icon]').forEach(e=>e.innerHTML=ICONS[e.dataset.icon]);
+$('socicons').innerHTML=CONFIG.socials.map(k=>ICONS[k]).join('');
+$('handle').textContent=CONFIG.handle;
+
+// ===================== chibi characters =====================
+const SKIN='#f8d2b4', SKIN2='#eebd98';
+function eyes(lash){
+  const e=(cx)=>`<ellipse cx="${cx}" cy="148" rx="13" ry="17" fill="#2b1840"/><ellipse cx="${cx}" cy="152" rx="9" ry="12" fill="#7a45b8"/><ellipse cx="${cx}" cy="156" rx="6" ry="6" fill="#3c1f62"/><circle cx="${cx-4}" cy="141" r="5" fill="#fff"/><circle cx="${cx+4}" cy="157" r="2.5" fill="#fff"/>`+
+    (lash?`<path d="M${cx-15} 136 Q${cx} 126 ${cx+15} 134" stroke="#2b1840" stroke-width="4" fill="none" stroke-linecap="round"/>`:'');
+  return `<g class="eyes">${e(97)}${e(143)}</g>`;
+}
+const mouth=`<path class="smile" d="M108 180 Q120 194 132 180" stroke="#b03a5b" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path class="talk" d="M109 179 Q120 200 131 179 Z" fill="#b03a5b" opacity="0"/>`;
+const blush=`<ellipse cx="84" cy="173" rx="12" ry="7" fill="#ff8fb1" opacity=".55"/><ellipse cx="156" cy="173" rx="12" ry="7" fill="#ff8fb1" opacity=".55"/>`;
+function arm(cls,x,col,sleeve){return `<g class="${cls}"><rect x="${x-14}" y="205" width="28" height="104" rx="14" fill="${col}" stroke="${sleeve}" stroke-width="3"/><circle cx="${x}" cy="312" r="14" fill="${SKIN}"/></g>`}
+const feet=`<ellipse class="fL" cx="98" cy="414" rx="22" ry="11" fill="#3a2a40"/><ellipse class="fR" cx="142" cy="414" rx="22" ry="11" fill="#3a2a40"/>`;
+function femaleHead(hij,hij2,glasses){
+  return `<path d="M36 140 C36 52 204 52 204 140 L214 222 C180 244 60 244 26 222 Z" fill="${hij}"/>
+  <ellipse cx="120" cy="148" rx="58" ry="62" fill="${hij2}"/>
+  <ellipse cx="120" cy="150" rx="52" ry="57" fill="${SKIN}"/>
+  <path d="M68 120 Q120 92 172 120 Q160 104 120 100 Q80 104 68 120Z" fill="${hij2}"/>
+  ${blush}${eyes(true)}${mouth}
+  ${glasses?`<g fill="none" stroke="#3d2b5a" stroke-width="4"><circle cx="97" cy="149" r="20"/><circle cx="143" cy="149" r="20"/><path d="M117 147 h6"/></g>`:''}`;
+}
+function chibi(kind){
+  let s='';
+  if(kind==='father'){
+    s=`${feet}
+    <path d="M72 196 L168 196 L196 408 L44 408 Z" fill="#ffffff" stroke="#d5d8e6" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M120 200 V300" stroke="#c9a96b" stroke-width="5"/><circle cx="120" cy="306" r="8" fill="#c9a96b"/>
+    ${arm('armA',72,'#fff','#d5d8e6')}${arm('armB',168,'#fff','#d5d8e6')}
+    <g class="head">
+      <circle cx="60" cy="152" r="12" fill="${SKIN2}"/><circle cx="180" cy="152" r="12" fill="${SKIN2}"/>
+      <circle cx="120" cy="146" r="62" fill="${SKIN}"/>
+      <path d="M60 150 C62 214 178 214 180 150 C172 196 68 196 60 150Z" fill="#3b2a24"/>
+      <path d="M100 172 Q120 164 140 172 Q120 178 100 172Z" fill="#3b2a24"/>
+      ${blush}${eyes(false)}${mouth}
+      <path d="M58 122 C58 58 182 58 182 122 Z" fill="#ffffff" stroke="#d5d8e6" stroke-width="3"/>
+      <path d="M60 116 H180" stroke="#9b4dde" stroke-width="5"/>
+      <g fill="#19a7ad">${[78,96,114,132,150,166].map((x,i)=>`<circle cx="${x}" cy="${100-(i%2)*8}" r="4"/>`).join('')}</g>
+      <g fill="#c2307f">${[87,105,123,141,159].map((x,i)=>`<circle cx="${x}" cy="${86+(i%2)*6}" r="3.5"/>`).join('')}</g>
+    </g>`;
+  } else {
+    const c={mother:['#9b59d0','#7d3fb5','#3d2a63','#2c1f4a'],teacher:['#1aa3a9','#13858a','#2f3f78','#22305e'],girl:['#ffffff','#e9e2f3','#1aa3a9','#13858a']}[kind];
+    s=`${feet}
+    <path d="M74 200 L166 200 L194 408 L46 408 Z" fill="${c[2]}" stroke="${c[3]}" stroke-width="4" stroke-linejoin="round"/>
+    ${kind==='girl'?`<path d="M96 210 L120 240 L144 210 Z" fill="#fff"/><rect x="58" y="300" width="124" height="14" fill="#7b2cbf"/>`:''}
+    ${kind==='teacher'?`<rect x="150" y="250" width="44" height="58" rx="6" fill="#ffc83d" stroke="#d99a00" stroke-width="3"/>`:''}
+    ${arm('armA',74,c[2],c[3])}${arm('armB',166,c[2],c[3])}
+    <g class="head">${femaleHead(c[0],c[1],kind==='teacher')}</g>`;
+  }
+  return s;
+}
+function makeChar(id,kind){return `<g id="${id}"><g transform="translate(-120,-425)">${chibi(kind)}</g></g>`}
+// state: x,y(feet),s,bob,armA,armB(deg; + = outward),blink(0..1 closed),talk(bool),head(deg),walk(phase or null)
+function setChar(id,o){
+  const g=$(id); if(!g) return;
+  const s=o.s||1, bob=o.bob||0;
+  g.setAttribute('transform',`translate(${o.x},${o.y-bob}) scale(${s})`);
+  const a=g.querySelector('.armA'), b=g.querySelector('.armB');
+  a.setAttribute('transform',`rotate(${o.armA||8},${g.querySelector('.armA rect').getAttribute('x')*1+14},208)`);
+  b.setAttribute('transform',`rotate(${-(o.armB||8)},${g.querySelector('.armB rect').getAttribute('x')*1+14},208)`);
+  const ey=g.querySelector('.eyes'); const bl=1-(o.blink||0)*.92;
+  ey.setAttribute('transform',`translate(0,148) scale(1,${bl}) translate(0,-148)`);
+  g.querySelector('.head').setAttribute('transform',`rotate(${o.head||0},120,200)`);
+  g.querySelector('.talk').setAttribute('opacity',o.talk?1:0);
+  g.querySelector('.smile').setAttribute('opacity',o.talk?0:1);
+  const w=o.walk;
+  g.querySelector('.fL').setAttribute('transform',w==null?'':`translate(0,${-Math.max(0,Math.sin(w))*10})`);
+  g.querySelector('.fR').setAttribute('transform',w==null?'':`translate(0,${-Math.max(0,-Math.sin(w))*10})`);
+}
+function blinkAt(t,off=0){const p=((t+off)%3.1);return p<.14?Math.sin(p/.14*Math.PI):0}
+
+// ===================== reusable SVG pieces =====================
+function palm(x,y,s){return `<g transform="translate(${x},${y}) scale(${s})">
+ <path d="M-10 0 Q-4 -120 6 -230 L18 -230 Q10 -120 12 0Z" fill="#a8743f"/>
+ ${[0,1,2,3,4,5,6].map(i=>`<path d="M-4 ${-30-i*28} h20" stroke="#8a5a2c" stroke-width="5"/>`).join('')}
+ <g class="frond" transform="translate(12,-232)">
+ ${[-150,-115,-75,-35,-5,30].map(a=>`<path d="M0 0 Q60 -30 120 20 Q60 -6 0 6Z" fill="#2bb673" transform="rotate(${a})"/>`).join('')}
+ <circle cx="0" cy="8" r="9" fill="#b9772f"/><circle cx="12" cy="12" r="9" fill="#b9772f"/></g></g>`}
+function cloud(id,x,y,s){return `<g id="${id}" transform="translate(${x},${y}) scale(${s})"><ellipse cx="0" cy="0" rx="90" ry="44" fill="#fff"/><ellipse cx="-60" cy="14" rx="60" ry="34" fill="#fff"/><ellipse cx="62" cy="16" rx="62" ry="32" fill="#fff"/><ellipse cx="10" cy="-28" rx="54" ry="40" fill="#fff"/></g>`}
+function heartPath(x,y,s,col){return `<path transform="translate(${x},${y}) scale(${s})" d="M0 28 C-36 4 -30 -26 -12 -26 C-4 -26 0 -18 0 -14 C0 -18 4 -26 12 -26 C30 -26 36 4 0 28Z" fill="${col}"/>`}
+
+// ===================== build scenes =====================
+// Scene 1 kids peeking
+$('s1kids').innerHTML = makeChar('k1','girl')+makeChar('k2','girl')+`<g id="k1hearts"></g>`;
+
+// Scene 2
+$('s2svg').innerHTML = `
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdb4ff"/><stop offset=".45" stop-color="#ffe5f1"/><stop offset="1" stop-color="#fff6e8"/></linearGradient></defs>
+<rect width="1080" height="1920" fill="url(#sky)"/>
+<g id="sun" transform="translate(860,560)"><g id="rays">${Array.from({length:12},(_,i)=>`<rect x="-8" y="-150" width="16" height="50" rx="8" fill="#ffd36b" transform="rotate(${i*30})"/>`).join('')}</g><circle r="86" fill="#ffc94a"/><circle r="70" fill="#ffd96e"/></g>
+${cloud('cl1',200,480,1)}${cloud('cl2',700,760,.7)}
+<path d="M0 1000 Q270 930 540 990 T1080 970 V1920 H0Z" fill="#c9eccf"/>
+<g transform="translate(40,700)">
+  <rect x="0" y="120" width="620" height="440" fill="#fbf7ff" stroke="#c9b3e8" stroke-width="6"/>
+  ${Array.from({length:13},(_,i)=>`<rect x="${i*48}" y="96" width="34" height="34" fill="#fbf7ff" stroke="#c9b3e8" stroke-width="5"/>`).join('')}
+  <rect x="0" y="120" width="620" height="22" fill="#e8dcfa"/>
+  ${[[40,190],[150,190],[400,190],[510,190],[40,330],[150,330],[400,330],[510,330]].map(([x,y])=>`<rect x="${x}" y="${y}" width="74" height="86" rx="6" fill="#9fdde0" stroke="#7fb7c2" stroke-width="5"/><path d="M${x+37} ${y} v86 M${x} ${y+43} h74" stroke="#7fb7c2" stroke-width="4"/>`).join('')}
+  <rect x="245" y="20" width="130" height="560" fill="#f2e9ff" stroke="#c9b3e8" stroke-width="6"/>
+  <path d="M245 20 h130 l-65 -60z" fill="#9b4dde"/>
+  <rect x="268" y="410" width="84" height="150" rx="42" fill="#7b2cbf"/>
+  <rect x="210" y="160" width="200" height="200" rx="18" fill="#fff" stroke="#9b4dde" stroke-width="6"/>
+  <text x="310" y="232" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="34" fill="#5a1f86">مدرسة</text>
+  <text x="310" y="280" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="28" fill="#5a1f86">أم مالك الأنصارية</text>
+  <text x="310" y="326" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="28" fill="#19a7ad">للبنات</text>
+  <rect x="-20" y="560" width="660" height="26" rx="8" fill="#d9c8f2"/>
+</g>
+${palm(760,1290,1.15)}${palm(-10,1330,.95)}
+<path d="M0 1380 Q540 1320 1080 1380 V1500 Q540 1440 0 1500Z" fill="#efe2cf"/>
+<g fill="#ff9ccd">${[[120,1600],[300,1700],[860,1640],[980,1760],[560,1800]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="12"/><circle cx="${x+16}" cy="${y+8}" r="9" fill="#ffd36b"/>`).join('')}</g>
+${makeChar('dad','father')}${makeChar('girl2','girl')}
+<g id="s2heart" opacity="0">${heartPath(0,0,2.2,'#e0569f')}</g>`;
+
+// Scene 3
+$('s3svg').innerHTML = `
+<rect width="1080" height="1920" fill="#f5eeff"/>
+<rect y="1180" width="1080" height="740" fill="#e9d9c4"/>
+<g transform="translate(140,170)">
+ <rect width="800" height="470" rx="26" fill="#1f7f84" stroke="#c99a5b" stroke-width="18"/>
+ <text x="400" y="80" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="52" fill="#fff">مستوى التقدّم</text>
+ <line x1="100" y1="400" x2="700" y2="400" stroke="#d6f3f4" stroke-width="5"/>
+ ${[0,1,2,3,4].map(i=>`<rect class="bar" data-h="${110+i*52}" x="${130+i*112}" y="400" width="70" height="0" rx="8" fill="${['#ffd36b','#ff9ccd','#c79bf2','#7fe0e4','#ffd36b'][i]}"/>`).join('')}
+ <g id="bstar" transform="translate(690,140)"><path d="M0 -44 l13 28 l31 3 l-24 20 l8 31 l-28 -17 l-28 17 l8 -31 l-24 -20 l31 -3z" fill="#ffd36b" stroke="#fff" stroke-width="4"/></g>
+</g>
+<g id="tch"></g>
+${makeChar('teacher','teacher')}${makeChar('mom','mother')}${makeChar('girl3','girl')}
+<g>
+ <rect x="60" y="1240" width="960" height="60" rx="20" fill="#b7835a"/>
+ <rect x="90" y="1300" width="900" height="260" rx="16" fill="#c9966b"/>
+ <rect x="300" y="1205" width="160" height="40" rx="6" fill="#fff" stroke="#c79bf2" stroke-width="4"/>
+ <rect x="320" y="1196" width="120" height="12" rx="4" fill="#9b4dde"/>
+ <g transform="translate(700,1190)"><rect x="0" y="0" width="70" height="55" rx="10" fill="#fff" stroke="#c79bf2" stroke-width="4"/><path d="M70 14 q22 0 22 16 q0 16 -22 16" stroke="#c79bf2" stroke-width="6" fill="none"/></g>
+</g>
+<g id="s3hearts"></g>`;
+
+// Scene 4 sapling + girl
+$('s4svg').innerHTML = `
+<path d="M0 520 Q540 470 1080 520 V760 H0Z" fill="#c9eccf"/>
+${makeChar('girl4','girl')}
+<g transform="translate(330,175) rotate(-20)" id="can"><path d="M-40 0 h70 v55 a8 8 0 0 1 -8 8 h-54 a8 8 0 0 1 -8 -8z" fill="#19a7ad"/><path d="M30 10 l55 -30" stroke="#19a7ad" stroke-width="12" stroke-linecap="round"/><path d="M-40 10 q-30 20 0 40" stroke="#13858a" stroke-width="8" fill="none"/></g>
+<g id="drops"></g>
+<g transform="translate(660,560)">
+  <path d="M-80 0 h160 l-22 120 h-116z" fill="#c2307f"/><rect x="-92" y="-14" width="184" height="30" rx="10" fill="#9b4dde"/>
+  <g id="plant"></g>
+</g>`;
+
+// Scene 6 family
+$('s6svg').innerHTML = `<g id="s6hearts"></g>`+makeChar('f_dad','father')+makeChar('f_mom','mother')+makeChar('f_girl','girl')+makeChar('f_tch','teacher');
+
+// ===================== background particles =====================
+(function(){const r=rng(7);let h='';for(let i=0;i<42;i++){const x=r()*1080,y=r()*1920,s=6+r()*16,c=['#c79bf2','#7fd6da','#ffc83d','#ff9ccd'][i%4];
+ h+=`<g class="pt" data-x="${x}" data-y="${y}" data-sp="${20+r()*50}" data-ph="${r()*6.28}"><path d="M0 ${-s} Q0 0 ${s} 0 Q0 0 0 ${s} Q0 0 ${-s} 0 Q0 0 0 ${-s}Z" fill="${c}"/></g>`}
+ $('bgfx').innerHTML=h})();
+const PTS=[...document.querySelectorAll('.pt')];
+
+// confetti
+(function(){const r=rng(99);let h='';for(let i=0;i<70;i++){h+=`<rect class="cf" data-x="${r()*1080}" data-v="${120+r()*180}" data-ph="${r()*6.28}" data-d="${r()*3}" width="${12+r()*10}" height="${20+r()*12}" rx="3" fill="${['#9b4dde','#19a7ad','#ffc83d','#e0569f','#7fd6da'][i%5]}"/>`}$('confetti').innerHTML=h})();
+const CFS=[...document.querySelectorAll('.cf')];
+
+// ===================== timeline =====================
+const S=[[0,6.2],[6.2,12.4],[12.4,18.8],[18.8,25.6],[25.6,31.6],[31.6,DURATION+1]];
+function seek(t){
+  // particles
+  PTS.forEach(p=>{const sp=+p.dataset.sp,ph=+p.dataset.ph;let y=((+p.dataset.y - t*sp)%2000+2000)%2000-40;
+    const x=+p.dataset.x+Math.sin(t*.8+ph)*20;const sc=.6+.4*Math.sin(t*2.4+ph);
+    p.setAttribute('transform',`translate(${x},${y}) rotate(${t*40+ph*30}) scale(${sc})`);p.setAttribute('opacity',.35+.4*Math.sin(t*1.7+ph)**2)});
+  S.forEach(([a,b],i)=>{$('s'+(i+1)).style.opacity= i===0? Math.min(1,1-P(t,b-.25,b+.25)) : sceneVis(t,a,b,.5)});
+  $('flash').style.opacity = Math.max(...S.slice(1).map(([a])=>.35*(1-Math.abs(t-a)/.3)),0);
+
+  // ---- S1
+  if(t<7){
+    slide($('s1logos'),t,.15,.8,0,-120);
+    const tx=P(t,.5,2.0); const ti=$('s1title');
+    ti.style.opacity=eOut(tx); ti.style.clipPath=`inset(0 0 0 ${(1-eInOut(tx))*100}%)`;
+    ti.style.transform=`scale(${lerp(.8,1,eBack(tx))}) translateY(${Math.sin(t*1.5)*8}px)`;
+    $('s1glow').style.transform=`scale(${.9+.1*Math.sin(t*2)})`; $('s1glow').style.opacity=eOut(tx);
+    pop($('s1h1'),t,1.9,.7); slide($('s1h2'),t,2.4,.6,0,50); pop($('s1school'),t,2.9,.7);
+    const kx=eOut(P(t,3.4,4.2));
+    setChar('k1',{x:170,y:470-kx*120,s:.85,blink:blinkAt(t),armA:lerp(8,140,kx)+Math.sin(t*9)*15*kx,armB:12});
+    setChar('k2',{x:910,y:470-kx*120,s:.85,blink:blinkAt(t,1.3),armB:lerp(8,140,kx)+Math.sin(t*9+1)*15*kx,armA:12});
+  }
+  // ---- S2
+  if(t>5.5&&t<13){
+    const lt=t-6.2;
+    $('rays').setAttribute('transform',`rotate(${t*12})`);
+    $('cl1').setAttribute('transform',`translate(${200+lt*14},480)`);$('cl2').setAttribute('transform',`translate(${720-lt*10},760) scale(.7)`);
+    document.querySelectorAll('#s2svg .frond').forEach((f,i)=>f.setAttribute('transform',`translate(12,-232) rotate(${Math.sin(t*1.6+i)*4})`));
+    const wp=P(t,6.4,10.6); const x=lerp(1250,560,eInOut(wp)); const walking=wp>0&&wp<1; const ph=t*11;
+    setChar('dad',{x:x+150,y:1560,s:1.1,bob:walking?Math.abs(Math.sin(ph))*12:0,walk:walking?ph:null,armA:walking?30+Math.sin(ph)*6:lerp(14,24,1),armB:walking?10-Math.sin(ph)*12:8,blink:blinkAt(t,.4),head:walking?0:-6});
+    setChar('girl2',{x:x-40,y:1580,s:.82,bob:walking?Math.abs(Math.sin(ph+1))*12:0,walk:walking?ph+1:null,armB:walking?34+Math.sin(ph)*6:28,armA:walking?12+Math.sin(ph)*14:8,blink:blinkAt(t,1.1),head:walking?4:8});
+    slide($('s2c1'),t,6.6,.6,0,-40); slide($('s2c2'),t,7.2,.6,0,-40);
+    const hp=P(t,10.6,11.4);const hg=$('s2heart');hg.setAttribute('opacity',hp>0?clamp(hp*3):0);
+    hg.setAttribute('transform',`translate(${x+60},${1060-hp*80}) scale(${eBack(hp)*(1+.06*Math.sin(t*8))})`);
+  }
+  // ---- S3
+  if(t>11.8&&t<19.4){
+    document.querySelectorAll('.bar').forEach((b,i)=>{const h=+b.dataset.h*eBack(P(t,12.8+i*.2,13.6+i*.2));b.setAttribute('height',Math.max(0,h));b.setAttribute('y',400-Math.max(0,h))});
+    const sp=P(t,14,14.6); $('bstar').setAttribute('transform',`translate(690,140) scale(${eBack(sp)}) rotate(${t*30})`);
+    const talkT=(a,b)=>t>a&&t<b&&Math.sin(t*22)>0;
+    setChar('teacher',{x:290,y:1330,s:1.15,blink:blinkAt(t,.2),talk:talkT(13.2,14.6)||talkT(16.4,17.8),armB:t>13.2&&t<14.8?60+Math.sin(t*6)*10:14,armA:10,head:Math.sin(t*1.5)*3});
+    setChar('mom',{x:770,y:1330,s:1.15,blink:blinkAt(t,1.6),talk:talkT(14.9,16.2),armA:t>14.9&&t<16.3?50+Math.sin(t*5)*10:12,armB:10,head:-Math.sin(t*1.3)*3});
+    const gj=P(t,17.9,18.3);
+    setChar('girl3',{x:925,y:1360-Math.sin(gj*Math.PI)*60,s:.8,blink:blinkAt(t,.9),armA:gj>0?150:12,armB:gj>0?150:12,head:-6});
+    const bub=(el,a,b)=>{const v=Math.min(eBack(P(t,a,a+.45)),1-P(t,b-.2,b));el.style.opacity=clamp(v*2);el.style.transform=`scale(${Math.max(0,v)})`;el.style.transformOrigin='50% 120%'};
+    bub($('s3b1'),13.1,14.8); bub($('s3b2'),14.8,16.3); bub($('s3b3'),16.3,18.6);
+    slide($('s3c1'),t,13,.6,0,50); slide($('s3c2'),t,13.5,.6,0,50);
+    let hh='';const r=rng(5);for(let i=0;i<8;i++){const st=17.9+i*.08,pp=P(t,st,st+1.2);if(pp>0)hh+=`<g opacity="${1-pp}">${heartPath(520+(r()-.5)*500,1050-pp*420,.9+r()*.8,i%2?'#e0569f':'#9b4dde')}</g>`}
+    $('s3hearts').innerHTML=hh;
+  }
+  // ---- S4
+  if(t>18.2&&t<26.2){
+    pop($('s4h'),t,19,.6);
+    ['w1','w2','w3','w4'].forEach((id,i)=>slide($(id),t,19.6+i*.9,.6,-260,0));
+    document.querySelectorAll('.why .ic').forEach((e,i)=>e.style.transform=`scale(${1+.06*Math.sin(t*4+i)})`);
+    setChar('girl4',{x:250,y:560,s:.9,blink:blinkAt(t),armB:70+Math.sin(t*3)*6,armA:12,head:6});
+    $('can').setAttribute('transform',`translate(440,${380+Math.sin(t*3)*4}) rotate(${-10+Math.sin(t*3)*5})`);
+    let d='';for(let i=0;i<6;i++){const ph=((t*1.6+i/6)%1);d+=`<ellipse cx="${525+ph*90+(i%3)*10}" cy="${355+ph*190}" rx="6" ry="10" fill="#4fc3f7" opacity="${1-ph}"/>`}$('drops').innerHTML=d;
+    const g=P(t,19.4,23.8),h=40+g*300;
+    let pl=`<path d="M0 0 Q${Math.sin(t*2)*8} ${-h/2} 0 ${-h}" stroke="#2f9e5b" stroke-width="14" fill="none" stroke-linecap="round"/>`;
+    for(let i=0;i<4;i++){const lp=eBack(P(t,19.8+i*.9,20.4+i*.9));if(lp>0){const y=-60-i*65,side=i%2?1:-1;pl+=`<path transform="translate(0,${y}) scale(${side*lp},${lp}) rotate(${-25+Math.sin(t*2+i)*6})" d="M0 0 Q40 -40 90 -10 Q40 20 0 0Z" fill="${['#9b4dde','#19a7ad','#e0569f','#e6a91c'][i]}"/>`}}
+    const fp=eBack(P(t,23.6,24.3));if(fp>0)pl+=`<g transform="translate(0,${-h-10}) scale(${fp}) rotate(${t*20})">${[0,72,144,216,288].map(a=>`<ellipse rx="16" ry="30" cy="-26" fill="#ff9ccd" transform="rotate(${a})"/>`).join('')}<circle r="16" fill="#ffc83d"/></g>`;
+    $('plant').innerHTML=pl;
+    slide($('s4c'),t,23.2,.6,0,40);
+  }
+  // ---- S5
+  if(t>25&&t<32.2){
+    const cp=P(t,25.7,26.5);$('s5card').style.transform=`scale(${lerp(.7,1,eBack(cp))}) rotate(${(1-eOut(cp))*-4}deg)`;$('s5card').style.opacity=clamp(cp*2);
+    ['r1','r2','r3'].forEach((id,i)=>slide($(id),t,26.6+i*.6,.55,200,0));
+    document.querySelectorAll('.row .ic').forEach((e,i)=>e.style.transform=`rotate(${Math.sin(t*3+i)*6}deg)`);
+    pop($('s5c'),t,28.6,.6);
+    $('s5c').style.transform+=` scale(${1+.04*Math.sin(t*6)})`;
+    CFS.forEach(c=>{const lt=t-25.7-(+c.dataset.d)*.3;if(lt<0){c.setAttribute('opacity',0);return}
+      const y=-60+lt*+c.dataset.v;const x=+c.dataset.x+Math.sin(lt*2+ +c.dataset.ph)*40;
+      c.setAttribute('opacity',y<1980?1:0);c.setAttribute('transform',`translate(${x},${y%1980}) rotate(${lt*180+ +c.dataset.ph*60})`)});
+  }
+  // ---- S6
+  if(t>31){
+    slide($('s6logos'),t,31.8,.7,0,-100);
+    const tp=P(t,32.0,32.9);$('s6title').style.opacity=tp;$('s6title').style.transform=`scale(${lerp(.6,1,eBack(tp))})`;
+    pop($('s6slogan'),t,32.5,.7);
+    const wave=(st)=>{const p=eOut(P(t,st,st+.5));return {up:(1-p)*300,arm:lerp(10,150,p)+Math.sin(t*8+st)*16*p}};
+    let w;
+    w=wave(33.0);setChar('f_tch',{x:150,y:510+w.up,s:.92,blink:blinkAt(t,.3),armA:w.arm});
+    w=wave(33.2);setChar('f_dad',{x:420,y:510+w.up,s:.95,blink:blinkAt(t,.9),armB:w.arm});
+    w=wave(33.4);setChar('f_girl',{x:640,y:510+w.up-Math.abs(Math.sin(t*4))*16*P(t,33.9,34),s:.74,blink:blinkAt(t,1.7),armA:w.arm,armB:w.arm});
+    w=wave(33.6);setChar('f_mom',{x:880,y:510+w.up,s:.92,blink:blinkAt(t,2.2),armA:w.arm});
+    slide($('s6soc'),t,34.0,.6,0,80); slide($('s6names'),t,34.4,.6,0,80);
+    let hh='';const r=rng(11);for(let i=0;i<10;i++){const st=34+i*.25,pp=((t-st)%2.5)/2.5;if(t>st)hh+=`<g opacity="${1-pp}">${heartPath(100+r()*880,300-pp*260,.6+r()*.6,['#e0569f','#9b4dde','#19a7ad'][i%3])}</g>`}
+    $('s6hearts').innerHTML=hh;
+    $('stage').style.filter=`brightness(${1+P(t,DURATION-.6,DURATION)*0})`;
+  }
+}
+window.seek=seek; window.DURATION=DURATION;
+document.fonts.ready.then(()=>{window.READY=true});
+const q=new URLSearchParams(location.search);if(q.has('t'))seek(+q.get('t'));
+</script>
+</body>
+</html>

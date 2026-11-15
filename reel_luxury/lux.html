@@ -52,7 +52,7 @@ svg .draw{fill:none;stroke-linecap:round;stroke-linejoin:round}
     <img id="s1title" class="abs" src="title_gold.png" style="left:250px;top:400px;width:580px;filter:drop-shadow(0 8px 30px rgba(0,0,0,.5))">
     <div id="a1" class="line amiri" style="top:1180px;font-size:76px;color:#9fe3e6"></div>
     <div id="a2" class="line ruqaa gold" style="top:1290px;font-size:122px;line-height:1.5"></div>
-    <svg id="a2heart" class="abs" width="200" height="200" viewBox="0 0 100 100" style="left:440px;top:1560px"></svg>
+    <svg id="a2heart" class="abs" width="200" height="200" viewBox="0 0 100 100" style="left:440px;top:1490px"></svg>
   </div>
 
   <!-- S2 B -->
@@ -93,7 +93,7 @@ svg .draw{fill:none;stroke-linecap:round;stroke-linejoin:round}
       <div id="f2" class="irow"><div class="ic"><svg width="74" height="74" viewBox="0 0 64 64" data-ic="clock"></svg></div><div class="tx">من الساعة <span class="gold">٢:٣٠</span><br><span id="f2b">حتى الساعة <span class="gold">٤:٠٠</span> مساءً</span></div></div>
       <div id="g1" class="irow"><div class="ic"><svg width="74" height="74" viewBox="0 0 64 64" data-ic="pin"></svg></div><div class="tx">مدرسة أم مالك الأنصارية<br><span class="gold">للبنات (٥-٦)</span></div></div>
     </div>
-    <div id="e3" class="line amiri" style="top:1640px;font-size:64px;color:#f6dc8e">بانتظار حضوركم الكريم</div>
+    <div id="e3" class="line amiri" style="top:1580px;font-size:64px;color:#f6dc8e">بانتظار حضوركم الكريم</div>
   </div>
 
   <!-- S6 outro -->
@@ -118,12 +118,27 @@ svg .draw{fill:none;stroke-linecap:round;stroke-linejoin:round}
     </div>
     <div id="o_logos" class="abs" style="left:50px;right:50px;top:1480px;height:180px;border-radius:30px;background:rgba(255,255,255,.96);
       border:3px solid #e9c46a;display:flex;align-items:center;justify-content:center"><img src="logos.png" style="width:900px"></div>
-    <div id="o_school" class="line" style="top:1700px;font-size:46px;font-weight:800;color:#cbb7e6">مدرسة أم مالك الأنصارية للبنات (٥-٦)</div>
+  </div>
+  <div id="sig" class="abs" style="left:110px;right:110px;top:1735px;height:136px;border-radius:70px;display:flex;align-items:center;gap:22px;padding:0 14px 0 40px;
+    background:linear-gradient(135deg,rgba(42,13,74,.92),rgba(20,8,40,.92));border:2.5px solid rgba(233,196,106,.85);box-shadow:0 12px 40px rgba(0,0,0,.45),0 0 30px rgba(233,196,106,.18);overflow:hidden">
+    <div id="medal" style="position:relative;width:118px;height:118px;flex:none">
+      <svg width="118" height="118" viewBox="0 0 118 118" style="position:absolute;inset:0"><circle id="ring" cx="59" cy="59" r="56" pathLength="1" fill="none" stroke="#f6dc8e" stroke-width="3.5" stroke-dasharray="1"/></svg>
+      <div style="position:absolute;inset:7px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden">
+        <img src="school_logo.png" style="width:86px"><div id="mshine" style="position:absolute;top:-20px;bottom:-20px;width:40px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);transform:rotate(20deg)"></div></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;line-height:1.15">
+      <div style="font-size:30px;font-weight:700;color:#9fe3e6">تابعونا على إكس وإنستغرام</div>
+      <div style="display:flex;align-items:center;gap:14px;direction:ltr;justify-content:flex-end">
+        <div id="sigicons" style="display:flex;gap:10px"></div>
+        <div class="gold" style="font-size:48px;font-weight:900;letter-spacing:.5px">@edugovnbt2264</div>
+      </div>
+    </div>
+    <div id="sigsweep" style="position:absolute;top:0;bottom:0;width:160px;background:linear-gradient(90deg,transparent,rgba(255,240,200,.18),transparent)"></div>
   </div>
   <div id="flash" class="abs" style="inset:0;background:#fff3c4;opacity:0"></div>
 </div>
 <script>
-const CONFIG={handle:'@school_account',socials:['ig','x','tt','wa']};
+const CONFIG={handle:'@edugovnbt2264',socials:['ig','x']};
 const V=2.4; // voice offset
 const DURATION=54;
 const $=id=>document.getElementById(id);
@@ -169,7 +184,7 @@ const SOC={
  x:`<svg width="74" height="74" viewBox="0 0 74 74"><rect x="3" y="3" width="68" height="68" rx="20" fill="none" stroke="#f6dc8e" stroke-width="5"/><path d="M22 20 L52 54 M52 20 L22 54" stroke="#f6dc8e" stroke-width="6" stroke-linecap="round"/></svg>`,
  tt:`<svg width="74" height="74" viewBox="0 0 74 74"><rect x="3" y="3" width="68" height="68" rx="20" fill="none" stroke="#f6dc8e" stroke-width="5"/><path d="M40 18 v28 a9 9 0 1 1 -9 -9 M40 18 q2 10 13 11" stroke="#f6dc8e" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`,
  wa:`<svg width="74" height="74" viewBox="0 0 74 74"><rect x="3" y="3" width="68" height="68" rx="20" fill="none" stroke="#f6dc8e" stroke-width="5"/><path d="M37 16 a21 21 0 0 0 -18 31 l-3 11 l11 -3 a21 21 0 1 0 10 -39z" fill="none" stroke="#f6dc8e" stroke-width="5" stroke-linejoin="round"/></svg>`};
-$('socicons').innerHTML=CONFIG.socials.map(k=>SOC[k]).join('');$('handle').textContent=CONFIG.handle;
+$('socicons').innerHTML=CONFIG.socials.map(k=>SOC[k]).join('');$('sigicons').innerHTML=CONFIG.socials.map(k=>SOC[k].replace(/width="74" height="74"/,'width="52" height="52"')).join('');$('handle').textContent=CONFIG.handle;
 
 // texts
 words('a1','وليَّ الأمرِ الكريم');
@@ -228,6 +243,14 @@ function seek(t){
   $('flash').style.opacity=Math.max(0,...S.slice(1).map(([a])=>.12*(1-Math.abs(t-a)/.35)));
   document.querySelectorAll('.gold').forEach(g=>shine(g,t));
 
+  { // persistent signature bar
+    const sg=$('sig'),x=eOut(P(t,.5,1.3));sg.style.opacity=x;sg.style.transform=`translateY(${(1-x)*160}px)`;
+    $('ring').style.strokeDashoffset=1-eInOut(P(t,1.0,2.2));
+    $('medal').style.transform=`scale(${lerp(.4,1,eBack(P(t,1.0,1.7)))})`;
+    $('medal').style.filter=`drop-shadow(0 0 ${8+8*Math.sin(t*2.2)}px rgba(246,220,142,.65))`;
+    const mp=(t%4)/1.0;$('mshine').style.left=(mp<1?lerp(-60,130,mp):-80)+'px';
+    $('sigsweep').style.left=(((t*0.25)%1.4)*1100-200)+'px';
+  }
   if(t<C.b1+1){ // S1
     const lo=$('s1logos');fadeUp(lo,t,.1,.9,-80);
     const tp=P(t,.3,2.0);const ti=$('s1title');ti.style.opacity=eOut(tp);ti.style.clipPath=`inset(${(1-eInOut(tp))*100}% 0 0 0)`;
@@ -268,7 +291,7 @@ function seek(t){
     kin('h1',t,C.h,.3,.8,'zoom');
     const ip=P(t,C.i-.2,C.i+1.2);const it=$('i_title');it.style.opacity=eOut(ip);it.style.clipPath=`inset(${(1-eInOut(ip))*100}% 0 0 0)`;it.style.transform=`scale(${lerp(.85,1,eOut(ip))*(1+.015*Math.sin(t*2))})`;
     $('i_halo').style.opacity=eOut(ip)*(.7+.3*Math.sin(t*2));
-    fadeUp($('o_soc'),t,C.end+.2,.7,80);fadeUp($('o_names'),t,C.end+.6,.7,80);fadeUp($('o_logos'),t,C.end+1.0,.7,80);fadeUp($('o_school'),t,C.end+1.4,.7,40);
+    fadeUp($('o_soc'),t,C.end+.2,.7,80);fadeUp($('o_names'),t,C.end+.6,.7,80);fadeUp($('o_logos'),t,C.end+1.0,.7,80);
   }
 }
 window.seek=seek;window.DURATION=DURATION;

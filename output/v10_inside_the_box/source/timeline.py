@@ -2,7 +2,7 @@
 import numpy as np, wave, json, os, re
 HERE=os.path.dirname(os.path.abspath(__file__))
 OFF=1.0
-VOICE_LEN=50.0
+VOICE_LEN=54.79
 FPS=30
 # (spoken text, start, end, gold keywords, on-screen caption)
 PHRASES=[

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Lux Reel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&family=Aref+Ruqaa:wght@700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#140726}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Cairo',sans-serif;color:#fff;
+  background:radial-gradient(120% 70% at 50% 38%,#4a1c78 0%,#2a0d4a 45%,#160830 75%,#0b2a33 100%)}
+.abs{position:absolute}
+.scene{position:absolute;inset:0;opacity:0}
+.gold{background:linear-gradient(100deg,#b8862f 0%,#f6dc8e 22%,#fff6d2 30%,#e9c46a 40%,#b8862f 60%,#f3d27a 80%,#b8862f 100%);
+  background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.ruqaa{font-family:'Aref Ruqaa',serif}
+.amiri{font-family:'Amiri',serif}
+.center{left:0;right:0;text-align:center}
+.w{display:inline-block;margin:0;padding:0 .04em;will-change:transform,opacity,filter}
+.line{position:absolute;left:60px;right:60px;text-align:center}
+.goldbar{height:4px;background:linear-gradient(90deg,transparent,#e9c46a,#fff3c4,#e9c46a,transparent)}
+.icard{position:absolute;left:80px;right:80px;height:250px;display:flex;align-items:center;gap:44px;padding:0 50px;border-radius:36px;
+  background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.03));border:2px solid rgba(233,196,106,.55);
+  box-shadow:0 20px 60px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.15)}
+.icard .ic{width:160px;height:160px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 35% 30%,rgba(233,196,106,.28),rgba(233,196,106,.05));border:2px solid rgba(233,196,106,.6)}
+.icard .tx{font-size:56px;font-weight:900;line-height:1.3}
+.icard .tx small{display:block;font-size:38px;font-weight:600;color:#9fe3e6}
+.irow{display:flex;align-items:center;gap:36px;padding:28px 44px;margin:0 70px 30px;border-radius:30px;
+  background:rgba(255,255,255,.06);border:2px solid rgba(233,196,106,.45)}
+.irow .ic{width:120px;height:120px;flex:none;border-radius:28px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#e9c46a,#b8862f)}
+.irow .tx{font-size:54px;font-weight:900;line-height:1.3}
+svg .draw{fill:none;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="pattern" class="abs" width="1080" height="1920" style="left:0;top:0"></svg>
+  <div id="sweep" class="abs" style="left:-600px;top:-200px;width:500px;height:2400px;transform:rotate(18deg);
+    background:linear-gradient(90deg,transparent,rgba(255,236,180,.10),transparent)"></div>
+  <svg id="dust" class="abs" width="1080" height="1920" style="left:0;top:0"></svg>
+  <svg id="frame" class="abs" width="1080" height="1920" style="left:0;top:0"></svg>
+
+  <!-- S1 intro + A -->
+  <div id="s1" class="scene">
+    <div id="s1logos" class="abs" style="left:50px;right:50px;top:90px;height:190px;border-radius:30px;background:rgba(255,255,255,.96);
+      border:3px solid #e9c46a;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 50px rgba(0,0,0,.4)">
+      <img src="logos.png" style="width:930px"></div>
+    <div id="s1halo" class="abs" style="left:140px;top:360px;width:800px;height:800px;border-radius:50%;
+      background:radial-gradient(circle,rgba(233,196,106,.35),rgba(233,196,106,0) 65%)"></div>
+    <img id="s1title" class="abs" src="title_gold.png" style="left:250px;top:400px;width:580px;filter:drop-shadow(0 8px 30px rgba(0,0,0,.5))">
+    <div id="a1" class="line amiri" style="top:1180px;font-size:76px;color:#9fe3e6"></div>
+    <div id="a2" class="line ruqaa gold" style="top:1290px;font-size:122px;line-height:1.5"></div>
+    <svg id="a2heart" class="abs" width="200" height="200" viewBox="0 0 100 100" style="left:440px;top:1560px"></svg>
+  </div>
+
+  <!-- S2 B -->
+  <div id="s2" class="scene">
+    <svg id="b_icon" class="abs" width="420" height="420" viewBox="0 0 120 120" style="left:330px;top:260px"></svg>
+    <div id="b1" class="line" style="top:760px;font-size:80px;font-weight:900"></div>
+    <div id="b1b" class="line" style="top:880px;font-size:66px;font-weight:700;color:#cbb7e6"></div>
+    <div id="b_bar" class="abs goldbar" style="left:240px;right:240px;top:1040px"></div>
+    <div id="b2" class="line ruqaa gold" style="top:1090px;font-size:128px;line-height:1.5"></div>
+    <div id="b3" class="line ruqaa gold" style="top:1290px;font-size:128px;line-height:1.5"></div>
+  </div>
+
+  <!-- S3 C -->
+  <div id="s3" class="scene">
+    <div id="c0" class="line" style="top:170px;font-size:76px;font-weight:900"></div>
+    <div id="c0b" class="abs goldbar" style="left:300px;right:300px;top:300px"></div>
+    <div id="c1" class="icard" style="top:420px"><div class="ic"><svg width="110" height="110" viewBox="0 0 64 64" data-ic="chart"></svg></div><div class="tx"><span class="gold">مستوى ابنتك</span><small>تتعرّف عليه عن قرب</small></div></div>
+    <div id="c2" class="icard" style="top:720px"><div class="ic"><svg width="110" height="110" viewBox="0 0 64 64" data-ic="shield"></svg></div><div class="tx"><span class="gold">سلوكها</span><small>تدعمه وتوجّهه معنا</small></div></div>
+    <div id="c3" class="icard" style="top:1020px"><div class="ic"><svg width="110" height="110" viewBox="0 0 64 64" data-ic="trophy"></svg></div><div class="tx"><span class="gold">تميّزها</span><small>تحفّزها نحو القمّة</small></div></div>
+    <div id="c4" class="line amiri" style="top:1380px;font-size:66px;color:#9fe3e6">ابنتكِ تكبر.. باهتمامك</div>
+  </div>
+
+  <!-- S4 D -->
+  <div id="s4" class="scene">
+    <svg id="d_svg" class="abs" width="1080" height="700" viewBox="0 0 1080 700" style="left:0;top:330px"></svg>
+    <div id="d1" class="line" style="top:1080px;font-size:84px;font-weight:900"></div>
+    <div id="d2" class="line ruqaa gold" style="top:1200px;font-size:100px;line-height:1.5"></div>
+  </div>
+
+  <!-- S5 invitation -->
+  <div id="s5" class="scene">
+    <div id="e0" class="line" style="top:150px;font-size:58px;font-weight:800;color:#9fe3e6"></div>
+    <div id="e1" class="center abs ruqaa gold" style="top:240px;font-size:170px;line-height:1.5">اللقاء التربوي</div>
+    <div id="e2" class="line" style="top:515px;font-size:52px;font-weight:800;white-space:nowrap"></div>
+    <div id="e_bar" class="abs goldbar" style="left:200px;right:200px;top:630px"></div>
+    <div class="abs" style="left:0;right:0;top:700px">
+      <div id="f1" class="irow"><div class="ic"><svg width="74" height="74" viewBox="0 0 64 64" data-ic="cal"></svg></div><div class="tx">الخميس<br><span class="gold">١٩ نوفمبر ٢٠٢٦م</span></div></div>
+      <div id="f2" class="irow"><div class="ic"><svg width="74" height="74" viewBox="0 0 64 64" data-ic="clock"></svg></div><div class="tx">من الساعة <span class="gold">٢:٣٠</span><br><span id="f2b">حتى الساعة <span class="gold">٤:٠٠</span> مساءً</span></div></div>
+      <div id="g1" class="irow"><div class="ic"><svg width="74" height="74" viewBox="0 0 64 64" data-ic="pin"></svg></div><div class="tx">مدرسة أم مالك الأنصارية<br><span class="gold">للبنات (٥-٦)</span></div></div>
+    </div>
+    <div id="e3" class="line amiri" style="top:1640px;font-size:64px;color:#f6dc8e">بانتظار حضوركم الكريم</div>
+  </div>
+
+  <!-- S6 outro -->
+  <div id="s6" class="scene">
+    <div id="h1" class="line ruqaa gold" style="top:150px;font-size:118px;white-space:nowrap;line-height:1.5"></div>
+    <div id="i_halo" class="abs" style="left:240px;top:420px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(233,196,106,.3),rgba(233,196,106,0) 65%)"></div>
+    <img id="i_title" class="abs" src="title_gold.png" style="left:340px;top:440px;width:400px">
+    <div id="o_soc" class="abs" style="left:60px;right:60px;top:1010px;height:160px;border-radius:30px;display:flex;align-items:center;justify-content:center;gap:24px;
+      background:rgba(255,255,255,.07);border:2px solid rgba(233,196,106,.5)">
+      <div style="font-size:42px;font-weight:800;color:#9fe3e6">تابعونا</div>
+      <div id="socicons" style="display:flex;gap:16px"></div>
+      <div id="handle" dir="ltr" style="font-size:44px;font-weight:900;color:#f6dc8e"></div>
+    </div>
+    <div id="o_names" class="abs" style="left:60px;right:60px;top:1210px;height:220px;border-radius:30px;display:flex;
+      background:rgba(255,255,255,.07);border:2px solid rgba(233,196,106,.5)">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:2px solid rgba(233,196,106,.4)">
+        <div style="font-size:40px;font-weight:700;color:#9fe3e6">مديرة المدرسة</div>
+        <div class="gold" style="font-size:54px;font-weight:900">أ. أحلام الحمداني</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-size:40px;font-weight:700;color:#9fe3e6">مساعدة المديرة</div>
+        <div class="gold" style="font-size:54px;font-weight:900">أ. فاطمة البادي</div></div>
+    </div>
+    <div id="o_logos" class="abs" style="left:50px;right:50px;top:1480px;height:180px;border-radius:30px;background:rgba(255,255,255,.96);
+      border:3px solid #e9c46a;display:flex;align-items:center;justify-content:center"><img src="logos.png" style="width:900px"></div>
+    <div id="o_school" class="line" style="top:1700px;font-size:46px;font-weight:800;color:#cbb7e6">مدرسة أم مالك الأنصارية للبنات (٥-٦)</div>
+  </div>
+  <div id="flash" class="abs" style="inset:0;background:#fff3c4;opacity:0"></div>
+</div>
+<script>
+const CONFIG={handle:'@school_account',socials:['ig','x','tt','wa']};
+const V=2.4; // voice offset
+const DURATION=54;
+const $=id=>document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const P=(t,a,b)=>clamp((t-a)/(b-a));
+const eOut=x=>1-Math.pow(1-x,3), eInOut=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eBack=x=>{const c=1.6;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+function rng(s){return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646}}
+function vis(t,a,b,f=.6){return Math.min(P(t,a-f/2,a+f/2),1-P(t,b-f/2,b+f/2))}
+
+// kinetic words
+function words(id,text){const el=$(id),g=el.classList.contains('gold');if(g)el.classList.remove('gold');el.innerHTML=text.split(' ').map(w=>`<span class="w${g?' gold':''}">${w}</span>`).join(' ')}
+function kin(id,t,a,step=.16,d=.6,mode='rise'){
+  [...$(id).querySelectorAll('.w')].forEach((w,i)=>{const x=P(t,a+i*step,a+i*step+d);const e=eOut(x);
+    w.style.opacity=clamp(x*1.6);
+    if(mode==='rise')w.style.transform=`translateY(${(1-e)*70}px) scale(${lerp(.85,1,e)})`;
+    if(mode==='zoom')w.style.transform=`scale(${lerp(1.8,1,eOut(x))})`;
+    w.style.filter=`blur(${(1-e)*14}px)`;
+    
+  })}
+function fadeUp(el,t,a,d=.7,dy=60){const x=eOut(P(t,a,a+d));el.style.opacity=x;el.style.transform=`translateY(${(1-x)*dy}px)`}
+function shine(el,t,sp=.22){el.style.backgroundPosition=`${(t*sp*100)%300}% 0`}
+
+// icons (line style, pathLength draw)
+const IC={
+ chart:'<path pathLength="1" d="M10 54 H56"/><path pathLength="1" d="M16 46 V36 M28 46 V28 M40 46 V22 M52 46 V12"/><path pathLength="1" d="M12 26 L26 16 L36 22 L54 6 M46 6 H54 V14"/>',
+ shield:'<path pathLength="1" d="M32 6 L54 14 V30 C54 44 44 54 32 58 C20 54 10 44 10 30 V14 Z"/><path pathLength="1" d="M22 31 L29 38 L43 24"/>',
+ trophy:'<path pathLength="1" d="M20 8 H44 V24 A12 12 0 0 1 20 24 Z"/><path pathLength="1" d="M20 13 H10 A9 9 0 0 0 22 30 M44 13 H54 A9 9 0 0 1 42 30"/><path pathLength="1" d="M32 36 V46 M22 56 H42 L39 46 H25 Z"/>',
+ cal:'<rect pathLength="1" x="8" y="12" width="48" height="44" rx="8"/><path pathLength="1" d="M8 26 H56 M20 6 V16 M44 6 V16 M20 38 h6 M30 38 h6 M40 38 h6 M20 47 h6 M30 47 h6"/>',
+ clock:'<circle pathLength="1" cx="32" cy="32" r="25"/><path pathLength="1" d="M32 16 V32 L43 39"/>',
+ pin:'<path pathLength="1" d="M32 58 C18 42 12 33 12 24 a20 20 0 0 1 40 0 C52 33 46 42 32 58Z"/><circle pathLength="1" cx="32" cy="24" r="7"/>',
+ heart:'<path pathLength="1" d="M50 86 C14 62 8 42 16 28 C24 14 44 16 50 32 C56 16 76 14 84 28 C92 42 86 62 50 86Z"/>',
+ letter:'<rect pathLength="1" x="14" y="34" width="92" height="64" rx="8"/><path pathLength="1" d="M14 40 L60 74 L106 40"/><path pathLength="1" d="M60 26 C46 10 30 22 40 34 L60 50 L80 34 C90 22 74 10 60 26Z"/>'
+};
+document.querySelectorAll('[data-ic]').forEach(s=>{const dark=s.closest('.irow');s.innerHTML=`<g class="draw" stroke="${dark?'#2a0d4a':'#f6dc8e'}" stroke-width="${dark?5:4}">${IC[s.dataset.ic]}</g>`});
+$('a2heart').innerHTML=`<g class="draw" stroke="#f6dc8e" stroke-width="4">${IC.heart}</g>`;
+$('b_icon').innerHTML=`<circle cx="60" cy="62" r="56" fill="rgba(233,196,106,.08)" stroke="rgba(233,196,106,.5)" stroke-width="1.2"/><g class="draw" stroke="#f6dc8e" stroke-width="3.2">${IC.letter}</g>`;
+function drawIcons(root,t,a,d=1){root.querySelectorAll('[pathLength]').forEach((p,i)=>{const x=eInOut(P(t,a+i*.12,a+i*.12+d));p.style.strokeDasharray='1';p.style.strokeDashoffset=1-x})}
+
+const SOC={
+ ig:`<svg width="74" height="74" viewBox="0 0 74 74"><rect x="3" y="3" width="68" height="68" rx="20" fill="none" stroke="#f6dc8e" stroke-width="5"/><circle cx="37" cy="37" r="13" fill="none" stroke="#f6dc8e" stroke-width="5"/><circle cx="54" cy="20" r="4" fill="#f6dc8e"/></svg>`,
+ x:`<svg width="74" height="74" viewBox="0 0 74 74"><rect x="3" y="3" width="68" height="68" rx="20" fill="none" stroke="#f6dc8e" stroke-width="5"/><path d="M22 20 L52 54 M52 20 L22 54" stroke="#f6dc8e" stroke-width="6" stroke-linecap="round"/></svg>`,
+ tt:`<svg width="74" height="74" viewBox="0 0 74 74"><rect x="3" y="3" width="68" height="68" rx="20" fill="none" stroke="#f6dc8e" stroke-width="5"/><path d="M40 18 v28 a9 9 0 1 1 -9 -9 M40 18 q2 10 13 11" stroke="#f6dc8e" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`,
+ wa:`<svg width="74" height="74" viewBox="0 0 74 74"><rect x="3" y="3" width="68" height="68" rx="20" fill="none" stroke="#f6dc8e" stroke-width="5"/><path d="M37 16 a21 21 0 0 0 -18 31 l-3 11 l11 -3 a21 21 0 1 0 10 -39z" fill="none" stroke="#f6dc8e" stroke-width="5" stroke-linejoin="round"/></svg>`};
+$('socicons').innerHTML=CONFIG.socials.map(k=>SOC[k]).join('');$('handle').textContent=CONFIG.handle;
+
+// texts
+words('a1','وليَّ الأمرِ الكريم');
+words('a2','ابنتُك تنتظرُ حضورَك');
+words('b1','زيارتُك للمدرسة');
+words('b1b','ليست موعداً عابراً..');
+words('b2','بل رسالةُ حبٍّ');
+words('b3','واهتمام');
+words('c0','حين تلتقي بالمعلّمات..');
+words('d1','البيتُ والمدرسة');
+words('d2','شريكان في صناعة المستقبل');
+words('e0','يسعدنا دعوتكم لحضور');
+words('e2','بين أولياء الأمور والهيئة التعليمية');
+words('h1','حضورُك.. يصنعُ الفرق');
+
+// background islamic star pattern
+(function(){let h='<defs><pattern id="star" width="180" height="180" patternUnits="userSpaceOnUse"><g fill="none" stroke="#e9c46a" stroke-width="1.6">'+
+ '<path d="M90 30 L107 73 L150 90 L107 107 L90 150 L73 107 L30 90 L73 73Z"/><path d="M48 48 L90 62 L132 48 L118 90 L132 132 L90 118 L48 132 L62 90Z"/>'+
+ '<circle cx="90" cy="90" r="16"/><path d="M0 0 L30 30 M180 0 L150 30 M0 180 L30 150 M180 180 L150 150"/></g></pattern>'+
+ '<radialGradient id="pmask" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#fff" stop-opacity=".0"/><stop offset=".55" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="1"/></radialGradient>'+
+ '<mask id="m"><rect width="1080" height="1920" fill="url(#pmask)"/></mask></defs>'+
+ '<g mask="url(#m)"><rect id="patrect" x="-400" y="-400" width="1880" height="2720" fill="url(#star)" opacity=".16"/></g>';
+ $('pattern').innerHTML=h;
+ // corner ornaments frame
+ const corner=(x,y,r)=>`<g transform="translate(${x},${y}) rotate(${r})"><path d="M0 0 H150 M0 0 V150" stroke="#e9c46a" stroke-width="3"/><path d="M14 14 H110 M14 14 V110" stroke="#e9c46a" stroke-width="1.5" opacity=".7"/><path d="M14 14 L44 44" stroke="#e9c46a" stroke-width="1.5"/><circle cx="44" cy="44" r="7" fill="none" stroke="#e9c46a" stroke-width="2"/></g>`;
+ $('frame').innerHTML=`<g id="fr" opacity=".85">${corner(28,28,0)}${corner(1052,28,90)}${corner(1052,1892,180)}${corner(28,1892,270)}</g>`;
+ const r=rng(3);let d='';for(let i=0;i<70;i++){d+=`<circle class="du" data-x="${r()*1080}" data-y="${r()*1920}" data-s="${10+r()*30}" data-p="${r()*6.3}" r="${1.5+r()*4.5}" fill="${i%5?'#f6dc8e':'#9fe3e6'}"/>`}
+ for(let i=0;i<10;i++){d+=`<circle class="du bok" data-x="${r()*1080}" data-y="${r()*1920}" data-s="${6+r()*12}" data-p="${r()*6.3}" r="${30+r()*60}" fill="#e9c46a"/>`}
+ $('dust').innerHTML=d})();
+const DU=[...document.querySelectorAll('.du')];
+
+// S4 house-school link
+$('d_svg').innerHTML=`
+<g transform="translate(250,330)"><circle r="170" fill="rgba(233,196,106,.07)" stroke="rgba(233,196,106,.55)" stroke-width="2"/>
+ <g class="draw" stroke="#f6dc8e" stroke-width="7" id="house"><path pathLength="1" d="M-80 -10 L0 -80 L80 -10"/><path pathLength="1" d="M-60 -25 V70 H60 V-25"/><path pathLength="1" d="M-18 70 V25 H18 V70"/></g></g>
+<g transform="translate(830,330)"><circle r="170" fill="rgba(233,196,106,.07)" stroke="rgba(233,196,106,.55)" stroke-width="2"/>
+ <g class="draw" stroke="#f6dc8e" stroke-width="7" id="school"><path pathLength="1" d="M-90 70 H90 M-75 70 V-10 H75 V70"/><path pathLength="1" d="M-30 -10 V-55 H30 V-10 M0 -55 V-95 L28 -84 L0 -74"/><path pathLength="1" d="M-50 15 h20 M30 15 h20 M-12 70 V30 H12 V70"/></g></g>
+<path id="link" pathLength="1" d="M420 330 C500 230 580 230 660 330" fill="none" stroke="#9fe3e6" stroke-width="6" stroke-dasharray="1" stroke-linecap="round"/>
+<path id="link2" pathLength="1" d="M420 330 C500 430 580 430 660 330" fill="none" stroke="#e9c46a" stroke-width="6" stroke-dasharray="1" stroke-linecap="round"/>
+<g id="dheart" transform="translate(540,330)"><path d="M0 34 C-44 6 -36 -32 -14 -32 C-5 -32 0 -22 0 -17 C0 -22 5 -32 14 -32 C36 -32 44 6 0 34Z" fill="#e9c46a"/></g>`;
+
+// timeline (voice cues + V)
+const C={a1:0+V,a2:1.95+V,b1:4.45+V,b2:8.3+V,c0:10.95+V,c1:13.1+V,c2:16.2+V,c3:18.0+V,d1:20.43+V,d2:22.17+V,
+ e:25.1+V,f1:31.7+V,f2:33.0+V,f3:37.3+V,g:38.86+V,h:42.3+V,i:44.88+V,end:47+V};
+const S=[[0,C.b1-.25],[C.b1-.25,C.c0-.3],[C.c0-.3,C.d1-.3],[C.d1-.3,C.e-.3],[C.e-.3,C.h-.3],[C.h-.3,DURATION+1]];
+
+function seek(t){
+  // bg
+  $('patrect').setAttribute('transform',`rotate(${t*1.2},540,960) translate(${t*6},${t*4})`);
+  $('sweep').style.transform=`translateX(${((t*260)%2600)}px) rotate(18deg)`;
+  DU.forEach(c=>{const s=+c.dataset.s,p=+c.dataset.p;const y=((+c.dataset.y-t*s)%1960+1960)%1960-20;
+    c.setAttribute('cx',+c.dataset.x+Math.sin(t*.6+p)*24);c.setAttribute('cy',y);
+    c.setAttribute('opacity',c.classList.contains('bok')?.05+.04*Math.sin(t+p):.25+.55*Math.pow(Math.sin(t*1.8+p),2))});
+  $('fr').setAttribute('opacity',.85*eOut(P(t,.2,1.4)));
+  S.forEach(([a,b],i)=>$('s'+(i+1)).style.opacity=i===0?1-P(t,b-.3,b+.3):vis(t,a,b));
+  $('flash').style.opacity=Math.max(0,...S.slice(1).map(([a])=>.12*(1-Math.abs(t-a)/.35)));
+  document.querySelectorAll('.gold').forEach(g=>shine(g,t));
+
+  if(t<C.b1+1){ // S1
+    const lo=$('s1logos');fadeUp(lo,t,.1,.9,-80);
+    const tp=P(t,.3,2.0);const ti=$('s1title');ti.style.opacity=eOut(tp);ti.style.clipPath=`inset(${(1-eInOut(tp))*100}% 0 0 0)`;
+    const up=eInOut(P(t,C.a1-.2,C.a1+.8));
+    ti.style.transform=`translateY(${-up*0}px) scale(${lerp(.9,1,eOut(tp))*lerp(1,.78,up)})`;ti.style.top=lerp(400,330,up)+'px';
+    $('s1halo').style.opacity=eOut(tp)*(.7+.3*Math.sin(t*2));$('s1halo').style.top=lerp(360,250,up)+'px';
+    kin('a1',t,C.a1,.2,.7);kin('a2',t,C.a2,.28,.8,'zoom');
+    drawIcons($('a2heart'),t,C.a2+.9,1.2);$('a2heart').style.transform=`scale(${1+.06*Math.sin(t*5)})`;
+  }
+  if(t>C.b1-1&&t<C.c0+1){ // S2
+    drawIcons($('b_icon'),t,C.b1,1.4);$('b_icon').style.transform=`translateY(${Math.sin(t*1.5)*10}px)`;
+    kin('b1',t,C.b1+.1,.2);kin('b1b',t,C.b1+1.4,.25);
+    const bx=eOut(P(t,C.b2-.6,C.b2));$('b_bar').style.transform=`scaleX(${bx})`;
+    kin('b2',t,C.b2,.3,.8,'zoom');kin('b3',t,C.b2+1.1,.3,.8,'zoom');
+  }
+  if(t>C.c0-1&&t<C.d1+1){ // S3
+    kin('c0',t,C.c0,.2);$('c0b').style.transform=`scaleX(${eOut(P(t,C.c0+.4,C.c0+1.2))}`;
+    [['c1',C.c1],['c2',C.c2],['c3',C.c3]].forEach(([id,a])=>{const el=$(id);const x=eOut(P(t,a-.3,a+.4));
+      el.style.opacity=x;el.style.transform=`translateX(${(1-x)*-200}px)`;drawIcons(el,t,a-.1,1);
+      el.style.borderColor=`rgba(233,196,106,${.4+.5*Math.max(0,1-Math.abs(t-a-.6)/1.2)})`});
+    fadeUp($('c4'),t,C.c3+1.2,.8,40);
+  }
+  if(t>C.d1-1&&t<C.e+1){ // S4
+    drawIcons($('house'),t,C.d1-.2,1);drawIcons($('school'),t,C.d1+.2,1);
+    $('link').style.strokeDashoffset=1-eInOut(P(t,C.d1+.9,C.d2+.3));$('link2').style.strokeDashoffset=1-eInOut(P(t,C.d1+1.1,C.d2+.5));
+    const hp=eBack(P(t,C.d2+.2,C.d2+.8));$('dheart').setAttribute('transform',`translate(540,330) scale(${hp*(1+.08*Math.sin(t*6))})`);
+    kin('d1',t,C.d1,.25);kin('d2',t,C.d2,.22,.7);
+  }
+  if(t>C.e-1&&t<C.h+1){ // S5
+    kin('e0',t,C.e,.18);
+    const e1=$('e1');const ex=P(t,C.e+.6,C.e+1.6);e1.style.opacity=eOut(ex);e1.style.transform=`scale(${lerp(1.4,1,eOut(ex))})`;e1.style.filter=`blur(${(1-eOut(ex))*16}px)`;
+    kin('e2',t,C.e+3.0,.15);$('e_bar').style.transform=`scaleX(${eOut(P(t,C.e+4,C.e+5))})`;
+    [['f1',C.f1-.3],['f2',C.f2-.3],['g1',C.g-.3]].forEach(([id,a])=>{const el=$(id),x=eOut(P(t,a,a+.6));el.style.opacity=x;el.style.transform=`translateX(${(1-x)*220}px)`;drawIcons(el,t,a+.1,.9)});
+    const f2b=$('f2b');const fx=eOut(P(t,C.f3-.3,C.f3+.3));f2b.style.opacity=.15+.85*fx;
+    fadeUp($('e3'),t,C.g+2.0,.8,40);
+  }
+  if(t>C.h-1){ // S6
+    kin('h1',t,C.h,.3,.8,'zoom');
+    const ip=P(t,C.i-.2,C.i+1.2);const it=$('i_title');it.style.opacity=eOut(ip);it.style.clipPath=`inset(${(1-eInOut(ip))*100}% 0 0 0)`;it.style.transform=`scale(${lerp(.85,1,eOut(ip))*(1+.015*Math.sin(t*2))})`;
+    $('i_halo').style.opacity=eOut(ip)*(.7+.3*Math.sin(t*2));
+    fadeUp($('o_soc'),t,C.end+.2,.7,80);fadeUp($('o_names'),t,C.end+.6,.7,80);fadeUp($('o_logos'),t,C.end+1.0,.7,80);fadeUp($('o_school'),t,C.end+1.4,.7,40);
+  }
+}
+window.seek=seek;window.DURATION=DURATION;
+document.fonts.ready.then(()=>{window.READY=true});
+</script>
+</body>
+</html>

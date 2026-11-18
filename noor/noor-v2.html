@@ -1,0 +1,80 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>جدول تفعيل منصة نور</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Reem+Kufi:wght@600;700&display=swap" rel="stylesheet">
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--red:#c8102e;--green:#007a3d;--deep:#00431f;--ink:#14302a;--muted:#5d726c;--line:#e3ebe7}
+body{background:#fff;font-family:'Tajawal',sans-serif;color:var(--ink)}
+.page{width:210mm;height:297mm;position:relative;overflow:hidden;background:#f5f8f6;
+ background-image:radial-gradient(rgba(0,122,61,.10) 1px,transparent 1.2px);background-size:5mm 5mm}
+/* hero */
+.hero{position:absolute;top:0;left:0;right:0;height:88mm;color:#fff;overflow:hidden;
+ background:linear-gradient(135deg,var(--deep) 0%,var(--green) 60%,#0d9c58 100%);
+ clip-path:path('M0 0 H794 V286 C620 340 430 300 260 318 C150 330 60 322 0 312 Z')}
+.hero .grid{position:absolute;inset:0;opacity:.13;background-image:linear-gradient(rgba(255,255,255,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.6) 1px,transparent 1px);background-size:9mm 9mm;-webkit-mask-image:linear-gradient(200deg,#000,transparent 70%)}
+.hero .slash{position:absolute;top:-42mm;right:-34mm;width:70mm;height:70mm;border-radius:50%;border:9mm solid rgba(200,16,46,.9)}
+.hero .slash2{position:absolute;top:30mm;right:40mm;width:9mm;height:9mm;border-radius:50%;background:#fff;opacity:.18}
+.topbar{position:absolute;top:9mm;right:14mm;left:12mm;display:flex;justify-content:space-between;align-items:flex-start}
+.min{white-space:nowrap;font-size:11.5px;line-height:1.65;font-weight:500;opacity:.95;margin-right:8mm}
+.chips{display:flex;gap:3mm}
+.chip{background:#fff;border-radius:12px;padding:2mm 3mm;box-shadow:0 6px 16px rgba(0,0,0,.18);flex:none}
+.chip img{height:16mm;width:auto;display:block}
+.title{position:absolute;top:31mm;right:14mm}
+.kicker{display:inline-block;background:var(--red);color:#fff;font-weight:800;font-size:13px;padding:1.2mm 4mm;border-radius:99px;letter-spacing:.2px}
+h1{font-family:'Reem Kufi',sans-serif;font-weight:700;font-size:50px;line-height:1.08;margin-top:2.5mm}
+h1 span{display:block;color:#fff;font-size:58px}
+h1 em{font-style:normal;color:#ffd7dd}
+.yr{margin-top:2mm;font-size:13px;opacity:.9}
+.student{position:absolute;top:30mm;left:6mm;height:66mm;z-index:3;filter:drop-shadow(0 10px 16px rgba(0,40,20,.28));-webkit-mask-image:linear-gradient(to right,transparent 0,#000 10%,#000 88%,transparent 100%),linear-gradient(to top,transparent 0,#000 16%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent 0,#000 10%,#000 88%,transparent 100%),linear-gradient(to top,transparent 0,#000 16%);mask-composite:intersect}
+/* schedule */
+.sched{position:absolute;top:100mm;right:12mm;left:12mm}
+.cols{display:grid;grid-template-columns:24mm 16mm 18mm 1fr 1fr 20mm;gap:0;padding:0 0 2mm;font-size:12.5px;font-weight:800;color:var(--muted);text-align:center}
+.day{display:grid;grid-template-columns:24mm 1fr;margin-bottom:4.5mm;background:#fff;border-radius:14px;box-shadow:0 4px 14px rgba(20,48,42,.08);overflow:hidden;border:1px solid var(--line)}
+.dname{background:linear-gradient(180deg,var(--red),#a00d25);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Reem Kufi',sans-serif;font-size:21px;gap:1mm}
+.dname small{font-family:'Tajawal';font-size:11px;font-weight:500;opacity:.85}
+.row{display:grid;grid-template-columns:16mm 18mm 1fr 1fr 20mm;align-items:center;text-align:center;height:14.6mm;font-size:16.5px;font-weight:500}
+.row+.row{border-top:1px dashed var(--line)}
+.per{justify-self:center;width:9mm;height:9mm;border-radius:50%;background:#e8f4ee;color:var(--green);font-weight:900;display:grid;place-items:center;font-size:16px}
+.cls{font-weight:900;font-size:19px;direction:ltr}
+.subj{color:var(--green);font-weight:700}
+.pc{justify-self:center;display:inline-flex;align-items:center;gap:1.2mm;padding:1mm 2.6mm;border-radius:99px;font-weight:900;font-size:15px;color:#fff}
+.pc svg{width:13px;height:13px}
+.pc1{background:var(--green)}.pc2{background:var(--red)}
+.legend{display:flex;justify-content:center;gap:8mm;margin-top:2mm;font-size:12.5px;color:var(--muted);font-weight:500}
+.legend b{color:var(--ink)}
+/* footer */
+.foot{position:absolute;bottom:0;left:0;right:0;height:34mm;background:#fff;border-top:1px solid var(--line)}
+.foot .flag{position:absolute;top:0;left:0;right:0;height:2mm;background:linear-gradient(to left,var(--red) 0 34%,#fff 34% 66%,var(--green) 66%)}
+.fin{position:absolute;inset:2mm 12mm 0 12mm;display:flex;align-items:center;justify-content:space-between}
+.motto{display:flex;align-items:center;gap:3.5mm}
+.motto .ic{width:13mm;height:13mm;border-radius:12px;background:var(--green);display:grid;place-items:center}
+.motto b{display:block;font-size:17px;color:var(--green);font-weight:900}
+.motto span{font-size:12px;color:var(--muted)}
+.sign{text-align:center;min-width:62mm}
+.sign .t{font-size:12px;color:var(--muted)}
+.sign .n{font-family:'Reem Kufi',sans-serif;font-size:22px;color:var(--red);margin-top:.5mm}
+.sign .l{margin:3mm auto 0;width:80%;border-top:1.5px dashed #b9c9c1;padding-top:1mm;font-size:10.5px;color:#8a9c96}
+</style></head><body><div class="page">
+<div class="hero"><div class="grid"></div><div class="slash"></div>
+ <div class="topbar">
+  <div class="min">سلطنة عُمان<br>وزارة التعليم<br>المديرية العامة للتعليم بمحافظة شمال الباطنة</div>
+  <div class="chips"><div class="chip"><img src="noor-logo.png" alt="منصة نور"></div><div class="chip"><img src="school-logo.png" alt="شعار المدرسة"></div></div>
+ </div>
+ <div class="title"><span class="kicker">الأحد • الاثنين • الثلاثاء</span>
+  <h1>جدول تفعيل<span>منصة <em>نور</em></span></h1>
+  <div class="yr">مدرسة أم مالك الأنصارية (5-6) — العام الدراسي <span dir="ltr">2026 / 2027</span></div></div>
+</div>
+<img class="student" src="student3d.png" alt="">
+<div class="sched">
+ <div class="cols"><div>اليوم</div><div>الحصة</div><div>الصف</div><div>المادة</div><div>المعلمة</div><div>الحاسوب</div></div>
+ <div class="day"><div class="dname">الأحد<small>4 حصص</small></div><div><div class="row"><div class="per">2</div><div class="cls">6/5</div><div class="subj">الدراسات الاجتماعية</div><div>مريم المقبالي</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div><div class="row"><div class="per">5</div><div class="cls">6/7</div><div class="subj">اللغة الإنجليزية</div><div>شيخة المسنية</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div><div class="row"><div class="per">5</div><div class="cls">5/6</div><div class="subj">العلوم</div><div>منال القرية</div><span class="pc pc2"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>2</span></div><div class="row"><div class="per">6</div><div class="cls">6/6</div><div class="subj">الرياضيات</div><div>ولاء الفريسية</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div></div></div>
+<div class="day"><div class="dname">الاثنين<small>3 حصص</small></div><div><div class="row"><div class="per">3</div><div class="cls">6/3</div><div class="subj">الرياضيات</div><div>رفيدة الفزارية</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div><div class="row"><div class="per">3</div><div class="cls">5/3</div><div class="subj">اللغة العربية</div><div>بشرى المزروعية</div><span class="pc pc2"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>2</span></div><div class="row"><div class="per">5</div><div class="cls">6/1</div><div class="subj">العلوم</div><div>نورة البريكي</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div></div></div>
+<div class="day"><div class="dname">الثلاثاء<small>حصتان</small></div><div><div class="row"><div class="per">5</div><div class="cls">6/4</div><div class="subj">الرياضيات</div><div>ضنينة الفزارية</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div><div class="row"><div class="per">5</div><div class="cls">5/5</div><div class="subj">اللغة العربية</div><div>هدى المعمرية</div><span class="pc pc2"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>2</span></div></div></div>
+
+ <div class="legend"><span>الحاسوب <b>1</b>: أ. رويدا الشيزاوية</span><span>الحاسوب <b>2</b>: أ. حسناء المسعودية</span></div>
+</div>
+<div class="foot"><div class="flag"></div><div class="fin">
+ <div class="motto"><div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4M8.5 10.5l2.5 2.5 4.5-4.5"/></svg></div><div><b>نحو تعلّمٍ رقميٍّ فاعل</b><span>تفعيل منصة نور التعليمية لجميع الطالبات</span></div></div>
+ <div class="sign"><div class="t">مديرة المدرسة</div><div class="n">أ. أحلام الحمدانية</div><div class="l">التوقيع</div></div>
+</div></div>
+</div></body></html>

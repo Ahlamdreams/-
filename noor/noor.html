@@ -13,22 +13,23 @@ body{background:#fff;font-family:'Tajawal',sans-serif;color:var(--ink)}
 .band{position:absolute;top:0;bottom:0;right:0;width:9mm;background:var(--red)}
 .band2{position:absolute;top:0;left:0;right:9mm;height:6mm;background:linear-gradient(to bottom,#fff 0 33%,var(--red) 33% 66%,var(--green) 66%)}
 .band3{position:absolute;bottom:0;left:0;right:9mm;height:6mm;background:linear-gradient(to bottom,#fff 0 33%,var(--red) 33% 66%,var(--green) 66%)}
-.dots{position:absolute;opacity:.12}
+.dots{position:absolute;opacity:.12;display:none}
 .content{position:absolute;top:16mm;right:20mm;left:14mm;bottom:14mm}
 .head{text-align:center}
 .top{display:flex;justify-content:space-between;align-items:flex-start;font-size:12.5px;line-height:1.7;font-weight:500}
-.top .l{text-align:left;direction:rtl}
-.badge{display:inline-flex;align-items:center;gap:10px;margin-top:8mm}
+.top .l{text-align:left}
+.slogo{height:30mm;margin-top:-4mm;margin-left:-3mm}
+.badge{display:inline-flex;align-items:center;gap:10px;margin-top:0}
 .icon{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--green),#0aa35a);display:grid;place-items:center;box-shadow:0 6px 16px rgba(0,122,61,.25)}
 h1{font-family:'Reem Kufi',sans-serif;font-size:46px;font-weight:700;color:var(--green);line-height:1.15}
 h1 span{color:var(--red)}
 .sub{margin-top:3mm;font-size:16px;font-weight:500;color:#4a6168}
 .sub b{color:var(--red)}
 .rule{margin:5mm auto 0;width:60%;height:3px;border-radius:3px;background:linear-gradient(to left,var(--red),var(--green))}
-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:9mm;font-size:17px;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(23,50,58,.10);border:1.5px solid #cfe3d7}
+table{width:100%;border-collapse:separate;border-spacing:0;margin-top:7mm;font-size:17px;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(23,50,58,.10);border:1.5px solid #cfe3d7}
 th{background:var(--green);color:#fff;font-weight:700;padding:12px 6px;font-size:17px}
 th:first-child{background:var(--red)}
-td{text-align:center;padding:12.5px 6px;border-top:1px solid #dcebe2;font-weight:500}
+td{text-align:center;padding:10px 6px;border-top:1px solid #dcebe2;font-weight:500}
 td+td,th+th{border-right:1px solid #dcebe2}
 th+th{border-right-color:rgba(255,255,255,.3)}
 td.day{background:#fff5f6;color:var(--red);font-weight:800;font-size:19px;border-top:2px solid #e9b7bf}
@@ -45,7 +46,9 @@ tr:nth-child(even) td:not(.day){background:var(--soft)}
 .sign .t{font-size:15px;color:#4a6168;font-weight:500}
 .sign .n{font-family:'Reem Kufi',sans-serif;font-size:24px;color:var(--green);margin-top:2mm}
 .sign .line{margin:12mm auto 0;width:80%;border-top:1.5px dashed #9bb5a8;padding-top:2mm;font-size:12px;color:#7b8f95}
-.motto{position:absolute;right:0;bottom:10mm;font-size:15px;color:var(--red);font-weight:700;max-width:80mm;line-height:1.6}
+.foot{position:absolute;right:-4mm;bottom:2mm;display:flex;align-items:flex-end;gap:2mm}
+.girl{width:56mm;height:auto;display:block}
+.motto{font-size:15px;color:var(--red);font-weight:700;line-height:1.6;margin-bottom:14mm}
 .motto small{display:block;color:#4a6168;font-weight:500;font-size:13px}
 </style></head><body><div class="page">
 <div class="band"></div><div class="band2"></div><div class="band3"></div>
@@ -53,10 +56,10 @@ tr:nth-child(even) td:not(.day){background:var(--soft)}
 <div class="content">
 <div class="head">
  <div class="top"><div>سلطنة عُمان<br>وزارة التعليم<br>المديرية العامة للتعليم بمحافظة شمال الباطنة<br>مدرسة أم مالك الأنصارية (5-6)</div>
- <div class="l">العام الدراسي<br><b dir="ltr">2026 / 2027</b></div></div>
+ <div class="l"><img class="slogo" src="school-logo.png" alt="شعار المدرسة"></div></div>
  <div class="badge"><div class="icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M12 7.5v1M12 13.5v1M9 11h-1M16 11h-1M9.9 8.9l.7.7M14.1 13.1l.7.7M9.9 13.1l.7-.7M14.1 8.9l.7-.7"/></svg></div>
  <h1>جدول تفعيل <span>منصة نور</span></h1></div>
- <div class="sub">حصص التفعيل في مختبرات الحاسوب — <b>الأحد والاثنين والثلاثاء</b></div>
+ <div class="sub">حصص التفعيل في مختبرات الحاسوب — <b>الأحد والاثنين والثلاثاء</b> — العام الدراسي <span dir="ltr">2026 / 2027</span></div>
  <div class="rule"></div>
 </div>
 <table><thead><tr><th>اليوم</th><th>الحصة</th><th>الصف</th><th>المادة</th><th>المعلمة</th><th>الحاسوب</th></tr></thead><tbody>
@@ -71,6 +74,51 @@ tr:nth-child(even) td:not(.day){background:var(--soft)}
 <tr><td><span class="per">5</span></td><td><span class="cls">5/5</span></td><td>اللغة العربية</td><td>هدى المعمرية</td><td><span class="pc pc2">2</span></td></tr>
 </tbody></table>
 <div class="legend"><span><i style="background:var(--green)"></i>الحاسوب 1: أ. رويدا الشيزاوية</span><span><i style="background:var(--red)"></i>الحاسوب 2: أ. حسناء المسعودية</span></div>
-<div class="motto">نحو تعلّمٍ رقميٍّ فاعل<small>تفعيل منصة نور التعليمية لجميع الطالبات</small></div>
+<div class="foot"><svg class="girl" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="125" cy="120" r="105" fill="#007a3d" opacity=".08"/>
+  <circle cx="125" cy="120" r="80" fill="#c8102e" opacity=".05"/>
+  <!-- floating icons -->
+  <g opacity=".9">
+    <rect x="22" y="40" width="34" height="34" rx="9" fill="#007a3d"/>
+    <path d="M31 57l6 6 11-12" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="188" y="30" width="32" height="32" rx="9" fill="#c8102e"/>
+    <path d="M197 40h14M197 46h14M197 52h9" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="208" cy="100" r="12" fill="#fff" stroke="#007a3d" stroke-width="2.5"/>
+    <path d="M208 93l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z" fill="#e0a800"/>
+    <circle cx="30" cy="112" r="5" fill="#c8102e" opacity=".6"/>
+    <circle cx="220" cy="150" r="4" fill="#007a3d" opacity=".6"/>
+  </g>
+  <!-- body: navy uniform -->
+  <path d="M62 228 C62 175 80 150 125 148 C170 150 188 175 188 228Z" fill="#1d2b5c"/>
+  <!-- white hijab: head + drape over shoulders -->
+  <path d="M125 30 C88 30 74 58 76 92 C77 118 82 140 72 168 C95 182 155 182 178 168 C168 140 173 118 174 92 C176 58 162 30 125 30Z" fill="#ffffff" stroke="#d3dde2" stroke-width="2"/>
+  <path d="M86 150 C100 162 150 162 164 150" stroke="#e3eaee" stroke-width="2" fill="none"/>
+  <!-- face -->
+  <ellipse cx="125" cy="92" rx="27" ry="31" fill="#e7b48b"/>
+  <!-- hijab frame around face -->
+  <path d="M96 88 C96 60 108 52 125 52 C142 52 154 60 154 88" stroke="#ffffff" stroke-width="7" fill="none"/>
+  <!-- eyes looking down -->
+  <path d="M110 92 q5 4 10 0" stroke="#3b2a20" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <path d="M130 92 q5 4 10 0" stroke="#3b2a20" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <path d="M108 84 q6 -3 11 -1M131 83 q5 -2 11 1" stroke="#3b2a20" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="108" cy="102" rx="5" ry="3" fill="#e58a8a" opacity=".45"/>
+  <ellipse cx="142" cy="102" rx="5" ry="3" fill="#e58a8a" opacity=".45"/>
+  <path d="M118 108 q7 6 14 0" stroke="#a2524a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <!-- desk -->
+  <rect x="20" y="222" width="210" height="14" rx="5" fill="#c9a27a"/>
+  <rect x="20" y="222" width="210" height="4" rx="2" fill="#dcbb94"/>
+  <!-- arms -->
+  <path d="M74 178 C60 195 66 214 92 220" stroke="#1d2b5c" stroke-width="20" fill="none" stroke-linecap="round"/>
+  <path d="M176 178 C190 195 184 214 158 220" stroke="#1d2b5c" stroke-width="20" fill="none" stroke-linecap="round"/>
+  <!-- laptop (back facing viewer) -->
+  <path d="M78 160 H172 L166 222 H84Z" fill="#e9eef1" stroke="#b9c6cc" stroke-width="2"/>
+  <path d="M84 222 H166 L172 226 H78Z" fill="#b9c6cc"/>
+  <circle cx="125" cy="190" r="12" fill="#007a3d"/>
+  <path d="M119 190l4 4 8-8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- hands -->
+  <ellipse cx="94" cy="220" rx="9" ry="6" fill="#e7b48b"/>
+  <ellipse cx="156" cy="220" rx="9" ry="6" fill="#e7b48b"/>
+</svg>
+<div class="motto">نحو تعلّمٍ رقميٍّ فاعل<small>تفعيل منصة نور التعليمية لجميع الطالبات</small></div></div>
 <div class="sign"><div class="t">مديرة المدرسة</div><div class="n">أ. أحلام الحمدانية</div><div class="line">التوقيع</div></div>
 </div></div></body></html>

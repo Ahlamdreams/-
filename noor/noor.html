@@ -57,7 +57,7 @@ tr:nth-child(even) td:not(.day){background:var(--soft)}
 .footer .bg::before{content:"";position:absolute;width:90mm;height:90mm;border-radius:50%;left:-25mm;top:-30mm;background:radial-gradient(circle,rgba(255,255,255,.13),transparent 65%)}
 .footer .bg::after{content:"";position:absolute;inset:auto 0 0 0;height:2.2mm;background:#c8102e}
 .f-inner{position:absolute;inset:0;display:flex;align-items:center;padding:0 10mm 3mm 0}
-.f-student{position:absolute;right:0;bottom:2.2mm;height:56mm;filter:drop-shadow(0 6px 10px rgba(0,0,0,.25))}
+.f-student{position:absolute;right:0;bottom:2.2mm;height:56mm;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 12%);mask-image:linear-gradient(to right,transparent 0,#000 12%);filter:drop-shadow(0 6px 10px rgba(0,0,0,.25))}
 .f-mid{position:absolute;right:68mm;top:4.5mm;width:66mm;display:flex;flex-direction:column;align-items:center;gap:2.5mm;text-align:center}
 .noorcard{background:#fff;border-radius:14px;padding:3mm 4.5mm;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .noorcard img{height:15mm;display:block}

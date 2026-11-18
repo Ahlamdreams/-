@@ -1,101 +1,80 @@
 <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>جدول تفعيل منصة نور</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Reem+Kufi:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Reem+Kufi:wght@600;700&display=swap" rel="stylesheet">
 <style>
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--red:#c8102e;--green:#007a3d;--ink:#17323a;--soft:#eef6f1}
+:root{--red:#c8102e;--green:#007a3d;--deep:#00431f;--ink:#14302a;--muted:#5d726c;--line:#e3ebe7}
 body{background:#fff;font-family:'Tajawal',sans-serif;color:var(--ink)}
-.page{width:210mm;height:297mm;position:relative;overflow:hidden;background:
- radial-gradient(circle at 85% 8%,rgba(0,122,61,.08),transparent 40%),
- radial-gradient(circle at 10% 92%,rgba(200,16,46,.07),transparent 40%),#fff}
-.flag{position:absolute;top:0;right:0;width:22mm;height:100%;display:flex}
-.flag div{flex:1}
-.band{position:absolute;top:0;bottom:0;right:0;width:9mm;background:var(--red)}
-.band2{position:absolute;top:0;left:0;right:9mm;height:6mm;background:linear-gradient(to bottom,#fff 0 33%,var(--red) 33% 66%,var(--green) 66%)}
-.band3{position:absolute;bottom:0;left:0;right:9mm;height:6mm;background:linear-gradient(to bottom,#fff 0 33%,var(--red) 33% 66%,var(--green) 66%)}
-.dots{position:absolute;opacity:.12;display:none}
-.content{position:absolute;top:16mm;right:20mm;left:14mm;bottom:14mm}
-.head{text-align:center}
-.top{display:flex;justify-content:space-between;align-items:flex-start;font-size:12.5px;line-height:1.7;font-weight:500}
-.top .l{text-align:left}
-.slogo{height:30mm;margin-top:-4mm;margin-left:-3mm}
-.badge{display:inline-flex;align-items:center;gap:10px;margin-top:0}
-.icon{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--green),#0aa35a);display:grid;place-items:center;box-shadow:0 6px 16px rgba(0,122,61,.25)}
-h1{font-family:'Reem Kufi',sans-serif;font-size:46px;font-weight:700;color:var(--green);line-height:1.15}
-h1 span{color:var(--red)}
-.sub{margin-top:3mm;font-size:16px;font-weight:500;color:#4a6168}
-.sub b{color:var(--red)}
-.rule{margin:5mm auto 0;width:60%;height:3px;border-radius:3px;background:linear-gradient(to left,var(--red),var(--green))}
-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:7mm;font-size:17px;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(23,50,58,.10);border:1.5px solid #cfe3d7}
-th{background:var(--green);color:#fff;font-weight:700;padding:12px 6px;font-size:17px}
-th:first-child{background:var(--red)}
-td{text-align:center;padding:10px 6px;border-top:1px solid #dcebe2;font-weight:500}
-td+td,th+th{border-right:1px solid #dcebe2}
-th+th{border-right-color:rgba(255,255,255,.3)}
-td.day{background:#fff5f6;color:var(--red);font-weight:800;font-size:19px;border-top:2px solid #e9b7bf}
-tr.first td{border-top:2px solid #b9d8c5}
-tr:nth-child(even) td:not(.day){background:var(--soft)}
-.cls{font-weight:800;font-size:19px;direction:ltr;display:inline-block}
-.pc{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;font-weight:800;color:#fff}
+.page{width:210mm;height:297mm;position:relative;overflow:hidden;background:#f5f8f6;
+ background-image:radial-gradient(rgba(0,122,61,.10) 1px,transparent 1.2px);background-size:5mm 5mm}
+/* hero */
+.hero{position:absolute;top:0;left:0;right:0;height:88mm;color:#fff;overflow:hidden;
+ background:linear-gradient(135deg,var(--deep) 0%,var(--green) 60%,#0d9c58 100%);
+ clip-path:path('M0 0 H794 V286 C620 340 430 300 260 318 C150 330 60 322 0 312 Z')}
+.hero .grid{position:absolute;inset:0;opacity:.13;background-image:linear-gradient(rgba(255,255,255,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.6) 1px,transparent 1px);background-size:9mm 9mm;-webkit-mask-image:linear-gradient(200deg,#000,transparent 70%)}
+.hero .slash{position:absolute;top:-42mm;right:-34mm;width:70mm;height:70mm;border-radius:50%;border:9mm solid rgba(200,16,46,.9)}
+.hero .slash2{position:absolute;top:30mm;right:40mm;width:9mm;height:9mm;border-radius:50%;background:#fff;opacity:.18}
+.topbar{position:absolute;top:9mm;right:14mm;left:12mm;display:flex;justify-content:space-between;align-items:flex-start}
+.min{white-space:nowrap;font-size:11.5px;line-height:1.65;font-weight:500;opacity:.95;margin-right:8mm}
+.chips{display:flex;gap:3mm}
+.chip{background:#fff;border-radius:12px;padding:2mm 3mm;box-shadow:0 6px 16px rgba(0,0,0,.18);flex:none}
+.chip img{height:16mm;width:auto;display:block}
+.title{position:absolute;top:31mm;right:14mm}
+.kicker{display:inline-block;background:var(--red);color:#fff;font-weight:800;font-size:13px;padding:1.2mm 4mm;border-radius:99px;letter-spacing:.2px}
+h1{font-family:'Reem Kufi',sans-serif;font-weight:700;font-size:50px;line-height:1.08;margin-top:2.5mm}
+h1 span{display:block;color:#fff;font-size:58px}
+h1 em{font-style:normal;color:#ffd7dd}
+.yr{margin-top:2mm;font-size:13px;opacity:.9}
+.student{position:absolute;top:30mm;left:6mm;height:66mm;z-index:3;filter:drop-shadow(0 10px 16px rgba(0,40,20,.28));-webkit-mask-image:linear-gradient(to right,transparent 0,#000 10%,#000 88%,transparent 100%),linear-gradient(to top,transparent 0,#000 16%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent 0,#000 10%,#000 88%,transparent 100%),linear-gradient(to top,transparent 0,#000 16%);mask-composite:intersect}
+/* schedule */
+.sched{position:absolute;top:100mm;right:12mm;left:12mm}
+.cols{display:grid;grid-template-columns:24mm 16mm 18mm 1fr 1fr 20mm;gap:0;padding:0 0 2mm;font-size:12.5px;font-weight:800;color:var(--muted);text-align:center}
+.day{display:grid;grid-template-columns:24mm 1fr;margin-bottom:4.5mm;background:#fff;border-radius:14px;box-shadow:0 4px 14px rgba(20,48,42,.08);overflow:hidden;border:1px solid var(--line)}
+.dname{background:linear-gradient(180deg,var(--red),#a00d25);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Reem Kufi',sans-serif;font-size:21px;gap:1mm}
+.dname small{font-family:'Tajawal';font-size:11px;font-weight:500;opacity:.85}
+.row{display:grid;grid-template-columns:16mm 18mm 1fr 1fr 20mm;align-items:center;text-align:center;height:14.6mm;font-size:16.5px;font-weight:500}
+.row+.row{border-top:1px dashed var(--line)}
+.per{justify-self:center;width:9mm;height:9mm;border-radius:50%;background:#e8f4ee;color:var(--green);font-weight:900;display:grid;place-items:center;font-size:16px}
+.cls{font-weight:900;font-size:19px;direction:ltr}
+.subj{color:var(--green);font-weight:700}
+.pc{justify-self:center;display:inline-flex;align-items:center;gap:1.2mm;padding:1mm 2.6mm;border-radius:99px;font-weight:900;font-size:15px;color:#fff}
+.pc svg{width:13px;height:13px}
 .pc1{background:var(--green)}.pc2{background:var(--red)}
-.per{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2px solid var(--green);font-weight:800;color:var(--green)}
-.legend{margin-top:5mm;display:flex;gap:18px;justify-content:center;font-size:14px;color:#4a6168;font-weight:500}
-.legend span{display:inline-flex;align-items:center;gap:6px}
-.legend i{width:16px;height:16px;border-radius:5px;display:inline-block}
-.sign{position:absolute;left:0;bottom:6mm;width:72mm;text-align:center}
-.sign .t{font-size:15px;color:#4a6168;font-weight:500}
-.sign .n{font-family:'Reem Kufi',sans-serif;font-size:24px;color:var(--green);margin-top:2mm}
-.sign .line{margin:12mm auto 0;width:80%;border-top:1.5px dashed #9bb5a8;padding-top:2mm;font-size:12px;color:#7b8f95}
-.foot{position:absolute;right:-4mm;bottom:2mm;display:flex;align-items:flex-end;gap:2mm}
-.girl{width:56mm;height:auto;display:block}
-.motto{font-size:15px;color:var(--red);font-weight:700;line-height:1.6;margin-bottom:14mm}
-.motto small{display:block;color:#4a6168;font-weight:500;font-size:13px}
-
-.footer{position:absolute;left:0;right:9mm;bottom:0;height:44mm;color:#fff}
-.footer .wave{position:absolute;top:-9mm;left:0;width:100%;height:10mm;display:block}
-.footer .bg{position:absolute;inset:0;background:linear-gradient(90deg,#004d27 0%,#007a3d 55%,#0b9a57 100%);overflow:hidden}
-.footer .bg::before{content:"";position:absolute;width:90mm;height:90mm;border-radius:50%;left:-25mm;top:-30mm;background:radial-gradient(circle,rgba(255,255,255,.13),transparent 65%)}
-.footer .bg::after{content:"";position:absolute;inset:auto 0 0 0;height:2.2mm;background:#c8102e}
-.f-inner{position:absolute;inset:0;display:flex;align-items:center;padding:0 10mm 3mm 0}
-.f-student{position:absolute;right:0;bottom:2.2mm;height:56mm;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 12%);mask-image:linear-gradient(to right,transparent 0,#000 12%);filter:drop-shadow(0 6px 10px rgba(0,0,0,.25))}
-.f-mid{position:absolute;right:68mm;top:4.5mm;width:66mm;display:flex;flex-direction:column;align-items:center;gap:2.5mm;text-align:center}
-.noorcard{background:#fff;border-radius:14px;padding:3mm 4.5mm;box-shadow:0 6px 18px rgba(0,0,0,.18)}
-.noorcard img{height:15mm;display:block}
-.f-motto{font-size:17px;font-weight:800;line-height:1.35}
-.f-motto small{display:block;font-size:12px;font-weight:500;opacity:.9;margin-top:.5mm}
-.f-sign{position:absolute;left:8mm;top:7mm;width:58mm;text-align:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);border-radius:14px;padding:3mm 3mm 3.5mm}
-.f-sign .t{font-size:13px;opacity:.9}
-.f-sign .n{font-family:'Reem Kufi',sans-serif;font-size:23px;margin-top:1mm}
-.f-sign .line{margin:5mm auto 0;width:85%;border-top:1.5px dashed rgba(255,255,255,.6);padding-top:1.2mm;font-size:11px;opacity:.8}
+.legend{display:flex;justify-content:center;gap:8mm;margin-top:2mm;font-size:12.5px;color:var(--muted);font-weight:500}
+.legend b{color:var(--ink)}
+/* footer */
+.foot{position:absolute;bottom:0;left:0;right:0;height:34mm;background:#fff;border-top:1px solid var(--line)}
+.foot .flag{position:absolute;top:0;left:0;right:0;height:2mm;background:linear-gradient(to left,var(--red) 0 34%,#fff 34% 66%,var(--green) 66%)}
+.fin{position:absolute;inset:2mm 12mm 0 12mm;display:flex;align-items:center;justify-content:space-between}
+.motto{display:flex;align-items:center;gap:3.5mm}
+.motto .ic{width:13mm;height:13mm;border-radius:12px;background:var(--green);display:grid;place-items:center}
+.motto b{display:block;font-size:17px;color:var(--green);font-weight:900}
+.motto span{font-size:12px;color:var(--muted)}
+.sign{text-align:center;min-width:62mm}
+.sign .t{font-size:12px;color:var(--muted)}
+.sign .n{font-family:'Reem Kufi',sans-serif;font-size:22px;color:var(--red);margin-top:.5mm}
+.sign .l{margin:3mm auto 0;width:80%;border-top:1.5px dashed #b9c9c1;padding-top:1mm;font-size:10.5px;color:#8a9c96}
 </style></head><body><div class="page">
-<div class="band"></div><div class="band2"></div>
-<svg class="dots" style="top:30mm;left:6mm" width="150" height="150" viewBox="0 0 150 150"><g fill="#007a3d"><circle cx="20" cy="20" r="5"/><circle cx="60" cy="20" r="5"/><circle cx="100" cy="20" r="5"/><circle cx="20" cy="60" r="5"/><circle cx="60" cy="60" r="5"/><circle cx="20" cy="100" r="5"/></g><path d="M20 20H100M20 20V100M60 20V60H20" stroke="#007a3d" stroke-width="2" fill="none"/></svg>
-<div class="content">
-<div class="head">
- <div class="top"><div>سلطنة عُمان<br>وزارة التعليم<br>المديرية العامة للتعليم بمحافظة شمال الباطنة<br>مدرسة أم مالك الأنصارية (5-6)</div>
- <div class="l"><img class="slogo" src="school-logo.png" alt="شعار المدرسة"></div></div>
- <div class="badge"><div class="icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M12 7.5v1M12 13.5v1M9 11h-1M16 11h-1M9.9 8.9l.7.7M14.1 13.1l.7.7M9.9 13.1l.7-.7M14.1 8.9l.7-.7"/></svg></div>
- <h1>جدول تفعيل <span>منصة نور</span></h1></div>
- <div class="sub">حصص التفعيل في مختبرات الحاسوب — <b>الأحد والاثنين والثلاثاء</b> — العام الدراسي <span dir="ltr">2026 / 2027</span></div>
- <div class="rule"></div>
+<div class="hero"><div class="grid"></div><div class="slash"></div>
+ <div class="topbar">
+  <div class="min">سلطنة عُمان<br>وزارة التعليم<br>المديرية العامة للتعليم بمحافظة شمال الباطنة</div>
+  <div class="chips"><div class="chip"><img src="noor-logo.png" alt="منصة نور"></div><div class="chip"><img src="school-logo.png" alt="شعار المدرسة"></div></div>
+ </div>
+ <div class="title"><span class="kicker">الأحد • الاثنين • الثلاثاء</span>
+  <h1>جدول تفعيل<span>منصة <em>نور</em></span></h1>
+  <div class="yr">مدرسة أم مالك الأنصارية (5-6) — العام الدراسي <span dir="ltr">2026 / 2027</span></div></div>
 </div>
-<table><thead><tr><th>اليوم</th><th>الحصة</th><th>الصف</th><th>المادة</th><th>المعلمة</th><th>الحاسوب</th></tr></thead><tbody>
-<tr class="first"><td class="day" rowspan="4">الأحد</td><td><span class="per">2</span></td><td><span class="cls">6/5</span></td><td>الدراسات الاجتماعية</td><td>مريم المقبالي</td><td><span class="pc pc1">1</span></td></tr>
-<tr><td><span class="per">5</span></td><td><span class="cls">6/7</span></td><td>اللغة الإنجليزية</td><td>شيخة المسنية</td><td><span class="pc pc1">1</span></td></tr>
-<tr><td><span class="per">5</span></td><td><span class="cls">5/6</span></td><td>العلوم</td><td>منال القرية</td><td><span class="pc pc2">2</span></td></tr>
-<tr><td><span class="per">6</span></td><td><span class="cls">6/6</span></td><td>الرياضيات</td><td>ولاء الفريسية</td><td><span class="pc pc1">1</span></td></tr>
-<tr class="first"><td class="day" rowspan="3">الاثنين</td><td><span class="per">3</span></td><td><span class="cls">6/3</span></td><td>الرياضيات</td><td>رفيدة الفزارية</td><td><span class="pc pc1">1</span></td></tr>
-<tr><td><span class="per">3</span></td><td><span class="cls">5/3</span></td><td>اللغة العربية</td><td>بشرى المزروعية</td><td><span class="pc pc2">2</span></td></tr>
-<tr><td><span class="per">5</span></td><td><span class="cls">6/1</span></td><td>العلوم</td><td>نورة البريكي</td><td><span class="pc pc1">1</span></td></tr>
-<tr class="first"><td class="day" rowspan="2">الثلاثاء</td><td><span class="per">5</span></td><td><span class="cls">6/4</span></td><td>الرياضيات</td><td>ضنينة الفزارية</td><td><span class="pc pc1">1</span></td></tr>
-<tr><td><span class="per">5</span></td><td><span class="cls">5/5</span></td><td>اللغة العربية</td><td>هدى المعمرية</td><td><span class="pc pc2">2</span></td></tr>
-</tbody></table>
-<div class="legend"><span><i style="background:var(--green)"></i>الحاسوب 1: أ. رويدا الشيزاوية</span><span><i style="background:var(--red)"></i>الحاسوب 2: أ. حسناء المسعودية</span></div>
-</div><div class="footer">
-<svg class="wave" viewBox="0 0 800 40" preserveAspectRatio="none"><defs><linearGradient id="wg" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#004d27"/><stop offset=".55" stop-color="#007a3d"/><stop offset="1" stop-color="#0b9a57"/></linearGradient></defs><path d="M0 41 V22 C150 0 300 38 450 20 S700 4 800 18 V41Z" fill="url(#wg)"/><path d="M0 22 C150 0 300 38 450 20 S700 4 800 18" stroke="#c8102e" stroke-width="3" fill="none"/></svg>
-<div class="bg"></div>
-<img class="f-student" src="student3d.png" alt="">
-<div class="f-mid"><div class="noorcard"><img src="noor-logo.png" alt="منصة نور"></div><div class="f-motto">نحو تعلّمٍ رقميٍّ فاعل<small>تفعيل منصة نور التعليمية لجميع الطالبات</small></div></div>
-<div class="f-sign"><div class="t">مديرة المدرسة</div><div class="n">أ. أحلام الحمدانية</div><div class="line">التوقيع</div></div>
+<img class="student" src="student3d.png" alt="">
+<div class="sched">
+ <div class="cols"><div>اليوم</div><div>الحصة</div><div>الصف</div><div>المادة</div><div>المعلمة</div><div>الحاسوب</div></div>
+ <div class="day"><div class="dname">الأحد<small>4 حصص</small></div><div><div class="row"><div class="per">2</div><div class="cls">6/5</div><div class="subj">الدراسات الاجتماعية</div><div>مريم المقبالي</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div><div class="row"><div class="per">5</div><div class="cls">6/7</div><div class="subj">اللغة الإنجليزية</div><div>شيخة المسنية</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div><div class="row"><div class="per">5</div><div class="cls">5/6</div><div class="subj">العلوم</div><div>منال القرية</div><span class="pc pc2"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>2</span></div><div class="row"><div class="per">6</div><div class="cls">6/6</div><div class="subj">الرياضيات</div><div>ولاء الفريسية</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div></div></div>
+<div class="day"><div class="dname">الاثنين<small>3 حصص</small></div><div><div class="row"><div class="per">3</div><div class="cls">6/3</div><div class="subj">الرياضيات</div><div>رفيدة الفزارية</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div><div class="row"><div class="per">3</div><div class="cls">5/3</div><div class="subj">اللغة العربية</div><div>بشرى المزروعية</div><span class="pc pc2"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>2</span></div><div class="row"><div class="per">5</div><div class="cls">6/1</div><div class="subj">العلوم</div><div>نورة البريكي</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div></div></div>
+<div class="day"><div class="dname">الثلاثاء<small>حصتان</small></div><div><div class="row"><div class="per">5</div><div class="cls">6/4</div><div class="subj">الرياضيات</div><div>ضنينة الفزارية</div><span class="pc pc1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>1</span></div><div class="row"><div class="per">5</div><div class="cls">5/5</div><div class="subj">اللغة العربية</div><div>هدى المعمرية</div><span class="pc pc2"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>2</span></div></div></div>
+
+ <div class="legend"><span>الحاسوب <b>1</b>: أ. رويدا الشيزاوية</span><span>الحاسوب <b>2</b>: أ. حسناء المسعودية</span></div>
 </div>
+<div class="foot"><div class="flag"></div><div class="fin">
+ <div class="motto"><div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4M8.5 10.5l2.5 2.5 4.5-4.5"/></svg></div><div><b>نحو تعلّمٍ رقميٍّ فاعل</b><span>تفعيل منصة نور التعليمية لجميع الطالبات</span></div></div>
+ <div class="sign"><div class="t">مديرة المدرسة</div><div class="n">أ. أحلام الحمدانية</div><div class="l">التوقيع</div></div>
+</div></div>
 </div></body></html>

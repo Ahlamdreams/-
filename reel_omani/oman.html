@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Omani Reel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&family=Aref+Ruqaa:wght@700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#fbf5ea}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Cairo',sans-serif;color:#3a1a12;
+  background:radial-gradient(120% 70% at 50% 35%,#fffaf1 0%,#f8eedd 50%,#efdfc2 100%)}
+.abs{position:absolute}
+.scene{position:absolute;inset:0;opacity:0}
+.gold{background:linear-gradient(100deg,#7a0f14 0%,#b3131f 20%,#e2a93f 28%,#b3131f 36%,#7a0f14 55%,#a5121c 80%,#7a0f14 100%);
+  background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.ruqaa{font-family:'Aref Ruqaa',serif}
+.amiri{font-family:'Amiri',serif}
+.center{left:0;right:0;text-align:center}
+.w{display:inline-block;margin:0;padding:0 .04em;will-change:transform,opacity,filter}
+.line{position:absolute;left:60px;right:60px;text-align:center}
+.tri{height:10px;background:linear-gradient(180deg,#fff 0 33%,#c8102e 33% 66%,#00843d 66%);border-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.icard{position:absolute;left:80px;right:80px;height:250px;display:flex;align-items:center;gap:44px;padding:0 50px;border-radius:36px;
+  background:#fffdf8;border:2px solid #e3cfa5;border-right:16px solid #c8102e;box-shadow:0 18px 44px rgba(122,15,20,.14)}
+.icard.g{border-right-color:#00843d}
+.icard .ic{width:160px;height:160px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 35% 30%,#fff,#f6e9cf);border:3px solid #c99a3e}
+.icard .tx{font-size:56px;font-weight:900;line-height:1.3}
+.icard .tx small{display:block;font-size:38px;font-weight:700;color:#00843d}
+.irow{display:flex;align-items:center;gap:36px;padding:26px 44px;margin:0 70px 28px;border-radius:30px;
+  background:#fffdf8;border:2px solid #e3cfa5;box-shadow:0 10px 30px rgba(122,15,20,.10)}
+.irow .ic{width:120px;height:120px;flex:none;border-radius:28px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#c8102e,#7a0f14)}
+.irow:nth-child(2) .ic{background:linear-gradient(135deg,#00a24c,#006a31)}
+.irow .tx{font-size:54px;font-weight:900;line-height:1.3}
+svg .draw{fill:none;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="pattern" class="abs" width="1080" height="1920" style="left:0;top:0"></svg>
+  <svg id="sky" class="abs" width="1080" height="520" viewBox="0 0 1080 520" style="left:0;top:1400px"></svg>
+  <svg id="dust" class="abs" width="1080" height="1920" style="left:0;top:0"></svg>
+  <svg id="frame" class="abs" width="1080" height="1920" style="left:0;top:0"></svg>
+
+  <!-- S1 -->
+  <div id="s1" class="scene">
+    <div id="s1logos" class="abs" style="left:50px;right:50px;top:70px;height:190px;border-radius:30px;background:#fff;
+      border:3px solid #c99a3e;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 40px rgba(122,15,20,.15)">
+      <img src="logos.png" style="width:930px"></div>
+    <canvas id="flag1" class="abs" width="700" height="420" style="left:190px;top:290px"></canvas>
+    <img id="s1title" class="abs" src="title_red.png" style="left:345px;top:700px;width:390px">
+    <div id="a1" class="line amiri" style="top:1150px;font-size:70px;color:#00843d"></div>
+    <div id="a2" class="line ruqaa gold" style="top:1240px;font-size:116px;line-height:1.5"></div>
+    <svg id="a2heart" class="abs" width="170" height="170" viewBox="0 0 100 100" style="left:455px;top:1460px"></svg>
+  </div>
+
+  <!-- S2 -->
+  <div id="s2" class="scene">
+    <svg id="mab" class="abs" width="560" height="620" viewBox="0 0 280 310" style="left:260px;top:140px"></svg>
+    <div id="b1" class="line" style="top:780px;font-size:80px;font-weight:900"></div>
+    <div id="b1b" class="line" style="top:900px;font-size:66px;font-weight:700;color:#8a6a4a"></div>
+    <div id="b_bar" class="abs tri" style="left:260px;right:260px;top:1050px"></div>
+    <div id="b2" class="line ruqaa gold" style="top:1090px;font-size:128px;line-height:1.5"></div>
+    <div id="b3" class="line ruqaa gold" style="top:1290px;font-size:128px;line-height:1.5"></div>
+  </div>
+
+  <!-- S3 -->
+  <div id="s3" class="scene">
+    <div id="c0" class="line" style="top:170px;font-size:76px;font-weight:900;color:#7a0f14"></div>
+    <div id="c0b" class="abs tri" style="left:300px;right:300px;top:305px"></div>
+    <div id="c1" class="icard" style="top:420px"><div class="ic"><svg width="110" height="110" viewBox="0 0 64 64" data-ic="chart"></svg></div><div class="tx"><span class="gold">مستوى ابنتك</span><small>تتعرّف عليه عن قرب</small></div></div>
+    <div id="c2" class="icard g" style="top:720px"><div class="ic"><svg width="110" height="110" viewBox="0 0 64 64" data-ic="shield"></svg></div><div class="tx"><span class="gold">سلوكها</span><small>تدعمه وتوجّهه معنا</small></div></div>
+    <div id="c3" class="icard" style="top:1020px"><div class="ic"><svg width="110" height="110" viewBox="0 0 64 64" data-ic="trophy"></svg></div><div class="tx"><span class="gold">تميّزها</span><small>تحفّزها نحو القمّة</small></div></div>
+    <div id="c4" class="line amiri" style="top:1340px;font-size:66px;color:#00843d">ابنتكِ تكبر.. باهتمامك</div>
+  </div>
+
+  <!-- S4 -->
+  <div id="s4" class="scene">
+    <svg id="d_svg" class="abs" width="1080" height="700" viewBox="0 0 1080 700" style="left:0;top:300px"></svg>
+    <div id="d1" class="line" style="top:1060px;font-size:84px;font-weight:900;color:#3a1a12"></div>
+    <div id="d2" class="line ruqaa gold" style="top:1180px;font-size:100px;line-height:1.5"></div>
+  </div>
+
+  <!-- S5 -->
+  <div id="s5" class="scene">
+    <div id="e0" class="line" style="top:130px;font-size:58px;font-weight:800;color:#00843d"></div>
+    <div id="e1" class="center abs ruqaa gold" style="top:215px;font-size:170px;line-height:1.5">اللقاء التربوي</div>
+    <div id="e2" class="line" style="top:490px;font-size:52px;font-weight:800;white-space:nowrap"></div>
+    <div id="e_bar" class="abs tri" style="left:220px;right:220px;top:610px"></div>
+    <div class="abs" style="left:0;right:0;top:670px">
+      <div id="f1" class="irow"><div class="ic"><svg width="74" height="74" viewBox="0 0 64 64" data-ic="cal"></svg></div><div class="tx">الخميس<br><span class="gold">١٩ نوفمبر ٢٠٢٦م</span></div></div>
+      <div id="f2" class="irow"><div class="ic"><svg width="74" height="74" viewBox="0 0 64 64" data-ic="clock"></svg></div><div class="tx">من الساعة <span class="gold">٢:٣٠</span><br><span id="f2b">حتى الساعة <span class="gold">٤:٠٠</span> مساءً</span></div></div>
+      <div id="g1" class="irow"><div class="ic"><svg width="74" height="74" viewBox="0 0 64 64" data-ic="pin"></svg></div><div class="tx">مدرسة أم مالك الأنصارية<br><span class="gold">للبنات (٥-٦)</span></div></div>
+    </div>
+    <div id="e3" class="line amiri" style="top:1530px;font-size:64px;color:#7a0f14">بانتظار حضوركم الكريم</div>
+  </div>
+
+  <!-- S6 -->
+  <div id="s6" class="scene">
+    <div id="h1" class="line ruqaa gold" style="top:110px;font-size:118px;line-height:1.5;white-space:nowrap"></div>
+    <canvas id="flag2" class="abs" width="520" height="320" style="left:50px;top:380px"></canvas>
+    <img id="i_title" class="abs" src="title_red.png" style="left:600px;top:340px;width:380px">
+    <div id="o_names" class="abs" style="left:60px;right:60px;top:830px;height:220px;border-radius:30px;display:flex;
+      background:#fffdf8;border:3px solid #c99a3e;box-shadow:0 12px 34px rgba(122,15,20,.12)">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:2px solid #e3cfa5">
+        <div style="font-size:40px;font-weight:700;color:#00843d">مديرة المدرسة</div>
+        <div class="gold" style="font-size:54px;font-weight:900">أ. أحلام الحمداني</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-size:40px;font-weight:700;color:#00843d">مساعدة المديرة</div>
+        <div class="gold" style="font-size:54px;font-weight:900">أ. فاطمة البادي</div></div>
+    </div>
+    <div id="o_logos" class="abs" style="left:50px;right:50px;top:1090px;height:190px;border-radius:30px;background:#fff;
+      border:3px solid #c99a3e;display:flex;align-items:center;justify-content:center"><img src="logos.png" style="width:930px"></div>
+  </div>
+
+  <!-- persistent: logo + handle -->
+  <div id="sig" class="abs" style="left:110px;right:110px;top:1735px;height:136px;border-radius:70px;display:flex;align-items:center;gap:22px;padding:0 14px 0 40px;
+    background:linear-gradient(135deg,#8c1219,#5c0a10);border:3px solid #e2b55a;box-shadow:0 12px 40px rgba(92,10,16,.4);overflow:hidden">
+    <div id="medal" style="position:relative;width:118px;height:118px;flex:none">
+      <svg width="118" height="118" viewBox="0 0 118 118" style="position:absolute;inset:0"><circle id="ring" cx="59" cy="59" r="56" pathLength="1" fill="none" stroke="#f3cf7a" stroke-width="3.5" stroke-dasharray="1"/></svg>
+      <div style="position:absolute;inset:7px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden">
+        <img src="school_logo.png" style="width:86px"><div id="mshine" style="position:absolute;top:-20px;bottom:-20px;width:40px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);transform:rotate(20deg)"></div></div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;gap:14px;direction:ltr;justify-content:center">
+      <div id="sigicons" style="display:flex;gap:10px"></div>
+      <div style="font-size:56px;font-weight:900;letter-spacing:.5px;color:#f7d98b">@edugovnbt2264</div>
+    </div>
+    <div id="sigsweep" style="position:absolute;top:0;bottom:0;width:160px;background:linear-gradient(90deg,transparent,rgba(255,240,200,.22),transparent)"></div>
+  </div>
+  <div id="flash" class="abs" style="inset:0;background:#fff;opacity:0"></div>
+</div>
+<script>
+const V=2.4, DURATION=54;
+const $=id=>document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const P=(t,a,b)=>clamp((t-a)/(b-a));
+const eOut=x=>1-Math.pow(1-x,3), eInOut=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eBack=x=>{const c=1.6;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+function rng(s){return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646}}
+function vis(t,a,b,f=.6){return Math.min(P(t,a-f/2,a+f/2),1-P(t,b-f/2,b+f/2))}
+function words(id,text){const el=$(id),g=el.classList.contains('gold');if(g)el.classList.remove('gold');el.innerHTML=text.split(' ').map(w=>`<span class="w${g?' gold':''}">${w}</span>`).join(' ')}
+function kin(id,t,a,step=.16,d=.6,mode='rise'){
+  [...$(id).querySelectorAll('.w')].forEach((w,i)=>{const x=P(t,a+i*step,a+i*step+d);const e=eOut(x);
+    w.style.opacity=clamp(x*1.6);
+    w.style.transform=mode==='rise'?`translateY(${(1-e)*70}px) scale(${lerp(.85,1,e)})`:`scale(${lerp(1.8,1,e)})`;
+    w.style.filter=`blur(${(1-e)*14}px)`;})}
+function fadeUp(el,t,a,d=.7,dy=60){const x=eOut(P(t,a,a+d));el.style.opacity=x;el.style.transform=`translateY(${(1-x)*dy}px)`}
+
+// ---------- Omani flag (waving canvas) ----------
+const FW=520,FH=260;const fsrc=document.createElement('canvas');fsrc.width=FW;fsrc.height=FH;
+const emb=new Image();emb.src='emblem_white.png';
+function paintFlag(){const c=fsrc.getContext('2d');
+  c.fillStyle='#ffffff';c.fillRect(0,0,FW,FH/3);c.fillStyle='#db161b';c.fillRect(0,FH/3,FW,FH/3);c.fillStyle='#008000';c.fillRect(0,2*FH/3,FW,FH/3);
+  c.fillStyle='#db161b';c.fillRect(0,0,FW*0.26,FH);
+  if(emb.complete)c.drawImage(emb,10,8,FW*0.26-20,FW*0.26-20);}
+function drawFlag(cv,t,s){const c=cv.getContext('2d');c.clearRect(0,0,cv.width,cv.height);
+  const px=40*s,py=40*s,w=FW*s,h=FH*s;
+  // pole
+  const g=c.createLinearGradient(px-14*s,0,px,0);g.addColorStop(0,'#a87a2a');g.addColorStop(.5,'#f3d58a');g.addColorStop(1,'#a87a2a');
+  c.fillStyle=g;c.fillRect(px-14*s,py-20*s,12*s,cv.height-py);c.beginPath();c.arc(px-8*s,py-26*s,11*s,0,7);c.fillStyle='#e2b55a';c.fill();
+  const step=3;for(let x=0;x<FW;x+=step){const k=x/FW;const ph=x*0.022-t*4.2;
+    const dy=Math.sin(ph)*16*k*s+Math.sin(ph*.5+1)*6*k*s;const sh=Math.cos(ph)*k;
+    c.drawImage(fsrc,x,0,step+1,FH,px+x*s,py+dy,(step+1)*s,h);
+    c.fillStyle=sh>0?`rgba(255,255,255,${sh*.22})`:`rgba(0,0,0,${-sh*.25})`;c.fillRect(px+x*s,py+dy,(step+.6)*s,h);}
+}
+
+// ---------- icons ----------
+const IC={
+ chart:'<path pathLength="1" d="M10 54 H56"/><path pathLength="1" d="M16 46 V36 M28 46 V28 M40 46 V22 M52 46 V12"/><path pathLength="1" d="M12 26 L26 16 L36 22 L54 6 M46 6 H54 V14"/>',
+ shield:'<path pathLength="1" d="M32 6 L54 14 V30 C54 44 44 54 32 58 C20 54 10 44 10 30 V14 Z"/><path pathLength="1" d="M22 31 L29 38 L43 24"/>',
+ trophy:'<path pathLength="1" d="M20 8 H44 V24 A12 12 0 0 1 20 24 Z"/><path pathLength="1" d="M20 13 H10 A9 9 0 0 0 22 30 M44 13 H54 A9 9 0 0 1 42 30"/><path pathLength="1" d="M32 36 V46 M22 56 H42 L39 46 H25 Z"/>',
+ cal:'<rect pathLength="1" x="8" y="12" width="48" height="44" rx="8"/><path pathLength="1" d="M8 26 H56 M20 6 V16 M44 6 V16 M20 38 h6 M30 38 h6 M40 38 h6 M20 47 h6 M30 47 h6"/>',
+ clock:'<circle pathLength="1" cx="32" cy="32" r="25"/><path pathLength="1" d="M32 16 V32 L43 39"/>',
+ pin:'<path pathLength="1" d="M32 58 C18 42 12 33 12 24 a20 20 0 0 1 40 0 C52 33 46 42 32 58Z"/><circle pathLength="1" cx="32" cy="24" r="7"/>',
+ heart:'<path pathLength="1" d="M50 86 C14 62 8 42 16 28 C24 14 44 16 50 32 C56 16 76 14 84 28 C92 42 86 62 50 86Z"/>'
+};
+document.querySelectorAll('[data-ic]').forEach(s=>{const dark=s.closest('.irow');s.innerHTML=`<g class="draw" stroke="${dark?'#fff':'#8c1219'}" stroke-width="${dark?5:4}">${IC[s.dataset.ic]}</g>`});
+$('a2heart').innerHTML=`<g class="draw" stroke="#c8102e" stroke-width="5">${IC.heart}</g>`;
+function drawIcons(root,t,a,d=1){root.querySelectorAll('[pathLength]').forEach((p,i)=>{const x=eInOut(P(t,a+i*.12,a+i*.12+d));p.style.strokeDasharray='1';p.style.strokeDashoffset=1-x})}
+const SOC={
+ ig:`<svg width="52" height="52" viewBox="0 0 74 74"><rect x="3" y="3" width="68" height="68" rx="20" fill="none" stroke="#f7d98b" stroke-width="5"/><circle cx="37" cy="37" r="13" fill="none" stroke="#f7d98b" stroke-width="5"/><circle cx="54" cy="20" r="4" fill="#f7d98b"/></svg>`,
+ x:`<svg width="52" height="52" viewBox="0 0 74 74"><rect x="3" y="3" width="68" height="68" rx="20" fill="none" stroke="#f7d98b" stroke-width="5"/><path d="M22 20 L52 54 M52 20 L22 54" stroke="#f7d98b" stroke-width="6" stroke-linecap="round"/></svg>`};
+$('sigicons').innerHTML=SOC.ig+SOC.x;
+
+// ---------- mabkhara (incense burner) ----------
+$('mab').innerHTML=`
+<g id="smoke" fill="none" stroke-linecap="round"></g>
+<g transform="translate(140,170)">
+ <path d="M-70 0 Q-80 -8 -64 -14 H64 Q80 -8 70 0 Z" fill="#c99a3e"/>
+ <path d="M-62 0 H62 L50 50 H-50 Z" fill="#c8102e"/>
+ <path d="M-50 50 H50 L44 64 H-44 Z" fill="#7a0f14"/>
+ <rect x="-44" y="64" width="88" height="46" fill="#00843d"/>
+ <path d="M-56 110 H56 L64 132 H-64 Z" fill="#c99a3e"/>
+ ${[-36,-12,12,36].map(x=>`<path d="M${x-10} 6 L${x} 34 L${x+10} 6Z" fill="#fff" opacity=".85"/><circle cx="${x}" cy="88" r="7" fill="#f3cf7a"/>`).join('')}
+ <path d="M-62 0 H62" stroke="#f3cf7a" stroke-width="4"/>
+ <g id="coal">${[-24,-6,12,28].map((x,i)=>`<ellipse cx="${x}" cy="-14" rx="12" ry="7" fill="${i%2?'#ff7a2a':'#e2421b'}"/>`).join('')}</g>
+</g>`;
+// ---------- background ----------
+(function(){
+ $('pattern').innerHTML='<defs><pattern id="km" width="120" height="120" patternUnits="userSpaceOnUse"><g fill="none" stroke="#8c1219" stroke-width="1.6">'+
+  '<path d="M60 10 L110 60 L60 110 L10 60Z"/><path d="M60 34 L86 60 L60 86 L34 60Z"/><circle cx="60" cy="60" r="5" fill="#00843d" stroke="none"/>'+
+  '<path d="M0 0 L10 10 M120 0 L110 10 M0 120 L10 110 M120 120 L110 110"/></g></pattern>'+
+  '<radialGradient id="pg" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".6" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="1"/></radialGradient>'+
+  '<mask id="pm"><rect width="1080" height="1920" fill="url(#pg)"/></mask></defs>'+
+  '<g mask="url(#pm)"><rect id="patrect" x="-300" y="-300" width="1680" height="2520" fill="url(#km)" opacity=".09"/></g>'+
+  // kumma-style embroidered top band
+  '<g id="topband">'+Array.from({length:28},(_,i)=>`<path d="M${i*40} 0 L${i*40+20} 26 L${i*40+40} 0Z" fill="${i%2?'#00843d':'#c8102e'}"/>`).join('')+'<rect y="26" width="1080" height="5" fill="#c99a3e"/></g>';
+ // skyline: forts, palms, dhow
+ const tower=(x,w,h,col)=>`<rect x="${x}" y="${300-h}" width="${w}" height="${h+220}" fill="${col}"/>`+Array.from({length:Math.floor(w/22)},(_,i)=>`<rect x="${x+4+i*22}" y="${300-h-16}" width="12" height="18" fill="${col}"/>`).join('');
+ const round=(x,r,h,col)=>`<rect x="${x-r}" y="${300-h}" width="${2*r}" height="${h+220}" fill="${col}"/><ellipse cx="${x}" cy="${300-h}" rx="${r}" ry="12" fill="${col}"/>`+Array.from({length:7},(_,i)=>`<rect x="${x-r+6+i*(2*r-12)/7}" y="${300-h-22}" width="10" height="16" fill="${col}"/>`).join('')+`<rect x="${x-6}" y="${300-h+40}" width="12" height="26" rx="6" fill="#efdfc2" opacity=".6"/>`;
+ const palm=(x,y,s,col)=>`<g transform="translate(${x},${y}) scale(${s})" class="palm"><path d="M-6 0 Q0 -90 8 -170 L16 -170 Q8 -90 8 0Z" fill="${col}"/><g class="fr" transform="translate(12,-172)">${[-160,-125,-85,-45,-10,25].map(a=>`<path d="M0 0 Q55 -28 110 18 Q55 -6 0 6Z" fill="${col}" transform="rotate(${a})"/>`).join('')}</g></g>`;
+ const far='#e6d0a6',mid='#d6b98a',near='#b8915e';
+ $('sky').innerHTML=`<g id="skyfar">${tower(40,150,90,far)}${round(300,60,150,far)}${tower(420,240,70,far)}${round(760,70,170,far)}${tower(860,200,100,far)}</g>
+ <g id="skymid">${palm(120,330,1,mid)}${palm(190,345,.8,mid)}${tower(560,180,40,mid)}${palm(980,330,1.1,mid)}${palm(900,350,.75,mid)}</g>
+ <rect y="330" width="1080" height="200" fill="${mid}"/><rect y="350" width="1080" height="200" fill="#9fc9c4" opacity=".55"/>
+ <g id="dhow" transform="translate(600,350)"><path d="M-120 -6 Q-60 26 110 4 L140 -26 L118 -8 L-130 -14Z" fill="#7a4a24"/><path d="M-10 -10 L0 -150 L6 -10Z" fill="#7a4a24"/><path d="M2 -146 Q90 -90 70 -20 L4 -24Z" fill="#fffaf1" stroke="#c99a3e" stroke-width="2"/></g>
+ <g fill="#fff" opacity=".5" id="waves">${Array.from({length:14},(_,i)=>`<path d="M${i*80} 380 q20 -8 40 0" stroke="#fff" stroke-width="3" fill="none"/>`).join('')}</g>`;
+ const corner=(x,y,r)=>`<g transform="translate(${x},${y}) rotate(${r})"><path d="M0 0 H140 M0 0 V140" stroke="#c99a3e" stroke-width="3"/><path d="M14 14 H100 M14 14 V100" stroke="#c8102e" stroke-width="2"/><path d="M26 26 L50 26 L26 50Z" fill="#00843d"/></g>`;
+ $('frame').innerHTML=`<g id="fr">${corner(28,48,0)}${corner(1052,48,90)}</g>`;
+ const r=rng(5);let d='';for(let i=0;i<55;i++){d+=`<circle class="du" data-x="${r()*1080}" data-y="${r()*1920}" data-s="${8+r()*24}" data-p="${r()*6.3}" r="${1.5+r()*4}" fill="${['#c99a3e','#c8102e','#00843d'][i%3]}"/>`}
+ $('dust').innerHTML=d})();
+const DU=[...document.querySelectorAll('.du')];
+
+// S4 house <-> school(fort)
+$('d_svg').innerHTML=`
+<g transform="translate(250,330)"><circle r="170" fill="#fffdf8" stroke="#00843d" stroke-width="4"/>
+ <g class="draw" stroke="#8c1219" stroke-width="7" id="house"><path pathLength="1" d="M-75 70 V-30 H75 V70 Z"/><path pathLength="1" d="M-75 -30 v-14 h12 v8 h14 v-8 h14 v8 h14 v-8 h14 v8 h14 v-8 h14 v8 h14 v-8 h12 v14"/><path pathLength="1" d="M-20 70 V20 A20 20 0 0 1 20 20 V70"/></g></g>
+<g transform="translate(830,330)"><circle r="170" fill="#fffdf8" stroke="#c8102e" stroke-width="4"/>
+ <g class="draw" stroke="#8c1219" stroke-width="7" id="school"><path pathLength="1" d="M-95 75 H95 M-60 75 V-5 H60 V75"/><path pathLength="1" d="M-95 75 V-40 H-60 V75 M95 75 V-40 H60 V75"/><path pathLength="1" d="M-95 -40 v-14 h10 v8 h10 v-8 h10 v8 h5 M95 -40 v-14 h-10 v8 h-10 v-8 h-10 v8 h-5 M-15 75 V35 A15 15 0 0 1 15 35 V75 M0 -5 V-60 L26 -50 L0 -40"/></g></g>
+<path id="link" pathLength="1" d="M420 330 C500 230 580 230 660 330" fill="none" stroke="#00843d" stroke-width="7" stroke-dasharray="1" stroke-linecap="round"/>
+<path id="link2" pathLength="1" d="M420 330 C500 430 580 430 660 330" fill="none" stroke="#c8102e" stroke-width="7" stroke-dasharray="1" stroke-linecap="round"/>
+<g id="dheart" transform="translate(540,330)"><path d="M0 34 C-44 6 -36 -32 -14 -32 C-5 -32 0 -22 0 -17 C0 -22 5 -32 14 -32 C36 -32 44 6 0 34Z" fill="#c8102e"/></g>`;
+
+words('a1','وليَّ الأمرِ الكريم');words('a2','ابنتُك تنتظرُ حضورَك');
+words('b1','زيارتُك للمدرسة');words('b1b','ليست موعداً عابراً..');words('b2','بل رسالةُ حبٍّ');words('b3','واهتمام');
+words('c0','حين تلتقي بالمعلّمات..');words('d1','البيتُ والمدرسة');words('d2','شريكان في صناعة المستقبل');
+words('e0','يسعدنا دعوتكم لحضور');words('e2','بين أولياء الأمور والهيئة التعليمية');words('h1','حضورُك.. يصنعُ الفرق');
+
+const C={a1:0+V,a2:1.95+V,b1:4.45+V,b2:8.3+V,c0:10.95+V,c1:13.1+V,c2:16.2+V,c3:18.0+V,d1:20.43+V,d2:22.17+V,
+ e:25.1+V,f1:31.7+V,f2:33.0+V,f3:37.3+V,g:38.86+V,h:42.3+V,i:44.88+V,end:47+V};
+const S=[[0,C.b1-.25],[C.b1-.25,C.c0-.3],[C.c0-.3,C.d1-.3],[C.d1-.3,C.e-.3],[C.e-.3,C.h-.3],[C.h-.3,DURATION+1]];
+
+function seek(t){
+  paintFlag();
+  $('patrect').setAttribute('transform',`translate(${(t*8)%120},${(t*5)%120})`);
+  $('skyfar').setAttribute('transform',`translate(${-t*1.2},0)`);
+  $('dhow').setAttribute('transform',`translate(${700-t*6},${350+Math.sin(t*1.6)*4}) rotate(${Math.sin(t*1.6)*2})`);
+  $('waves').setAttribute('transform',`translate(${(t*20)%80-80},0)`);
+  document.querySelectorAll('#sky .fr').forEach((f,i)=>f.setAttribute('transform',`translate(12,-172) rotate(${Math.sin(t*1.4+i)*4})`));
+  DU.forEach(c=>{const s=+c.dataset.s,p=+c.dataset.p;const y=((+c.dataset.y-t*s)%1960+1960)%1960-20;
+    c.setAttribute('cx',+c.dataset.x+Math.sin(t*.6+p)*24);c.setAttribute('cy',y);c.setAttribute('opacity',.15+.4*Math.pow(Math.sin(t*1.8+p),2))});
+  $('topband').setAttribute('transform',`translate(0,${-31*(1-eOut(P(t,.1,.9)))})`);
+  $('fr').setAttribute('opacity',eOut(P(t,.3,1.4)));
+  S.forEach(([a,b],i)=>$('s'+(i+1)).style.opacity=i===0?1-P(t,b-.3,b+.3):vis(t,a,b));
+  $('flash').style.opacity=Math.max(0,...S.slice(1).map(([a])=>.25*(1-Math.abs(t-a)/.35)));
+  document.querySelectorAll('.gold').forEach(g=>g.style.backgroundPosition=`${(t*22)%300}% 0`);
+  { const sg=$('sig'),x=eOut(P(t,.5,1.3));sg.style.opacity=x;sg.style.transform=`translateY(${(1-x)*160}px)`;
+    $('ring').style.strokeDashoffset=1-eInOut(P(t,1.0,2.2));
+    $('medal').style.transform=`scale(${lerp(.4,1,eBack(P(t,1.0,1.7)))})`;
+    $('medal').style.filter=`drop-shadow(0 0 ${8+8*Math.sin(t*2.2)}px rgba(247,217,139,.7))`;
+    const mp=(t%4);$('mshine').style.left=(mp<1?lerp(-60,130,mp):-80)+'px';
+    $('sigsweep').style.left=(((t*0.25)%1.4)*1100-200)+'px'; }
+
+  if(t<C.b1+1){
+    fadeUp($('s1logos'),t,.1,.9,-80);
+    const fp=eOut(P(t,.4,1.4));const f1=$('flag1');f1.style.opacity=fp;f1.style.transform=`scale(${lerp(.7,1,fp)})`;drawFlag(f1,t,1.15);
+    const tp=P(t,1.0,2.6);const ti=$('s1title');ti.style.opacity=eOut(tp);ti.style.clipPath=`inset(${(1-eInOut(tp))*100}% 0 0 0)`;
+    ti.style.transform=`scale(${lerp(.9,1,eOut(tp))*(1+.015*Math.sin(t*2))})`;
+    kin('a1',t,C.a1,.2,.7);kin('a2',t,C.a2,.28,.8,'zoom');
+    drawIcons($('a2heart'),t,C.a2+.9,1.2);$('a2heart').style.transform=`scale(${1+.06*Math.sin(t*5)})`;
+  }
+  if(t>C.b1-1&&t<C.c0+1){
+    const m=$('mab');const mx=eBack(P(t,C.b1-.2,C.b1+.6));m.style.transform=`scale(${mx}) translateY(${Math.sin(t*1.5)*6}px)`;
+    let sm='';for(let i=0;i<5;i++){const ph=t*.9+i*1.3;let d='M'+(115+i*12)+' 160';for(let k=1;k<=6;k++){d+=` Q${115+i*12+Math.sin(ph+k)*26} ${160-k*22+11} ${115+i*12+Math.sin(ph+k+.6)*18} ${160-k*22}`}
+      sm+=`<path d="${d}" stroke="${i%2?'#d9c7b4':'#bfaea0'}" stroke-width="${7-i*.6}" opacity="${.35+.2*Math.sin(t*2+i)}"/>`}
+    $('smoke').innerHTML=sm;$('coal').setAttribute('opacity',.75+.25*Math.sin(t*9));
+    kin('b1',t,C.b1+.1,.2);kin('b1b',t,C.b1+1.4,.25);
+    $('b_bar').style.transform=`scaleX(${eOut(P(t,C.b2-.6,C.b2))})`;
+    kin('b2',t,C.b2,.3,.8,'zoom');kin('b3',t,C.b2+1.1,.3,.8,'zoom');
+  }
+  if(t>C.c0-1&&t<C.d1+1){
+    kin('c0',t,C.c0,.2);$('c0b').style.transform=`scaleX(${eOut(P(t,C.c0+.4,C.c0+1.2))})`;
+    [['c1',C.c1],['c2',C.c2],['c3',C.c3]].forEach(([id,a])=>{const el=$(id);const x=eOut(P(t,a-.3,a+.4));
+      el.style.opacity=x;el.style.transform=`translateX(${(1-x)*-200}px) scale(${1+.03*Math.max(0,1-Math.abs(t-a-.6)/1.0)})`;drawIcons(el,t,a-.1,1)});
+    fadeUp($('c4'),t,C.c3+1.2,.8,40);
+  }
+  if(t>C.d1-1&&t<C.e+1){
+    drawIcons($('house'),t,C.d1-.2,1);drawIcons($('school'),t,C.d1+.2,1);
+    $('link').style.strokeDashoffset=1-eInOut(P(t,C.d1+.9,C.d2+.3));$('link2').style.strokeDashoffset=1-eInOut(P(t,C.d1+1.1,C.d2+.5));
+    $('dheart').setAttribute('transform',`translate(540,330) scale(${eBack(P(t,C.d2+.2,C.d2+.8))*(1+.08*Math.sin(t*6))})`);
+    kin('d1',t,C.d1,.25);kin('d2',t,C.d2,.22,.7);
+  }
+  if(t>C.e-1&&t<C.h+1){
+    kin('e0',t,C.e,.18);
+    const e1=$('e1');const ex=P(t,C.e+.6,C.e+1.6);e1.style.opacity=eOut(ex);e1.style.transform=`scale(${lerp(1.4,1,eOut(ex))})`;e1.style.filter=`blur(${(1-eOut(ex))*16}px)`;
+    kin('e2',t,C.e+3.0,.15);$('e_bar').style.transform=`scaleX(${eOut(P(t,C.e+4,C.e+5))})`;
+    [['f1',C.f1-.3],['f2',C.f2-.3],['g1',C.g-.3]].forEach(([id,a])=>{const el=$(id),x=eOut(P(t,a,a+.6));el.style.opacity=x;el.style.transform=`translateX(${(1-x)*220}px)`;drawIcons(el,t,a+.1,.9)});
+    $('f2b').style.opacity=.15+.85*eOut(P(t,C.f3-.3,C.f3+.3));
+    fadeUp($('e3'),t,C.g+2.0,.8,40);
+  }
+  if(t>C.h-1){
+    kin('h1',t,C.h,.3,.8,'zoom');
+    const fp=eOut(P(t,C.h+.4,C.h+1.4));const f2=$('flag2');f2.style.opacity=fp;f2.style.transform=`translateX(${(1-fp)*-80}px)`;drawFlag(f2,t,.85);
+    const ip=P(t,C.i-.2,C.i+1.2);const it=$('i_title');it.style.opacity=eOut(ip);it.style.clipPath=`inset(${(1-eInOut(ip))*100}% 0 0 0)`;it.style.transform=`scale(${lerp(.85,1,eOut(ip))*(1+.015*Math.sin(t*2))})`;
+    fadeUp($('o_names'),t,C.end+.2,.7,80);fadeUp($('o_logos'),t,C.end+.6,.7,80);
+  }
+}
+window.seek=seek;window.DURATION=DURATION;
+Promise.all([document.fonts.ready,new Promise(r=>{if(emb.complete)r();else emb.onload=r})]).then(()=>{window.READY=true});
+</script>
+</body>
+</html>

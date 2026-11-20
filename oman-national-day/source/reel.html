@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+@font-face{font-family:CairoAr;font-weight:400;src:url(fonts/cairo-arabic-400-normal.woff2)}
+@font-face{font-family:CairoAr;font-weight:700;src:url(fonts/cairo-arabic-700-normal.woff2)}
+@font-face{font-family:CairoAr;font-weight:900;src:url(fonts/cairo-arabic-900-normal.woff2)}
+@font-face{font-family:CairoLat;font-weight:400;src:url(fonts/cairo-latin-400-normal.woff2)}
+@font-face{font-family:CairoLat;font-weight:700;src:url(fonts/cairo-latin-700-normal.woff2)}
+@font-face{font-family:CairoLat;font-weight:900;src:url(fonts/cairo-latin-900-normal.woff2)}
+@font-face{font-family:Kufi;font-weight:700;src:url(fonts/reem-kufi-arabic-700-normal.woff2)}
+@font-face{font-family:Amiri;font-weight:700;src:url(fonts/amiri-arabic-700-normal.woff2)}
+:root{--red:#D2161E;--green:#0B7A3B;--gold:#E2B65A;--gold2:#F6D58E;--ink:#2A1608;--cream:#FFF6E6}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#1a0b06}
+body{font-family:CairoAr,CairoLat,sans-serif;color:#fff}
+#stage{position:absolute;inset:0;overflow:hidden}
+canvas{position:absolute;inset:0}
+.abs{position:absolute;left:0;right:0;text-align:center}
+.layer{position:absolute;inset:0}
+.gold{color:var(--gold2);text-shadow:0 4px 18px rgba(0,0,0,.45)}
+.kufi{font-family:Kufi,CairoAr}
+.amiri{font-family:Amiri,CairoAr}
+.pill{display:inline-block;padding:14px 46px;border-radius:999px;font-weight:700;font-size:46px;
+  background:linear-gradient(90deg,var(--red),#a10e14);box-shadow:0 10px 30px rgba(0,0,0,.35);border:3px solid var(--gold)}
+/* infographic */
+#info{background:transparent}
+.panel{position:absolute;left:60px;right:60px;top:380px;bottom:150px;border-radius:44px;
+  background:linear-gradient(180deg,#FFF8EC,#F7E7CC);box-shadow:0 30px 80px rgba(0,0,0,.45);overflow:hidden;border:4px solid var(--gold)}
+.panel .stripe{position:absolute;top:0;bottom:0;right:0;width:26px;background:linear-gradient(180deg,#fff 0 33%,var(--red) 33% 66%,var(--green) 66%);border-left:3px solid var(--gold)}
+.row{position:absolute;left:60px;right:70px;height:236px;display:flex;align-items:center;gap:34px;color:var(--ink)}
+.row .ic{width:180px;height:180px;flex:none;border-radius:40px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 24px rgba(0,0,0,.18)}
+.row .ic svg{width:120px;height:120px}
+.row .tx{flex:1;text-align:right}
+.row .num{font-family:CairoLat,CairoAr;font-weight:900;font-size:96px;line-height:1;direction:ltr;display:inline-block}
+.row .unit{font-weight:700;font-size:44px;margin-right:12px;color:#7a4a1c}
+.row .lab{font-weight:700;font-size:40px;line-height:1.3;color:#4a2b10;margin-top:6px}
+.row .bar{height:10px;border-radius:9px;background:#ead6b3;margin-top:14px;overflow:hidden}
+.row .bar i{display:block;height:100%;border-radius:9px}
+.sep{position:absolute;left:100px;right:100px;height:2px;background:repeating-linear-gradient(90deg,#d8bf93 0 14px,transparent 14px 26px)}
+/* heritage */
+.hcard{position:absolute;width:300px;height:330px;border-radius:40px;background:rgba(255,248,236,.96);
+  box-shadow:0 20px 50px rgba(0,0,0,.4);border:4px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink)}
+.hcard svg{width:170px;height:170px}
+.hcard b{font-size:44px;font-weight:900;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="bg" width="1080" height="1920"></canvas>
+
+  <!-- Scene 1: title -->
+  <div class="layer" id="s1">
+    <div class="abs gold" id="s1a" style="top:300px;font-size:62px;font-weight:700">بمناسبة</div>
+    <div class="abs kufi" id="s1b" style="top:380px;font-size:150px;line-height:1.15;color:#fff;text-shadow:0 8px 30px rgba(0,0,0,.5)">العيد الوطني</div>
+    <div class="abs kufi gold" id="s1c" style="top:560px;font-size:110px">لسلطنة عُمان</div>
+    <div class="abs" id="s1d" style="top:760px"><span class="pill"><span style="font-family:CairoLat">20</span> نوفمبر <span style="font-family:CairoLat">2026</span></span></div>
+  </div>
+
+  <!-- Scene 2: 56 -->
+  <div class="layer" id="s2">
+    <div class="abs" id="s2n" style="top:250px;font-family:CairoLat;font-weight:900;font-size:430px;line-height:1;
+      background:linear-gradient(180deg,#FFF1C9,#E2B65A 55%,#B07A22);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 14px 30px rgba(0,0,0,.5))">56</div>
+    <div class="abs kufi" id="s2a" style="top:720px;font-size:84px;line-height:1.35">العيد الوطني<br><span class="gold">السادس والخمسون المجيد</span></div>
+    <div class="abs" id="s2b" style="top:1000px;font-size:46px;font-weight:700;opacity:.95">
+      مسيرةُ دولةٍ منذ عام <span style="font-family:CairoLat;color:var(--gold2)">1744</span><br>بقيادة الإمام أحمد بن سعيد البوسعيدي</div>
+  </div>
+
+  <!-- Scene 3: infographic -->
+  <div class="layer" id="s3">
+    <div class="abs kufi" id="s3t" style="top:150px;font-size:110px;text-shadow:0 8px 24px rgba(0,0,0,.5)">عُمان <span class="gold">في أرقام</span></div>
+    <div class="panel" id="panel"><div class="stripe"></div><div id="rows"></div></div>
+  </div>
+
+  <!-- Scene 4: heritage -->
+  <div class="layer" id="s4">
+    <div class="abs kufi" id="s4t" style="top:170px;font-size:104px;line-height:1.3;text-shadow:0 8px 24px rgba(0,0,0,.5)">تراثٌ أصيل<br><span class="gold">وهويةٌ عُمانية</span></div>
+    <div id="hcards"></div>
+  </div>
+
+  <!-- Scene 5: finale -->
+  <div class="layer" id="s5">
+    <div class="abs amiri" id="s5a" style="top:1060px;font-size:132px;line-height:1.3;text-shadow:0 8px 30px rgba(0,0,0,.6)">كل عام<br>وعُمان بخير</div>
+    <div class="abs kufi gold" id="s5b" style="top:1430px;font-size:64px">دامت عُمان عزيزةً شامخة</div>
+    <div class="abs" id="s5c" style="top:1560px"><span class="pill" style="font-size:42px">العيد الوطني <span style="font-family:CairoLat">56</span> · <span style="font-family:CairoLat">20</span> نوفمبر</span></div>
+  </div>
+</div>
+
+<script>
+// ---------- helpers ----------
+const W=1080,H=1920;
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const lin=(t,a,b)=>cl((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3);
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eb=x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+const $=id=>document.getElementById(id);
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function show(el,o,dy=0,s=1){el.style.opacity=o;el.style.transform=`translateY(${dy}px) scale(${s})`;el.style.visibility=o<=0.001?'hidden':'visible'}
+
+// ---------- icons (SVG) ----------
+const ICON={
+ calendar:`<svg viewBox="0 0 100 100"><rect x="12" y="20" width="76" height="68" rx="10" fill="#fff"/><rect x="12" y="20" width="76" height="20" rx="10" fill="#fff" opacity=".6"/><rect x="28" y="10" width="8" height="20" rx="4" fill="#fff"/><rect x="64" y="10" width="8" height="20" rx="4" fill="#fff"/><g fill="#D2161E"><rect x="24" y="50" width="12" height="10" rx="2"/><rect x="44" y="50" width="12" height="10" rx="2"/><rect x="64" y="50" width="12" height="10" rx="2"/><rect x="24" y="68" width="12" height="10" rx="2"/><rect x="44" y="68" width="12" height="10" rx="2" fill="#0B7A3B"/></g></svg>`,
+ wave:`<svg viewBox="0 0 100 100"><circle cx="72" cy="28" r="12" fill="#FFE08A"/><path d="M6 58q11-12 22 0t22 0 22 0 22 0v8q-11 12-22 0t-22 0-22 0-22 0z" fill="#fff"/><path d="M6 76q11-12 22 0t22 0 22 0 22 0v8q-11 12-22 0t-22 0-22 0-22 0z" fill="#fff" opacity=".7"/><path d="M30 50l10-26 10 26z" fill="#fff"/><path d="M40 22v28" stroke="#fff" stroke-width="3"/></svg>`,
+ mountain:`<svg viewBox="0 0 100 100"><path d="M4 88L38 26l14 22 10-14 34 54z" fill="#fff"/><path d="M38 26l9 16-6-2-5 6-5-6-6 3z" fill="#B6E3FF"/><path d="M62 34l8 12-5-1-4 4-3-5z" fill="#B6E3FF"/><path d="M38 26V8" stroke="#fff" stroke-width="3"/><path d="M38 8h16l-4 5 4 5H38z" fill="#FFE08A"/></svg>`,
+ fort:`<svg viewBox="0 0 100 100"><path d="M10 90V50h8v-6h6v6h6v-6h6v6h6V40h6v-6h6v6h6v6h-0V50h6v-6h6v6h6v-6h6v6h6v40z" fill="#fff"/><path d="M42 90V70a8 8 0 0116 0v20z" fill="#0B7A3B"/><rect x="22" y="60" width="6" height="10" rx="3" fill="#0B7A3B"/><rect x="72" y="60" width="6" height="10" rx="3" fill="#0B7A3B"/><path d="M50 34V14" stroke="#fff" stroke-width="3"/><path d="M50 14h18v10H50z" fill="#D2161E"/></svg>`,
+ area:`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="none" stroke="#fff" stroke-width="6"/><path d="M50 12v76M12 50h76" stroke="#fff" stroke-width="3" opacity=".6"/><ellipse cx="50" cy="50" rx="18" ry="38" fill="none" stroke="#fff" stroke-width="3" opacity=".6"/><path d="M50 26c-10 0-17 7-17 16 0 12 17 28 17 28s17-16 17-28c0-9-7-16-17-16z" fill="#FFE08A"/><circle cx="50" cy="42" r="6" fill="#D2161E"/></svg>`,
+ khanjar:`<svg viewBox="0 0 100 100"><path d="M50 6c-8 0-14 4-14 8h28c0-4-6-8-14-8z" fill="#C8962E"/><rect x="44" y="14" width="12" height="16" rx="3" fill="#7a4a1c"/><rect x="34" y="30" width="32" height="8" rx="4" fill="#C8962E"/><path d="M40 38h20v26c0 10 6 16 16 18-6 8-22 10-30 0-5-6-6-12-6-20z" fill="#E2B65A"/><path d="M44 44h12M44 52h12M45 60h11" stroke="#9b6a1e" stroke-width="2.5"/><circle cx="68" cy="78" r="3" fill="#9b6a1e"/></svg>`,
+ dallah:`<svg viewBox="0 0 100 100"><path d="M46 8h8l2 8h-12z" fill="#C8962E"/><path d="M38 16h24l-3 10H41z" fill="#E2B65A"/><path d="M41 26h18c8 10 12 22 12 36 0 14-8 22-21 22S29 76 29 62c0-14 4-26 12-36z" fill="#E2B65A"/><path d="M33 40C20 36 12 26 8 14c10 6 18 10 26 12z" fill="#C8962E"/><path d="M70 36c12 2 14 22 2 30" fill="none" stroke="#C8962E" stroke-width="5"/><ellipse cx="50" cy="84" rx="20" ry="5" fill="#9b6a1e"/><path d="M33 54h34" stroke="#9b6a1e" stroke-width="3"/></svg>`,
+ dhow:`<svg viewBox="0 0 100 100"><path d="M8 66h84l-12 16H22z" fill="#8B5A2B"/><path d="M8 66l-2-6 8 6z" fill="#8B5A2B"/><path d="M48 66V16" stroke="#5a3a1a" stroke-width="3"/><path d="M50 14C70 26 82 44 86 60H50z" fill="#fff" stroke="#e7d3b0" stroke-width="2"/><path d="M46 22C34 34 26 48 22 60h24z" fill="#F6EBD6"/><path d="M4 88q12-6 23 0t23 0 23 0 23 0" stroke="#3aa0c8" stroke-width="4" fill="none"/></svg>`,
+ incense:`<svg viewBox="0 0 100 100"><path d="M30 18c6 6-6 10 0 16s-6 10 0 16" fill="none" stroke="#bbb" stroke-width="4" stroke-linecap="round"/><path d="M50 10c6 7-6 11 0 18s-6 11 0 18" fill="none" stroke="#ccc" stroke-width="4" stroke-linecap="round"/><path d="M70 18c6 6-6 10 0 16s-6 10 0 16" fill="none" stroke="#bbb" stroke-width="4" stroke-linecap="round"/><path d="M22 54h56l-8 16H30z" fill="#D2161E"/><path d="M30 70h40l-6 8H36z" fill="#0B7A3B"/><path d="M36 78h28l4 12H32z" fill="#E2B65A"/><circle cx="40" cy="52" r="4" fill="#F6D58E"/><circle cx="52" cy="50" r="5" fill="#F6D58E"/><circle cx="62" cy="52" r="4" fill="#F6D58E"/></svg>`,
+ palm:`<svg viewBox="0 0 100 100"><path d="M50 92c-2-24 0-44 4-58" stroke="#8B5A2B" stroke-width="7" fill="none" stroke-linecap="round"/><g fill="#0B7A3B"><path d="M54 32C44 18 26 18 14 28c14-2 26 0 40 6z"/><path d="M54 32C64 16 82 16 92 28c-14-2-26 0-38 6z"/><path d="M54 32C40 30 26 40 22 56c10-10 20-16 32-22z"/><path d="M54 32c14-2 26 8 28 24-8-10-18-16-28-22z"/><path d="M54 32C52 18 58 8 70 4c-6 8-10 16-14 28z"/></g><g fill="#C8962E"><circle cx="48" cy="38" r="4"/><circle cx="56" cy="40" r="4"/><circle cx="52" cy="44" r="4"/></g></svg>`,
+ fortH:`<svg viewBox="0 0 100 100"><path d="M8 92V48h6v-6h6v6h6v-6h6v6h4V30a14 14 0 0128 0v18h4v-6h6v6h6v-6h6v6h6v44z" fill="#C9A06A"/><path d="M36 30a14 14 0 0128 0" fill="#B98C55"/><g fill="#8B5A2B"><rect x="46" y="34" width="8" height="10" rx="4"/><rect x="18" y="58" width="6" height="10" rx="3"/><rect x="76" y="58" width="6" height="10" rx="3"/></g><path d="M42 92V76a8 8 0 0116 0v16z" fill="#6b3f1a"/><path d="M50 16V2" stroke="#6b3f1a" stroke-width="2.5"/><path d="M50 2h14v8H50z" fill="#D2161E"/></svg>`,
+};
+
+// ---------- infographic rows ----------
+const ROWS=[
+ {ic:'calendar',bg:'#D2161E',to:1744,fmt:v=>String(Math.round(v)),unit:'م',lab:'تأسيس الدولة البوسعيدية<br>على يد الإمام أحمد بن سعيد',bar:1},
+ {ic:'wave',bg:'#1F7FB0',to:3165,fmt:v=>Math.round(v).toLocaleString('en'),unit:'كم',lab:'طول السواحل العُمانية<br>على ثلاثة بحار وخليجين',bar:.78},
+ {ic:'mountain',bg:'#0B7A3B',to:3009,fmt:v=>Math.round(v).toLocaleString('en'),unit:'م',lab:'ارتفاع جبل شمس<br>أعلى قمة في عُمان',bar:.74},
+ {ic:'fort',bg:'#B07A22',to:5,fmt:v=>String(Math.round(v)),unit:'مواقع',lab:'ضمن التراث العالمي لليونسكو<br>منها قلعة بهلا والأفلاج',bar:.5},
+ {ic:'area',bg:'#7B2CBF',to:309500,fmt:v=>(Math.round(v/100)*100).toLocaleString('en'),unit:'كم²',lab:'المساحة التقريبية<br>لسلطنة عُمان',bar:.9},
+];
+const ROW_T=[8.8,10.8,12.8,14.8,16.8];
+(function(){
+  let h='';ROWS.forEach((r,i)=>{
+    const top=40+i*262;
+    h+=`<div class="row" id="row${i}" style="top:${top}px"><div class="ic" style="background:${r.bg}">${ICON[r.ic]}</div>
+      <div class="tx"><div><span class="num" id="num${i}" style="color:${r.bg}">0</span><span class="unit">${r.unit}</span></div>
+      <div class="lab">${r.lab}</div><div class="bar"><i id="bar${i}" style="background:${r.bg};width:0"></i></div></div></div>`;
+    if(i<4) h+=`<div class="sep" style="top:${top+249}px"></div>`;
+  });
+  $('rows').innerHTML=h;
+})();
+// ---------- heritage cards ----------
+const HC=[['khanjar','الخنجر'],['dallah','الدلّة'],['dhow','السفن الشراعية'],['incense','اللبان'],['palm','النخلة'],['fortH','القلاع']];
+(function(){let h='';HC.forEach((c,i)=>{const col=i%2,row=Math.floor(i/2);
+  const x=col?120:660,y=560+row*380;
+  h+=`<div class="hcard" id="hc${i}" style="left:${x}px;top:${y}px">${ICON[c[0]]}<b style="${c[1].length>8?'font-size:36px':''}">${c[1]}</b></div>`});
+  $('hcards').innerHTML=h;})();
+
+// ---------- canvas: flag, landscape, fireworks ----------
+const cv=$('bg'),cx=cv.getContext('2d');
+// flat flag (Oman) 600x300
+const FW=600,FH=300;
+const flat=document.createElement('canvas');flat.width=FW;flat.height=FH;
+(function(){const g=flat.getContext('2d');
+  const bw=FW*0.25; // red hoist band
+  g.fillStyle='#fff';g.fillRect(0,0,FW,FH/3);
+  g.fillStyle='#D2161E';g.fillRect(0,FH/3,FW,FH/3);
+  g.fillStyle='#0B7A3B';g.fillRect(0,2*FH/3,FW,FH/3);
+  g.fillStyle='#D2161E';g.fillRect(0,0,bw,FH);
+  // emblem (white) in upper hoist
+  g.save();g.translate(bw/2,FH*0.26);g.scale(1.05,1.05);g.fillStyle='#fff';g.strokeStyle='#fff';g.lineCap='round';
+  // crossed swords
+  [-1,1].forEach(s=>{g.save();g.scale(s,1);g.lineWidth=5;g.beginPath();g.moveTo(-30,-30);g.quadraticCurveTo(0,0,34,38);g.stroke();
+    g.lineWidth=4;g.beginPath();g.moveTo(-36,-20);g.lineTo(-20,-36);g.stroke();g.lineWidth=6;g.beginPath();g.moveTo(-33,-33);g.lineTo(-40,-40);g.stroke();g.restore();});
+  // belt
+  g.fillRect(-30,-6,60,8);g.beginPath();g.arc(-30,-2,5,0,7);g.arc(30,-2,5,0,7);g.fill();
+  // khanjar
+  g.beginPath();g.moveTo(-9,-36);g.quadraticCurveTo(0,-46,9,-36);g.closePath();g.fill();
+  g.fillRect(-4,-36,8,14);g.fillRect(-10,-22,20,5);
+  g.beginPath();g.moveTo(-7,-17);g.lineTo(7,-17);g.lineTo(7,10);g.quadraticCurveTo(9,24,24,28);g.quadraticCurveTo(12,40,-2,30);g.quadraticCurveTo(-8,22,-7,10);g.closePath();g.fill();
+  g.restore();})();
+
+function drawFlag(x,y,w,t,amp=1){ // pole at x, top y, flag width w
+  const h=w/2, sx=FW/w, strips=Math.ceil(w/3);
+  // pole
+  cx.save();
+  const pg=cx.createLinearGradient(x-10,0,x+10,0);pg.addColorStop(0,'#8a6a2a');pg.addColorStop(.5,'#f6dc9c');pg.addColorStop(1,'#8a6a2a');
+  cx.fillStyle=pg;cx.fillRect(x-9,y-30,18,h*3.2);
+  cx.fillStyle='#E2B65A';cx.beginPath();cx.arc(x,y-34,16,0,7);cx.fill();
+  for(let i=0;i<strips;i++){
+    const u=i/strips, px=x+9+i*3;
+    const ph=u*7-t*5.5;
+    const off=Math.sin(ph)*18*u*amp + Math.sin(ph*0.6+1)*8*u*amp;
+    const shade=Math.cos(ph)*0.22*Math.min(1,u*3)*amp;
+    cx.drawImage(flat,u*FW,0,FW/strips+1,FH,px,y+off,4,h*(1-0.04*u));
+    if(shade>0){cx.fillStyle=`rgba(255,255,255,${shade*0.6})`}else{cx.fillStyle=`rgba(0,0,0,${-shade})`}
+    cx.fillRect(px,y+off,4,h*(1-0.04*u));
+  }
+  cx.restore();
+}
+
+function sky(t,mood){ // mood 0 sunset, 1 night
+  const g=cx.createLinearGradient(0,0,0,H);
+  const A=[[255,170,90],[214,96,60],[110,30,40],[40,12,30]];
+  const B=[[20,24,60],[60,20,50],[110,24,36],[20,8,18]];
+  const mix=(a,b)=>a.map((v,i)=>Math.round(v+(b[i]-v)*mood));
+  [[0,3],[.35,2],[.65,1],[1,0]].forEach(([p,k])=>{const c=mix(A[k],B[k]);g.addColorStop(p,`rgb(${c})`)});
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);
+  // sun
+  const sy=1250+ t*6;
+  const sg=cx.createRadialGradient(540,sy,0,540,sy,520);
+  sg.addColorStop(0,`rgba(255,230,160,${.95*(1-mood)})`);sg.addColorStop(.18,`rgba(255,190,100,${.6*(1-mood)})`);sg.addColorStop(1,'rgba(255,150,80,0)');
+  cx.fillStyle=sg;cx.fillRect(0,0,W,H);
+  // stars
+  if(mood>0){const r=mulberry(3);cx.fillStyle='#fff';for(let i=0;i<140;i++){const x=r()*W,y=r()*1100,s=r()*2.4+.4;
+    cx.globalAlpha=mood*(.4+.6*Math.abs(Math.sin(t*2+i)));cx.fillRect(x,y,s,s)}cx.globalAlpha=1}
+}
+function pattern(alpha){ // islamic 8-point stars
+  if(alpha<=0)return;cx.save();cx.globalAlpha=alpha;cx.strokeStyle='#F6D58E';cx.lineWidth=2;
+  for(let y=-60;y<H+120;y+=135)for(let x=(Math.round(y/135)%2)*67;x<W+120;x+=135){
+    cx.beginPath();for(let k=0;k<16;k++){const a=k*Math.PI/8,r=k%2?18:40;cx.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r)}cx.closePath();cx.stroke();
+  }cx.restore();
+}
+function landscape(rise,dim){ // silhouettes: mountains, fort, palms
+  if(rise<=0)return;
+  cx.save();cx.translate(0,(1-rise)*700);
+  // far mountains
+  cx.fillStyle=`rgba(90,30,40,${.85})`;cx.beginPath();cx.moveTo(0,1500);
+  [[0,1380],[120,1300],[230,1350],[380,1180],[520,1320],[640,1250],[760,1340],[900,1200],[1080,1330]].forEach(p=>cx.lineTo(...p));
+  cx.lineTo(1080,1600);cx.lineTo(0,1600);cx.fill();
+  // near mountains
+  cx.fillStyle='#4a1420';cx.beginPath();cx.moveTo(0,1600);
+  [[0,1480],[160,1420],[300,1470],[460,1400],[600,1480],[800,1430],[1080,1500]].forEach(p=>cx.lineTo(...p));cx.lineTo(1080,1650);cx.lineTo(0,1650);cx.fill();
+  // ground
+  const gg=cx.createLinearGradient(0,1560,0,H);gg.addColorStop(0,'#2a0c12');gg.addColorStop(1,'#120408');
+  cx.fillStyle=gg;cx.fillRect(0,1560,W,H-1560+700);
+  // fort (Nizwa-style round tower + walls)
+  cx.fillStyle='#200810';
+  const fx=700,fy=1560;
+  cx.beginPath();cx.moveTo(fx-120,fy);cx.lineTo(fx-120,fy-110);
+  for(let i=0;i<5;i++){cx.lineTo(fx-120+i*24,fy-110);cx.lineTo(fx-120+i*24,fy-126);cx.lineTo(fx-108+i*24,fy-126);cx.lineTo(fx-108+i*24,fy-110)}
+  cx.lineTo(fx-10,fy-110);cx.lineTo(fx-10,fy-250);
+  for(let i=0;i<7;i++){cx.lineTo(fx-10+i*30,fy-250);cx.lineTo(fx-10+i*30,fy-272);cx.lineTo(fx+4+i*30,fy-272);cx.lineTo(fx+4+i*30,fy-250)}
+  cx.lineTo(fx+200,fy-250);cx.lineTo(fx+200,fy-120);cx.lineTo(fx+300,fy-120);cx.lineTo(fx+300,fy-140);cx.lineTo(fx+320,fy-140);cx.lineTo(fx+320,fy);cx.fill();
+  // fort flag
+  cx.strokeStyle='#200810';cx.lineWidth=4;cx.beginPath();cx.moveTo(fx+95,fy-272);cx.lineTo(fx+95,fy-360);cx.stroke();
+  // palms
+  const palm=(x,y,s)=>{cx.save();cx.translate(x,y);cx.scale(s,s);cx.fillStyle='#1a060c';cx.strokeStyle='#1a060c';
+    cx.lineWidth=12;cx.beginPath();cx.moveTo(0,0);cx.quadraticCurveTo(14,-120,6,-240);cx.stroke();
+    for(let k=0;k<9;k++){const a=-Math.PI/2+(k-4)*0.42;cx.save();cx.translate(6,-240);cx.rotate(a);
+      cx.beginPath();cx.moveTo(0,0);cx.quadraticCurveTo(60,-20,120,30);cx.quadraticCurveTo(60,0,0,8);cx.fill();cx.restore()}
+    cx.restore()};
+  palm(110,1600,1.25);palm(250,1590,.95);palm(960,1610,1.1);palm(470,1575,.7);
+  cx.restore();
+  if(dim>0){cx.fillStyle=`rgba(10,2,6,${dim})`;cx.fillRect(0,0,W,H)}
+}
+// fireworks
+const FWX=[];(function(){const r=mulberry(11);const cols=['#ffffff','#ff3b3b','#2bd46a','#F6D58E'];
+  for(let i=0;i<14;i++)FWX.push({t:24.6+i*0.38+r()*.15,x:140+r()*800,y:180+r()*520,c:cols[i%4],n:46,s:260+r()*160,seed:i+1})})();
+function fireworks(t){
+  cx.save();cx.globalCompositeOperation='lighter';
+  FWX.forEach(f=>{const dt=t-f.t;if(dt<-0.5||dt>2.0)return;
+    if(dt<0){const p=1+dt/0.5;cx.fillStyle=f.c;cx.globalAlpha=.8;cx.beginPath();cx.arc(f.x,f.y+(1-p)*600,4,0,7);cx.fill();return}
+    const r=mulberry(f.seed);const k=eo(cl(dt/1.2));const fade=1-cl(dt/2.0);
+    for(let i=0;i<f.n;i++){const a=i/f.n*Math.PI*2+r()*.1,sp=f.s*(.75+r()*.35);
+      const px=f.x+Math.cos(a)*sp*k,py=f.y+Math.sin(a)*sp*k+dt*dt*60;
+      cx.globalAlpha=fade*.9;cx.fillStyle=f.c;cx.beginPath();cx.arc(px,py,4.2*(fade+.2),0,7);cx.fill();
+      cx.globalAlpha=fade*.35;cx.strokeStyle=f.c;cx.lineWidth=2;cx.beginPath();cx.moveTo(px,py);
+      cx.lineTo(f.x+Math.cos(a)*sp*k*.8,f.y+Math.sin(a)*sp*k*.8);cx.stroke()}
+    if(dt<.15){cx.globalAlpha=(1-dt/.15)*.6;const g=cx.createRadialGradient(f.x,f.y,0,f.x,f.y,160);g.addColorStop(0,'#fff');g.addColorStop(1,'rgba(255,255,255,0)');cx.fillStyle=g;cx.fillRect(f.x-160,f.y-160,320,320)}
+  });cx.restore();
+}
+function sparkles(t,alpha){ if(alpha<=0)return; const r=mulberry(5);cx.save();cx.globalCompositeOperation='lighter';
+  for(let i=0;i<60;i++){const x=r()*W,sp=20+r()*50,y=(r()*H - t*sp)%H; const yy=y<0?y+H:y;
+    cx.globalAlpha=alpha*(.3+.5*Math.abs(Math.sin(t*3+i)));cx.fillStyle='#F6D58E';cx.beginPath();cx.arc(x,yy,1.5+r()*2.5,0,7);cx.fill()}
+  cx.restore();}
+// ribbon of flag colors
+function ribbon(y,alpha,t){ if(alpha<=0)return;cx.save();cx.globalAlpha=alpha;
+  [['#fff',0],['#D2161E',14],['#0B7A3B',28]].forEach(([c,o])=>{cx.fillStyle=c;cx.beginPath();
+    for(let x=0;x<=W;x+=10)cx.lineTo(x,y+o+Math.sin(x/120+t*3)*10);for(let x=W;x>=0;x-=10)cx.lineTo(x,y+o+14+Math.sin(x/120+t*3)*10);cx.fill()});
+  cx.restore()}
+
+// ---------- master render ----------
+function render(t){
+  // scene weights
+  const s1=lin(t,0,0.4)*(1-lin(t,3.7,4.2));
+  const s2=lin(t,4.0,4.4)*(1-lin(t,7.7,8.1));
+  const s3=lin(t,7.9,8.3)*(1-lin(t,19.7,20.1));
+  const s4=lin(t,19.9,20.3)*(1-lin(t,23.7,24.1));
+  const s5=lin(t,23.9,24.3);
+  // ---- canvas
+  const mood=cl(lin(t,7,9)*.55 + lin(t,23.5,25)*.45);
+  sky(t,mood);
+  pattern(0.06+0.06*lin(t,8,9));
+  sparkles(t,0.6);
+  const rise=eo(lin(t,0,1.6));
+  const dim=cl(lin(t,4,5)*.25+lin(t,7.8,8.6)*.35-lin(t,23.6,24.6)*.6,0,.6);
+  landscape(rise,dim);
+  // flag: scene1 on top-right corner pole; finale big
+  if(t<4.2){const a=eo(lin(t,0.6,2));cx.save();cx.globalAlpha=cl(1-lin(t,3.6,4.2));drawFlag(110,1050-a*0, 380,t,1);cx.restore();
+    // pole rising effect handled by clip
+  }
+  if(t>24.4)fireworks(t);
+  if(t>23.8){const a=eb(lin(t,24,25.2));cx.save();cx.globalAlpha=cl(lin(t,24,24.5));
+    const w=760*a;cx.translate(540-w/2-20,0);drawFlag(0,330+(1-a)*80,Math.max(w,1),t,1);cx.restore()}
+  ribbon(1830,cl(lin(t,0.4,1.2))*(1-lin(t,7.6,8.2))+lin(t,24.5,25.5),t);
+
+  // ---- DOM scene 1
+  show($('s1'),s1);
+  show($('s1a'),eo(lin(t,.4,1)),(1-eo(lin(t,.4,1)))*40);
+  {const p=eb(lin(t,.7,1.5));show($('s1b'),cl(lin(t,.7,1.1)),0,.6+.4*p)}
+  show($('s1c'),eo(lin(t,1.3,2)),(1-eo(lin(t,1.3,2)))*60);
+  {const p=eb(lin(t,2,2.6));show($('s1d'),cl(lin(t,2,2.3)),0,.5+.5*p)}
+  // scene 2
+  show($('s2'),s2);
+  {const p=eo(lin(t,4.2,5.8));$('s2n').textContent=String(Math.max(1,Math.round(56*p)));
+   const pop=t>5.8?1+0.08*Math.sin(cl((t-5.8)/.35)*Math.PI):1; show($('s2n'),cl(lin(t,4.1,4.5)),0,(0.7+0.3*eo(lin(t,4.1,4.8)))*pop)}
+  show($('s2a'),eo(lin(t,5.2,5.9)),(1-eo(lin(t,5.2,5.9)))*50);
+  show($('s2b'),eo(lin(t,6.0,6.7)),(1-eo(lin(t,6.0,6.7)))*50);
+  // scene 3
+  show($('s3'),s3);
+  show($('s3t'),eo(lin(t,8,8.6)),(1-eo(lin(t,8,8.6)))*-60);
+  {const p=eo(lin(t,8.1,8.9));show($('panel'),p,(1-p)*200)}
+  ROWS.forEach((r,i)=>{const t0=ROW_T[i];const p=eo(lin(t,t0,t0+.5));
+    const el=$('row'+i);el.style.opacity=p;el.style.transform=`translateX(${(1-p)*-160}px)`;
+    const c=eio(lin(t,t0+.1,t0+1.2));$('num'+i).textContent=r.fmt(r.to*c);
+    $('bar'+i).style.width=(r.bar*100*eo(lin(t,t0+.1,t0+1.3)))+'%';
+    const pop=t>t0+1.2?1+0.12*Math.sin(cl((t-t0-1.2)/.3)*Math.PI):1;
+    $('num'+i).style.transform=`scale(${pop})`;
+  });
+  // scene 4
+  show($('s4'),s4);
+  show($('s4t'),eo(lin(t,20.0,20.6)),(1-eo(lin(t,20,20.6)))*-50);
+  HC.forEach((c,i)=>{const t0=20.4+i*.35;const p=eb(lin(t,t0,t0+.5));const el=$('hc'+i);
+    el.style.opacity=cl(lin(t,t0,t0+.2));el.style.transform=`scale(${.3+.7*p}) rotate(${Math.sin(t*2+i)*2}deg) translateY(${Math.sin(t*2.4+i)*8}px)`});
+  // scene 5
+  show($('s5'),s5);
+  {const p=eb(lin(t,25,25.8));show($('s5a'),cl(lin(t,25,25.4)),0,.6+.4*p)}
+  show($('s5b'),eo(lin(t,26,26.7)),(1-eo(lin(t,26,26.7)))*50);
+  {const p=eb(lin(t,26.6,27.2));show($('s5c'),cl(lin(t,26.6,26.9)),0,.5+.5*p)}
+  // global fade out
+  document.getElementById('stage').style.filter=`brightness(${1-lin(t,29.3,30)})`;
+}
+window.render=render;
+document.fonts.ready.then(()=>{window.READY=true});
+// preview: animate in real time when opened directly
+if(!location.hash.includes('render')){let st=performance.now();(function loop(){render(((performance.now()-st)/1000)%30);requestAnimationFrame(loop)})()}
+</script>
+</body>
+</html>

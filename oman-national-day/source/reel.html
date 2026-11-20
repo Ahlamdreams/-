@@ -59,13 +59,15 @@ canvas{position:absolute;inset:0}
     <div class="abs" id="s1d" style="top:760px"><span class="pill"><span style="font-family:CairoLat">20</span> نوفمبر <span style="font-family:CairoLat">2026</span></span></div>
   </div>
 
-  <!-- Scene 2: 56 -->
+  <!-- Scene 2: 282 years -->
   <div class="layer" id="s2">
-    <div class="abs" id="s2n" style="top:250px;font-family:CairoLat;font-weight:900;font-size:430px;line-height:1;
-      background:linear-gradient(180deg,#FFF1C9,#E2B65A 55%,#B07A22);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 14px 30px rgba(0,0,0,.5))">56</div>
-    <div class="abs kufi" id="s2a" style="top:720px;font-size:84px;line-height:1.35">اليوم الوطني<br><span class="gold">السادس والخمسون المجيد</span></div>
-    <div class="abs" id="s2b" style="top:1000px;font-size:46px;font-weight:700;opacity:.95">
-      مسيرةُ دولةٍ منذ عام <span style="font-family:CairoLat;color:var(--gold2)">1744</span><br>بقيادة الإمام أحمد بن سعيد البوسعيدي</div>
+    <div class="abs" id="s2p" style="top:200px"><span class="pill" style="font-size:52px;background:linear-gradient(90deg,#5b2a86,#3d1a63)"><span style="font-family:CairoLat">20</span> نوفمبر <span style="font-family:CairoLat">1744</span> م</span></div>
+    <div class="abs" id="s2n" style="top:330px;font-family:CairoLat;font-weight:900;font-size:380px;line-height:1;
+      background:linear-gradient(180deg,#FFF1C9,#E2B65A 55%,#B07A22);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 14px 30px rgba(0,0,0,.5))">282</div>
+    <div class="abs kufi" id="s2a" style="top:720px;font-size:92px;line-height:1.3">عامًا <span class="gold">من المجد والبناء</span></div>
+    <div class="abs amiri" id="s2b" style="top:880px;left:90px;right:90px;font-size:56px;line-height:1.55;color:#fff">
+      «اليوم الذي تشرّفت فيه الأسرة البوسعيدية<br>بخدمة هذا الوطن العزيز»
+      <div style="font-family:CairoAr;font-size:38px;color:var(--gold2);margin-top:10px">— جلالة السلطان هيثم بن طارق</div></div>
   </div>
 
   <!-- Scene 3: infographic -->
@@ -84,7 +86,7 @@ canvas{position:absolute;inset:0}
   <div class="layer" id="s5">
     <div class="abs amiri" id="s5a" style="top:1060px;font-size:132px;line-height:1.3;text-shadow:0 8px 30px rgba(0,0,0,.6)">كل عام<br>وعُمان بخير</div>
     <div class="abs kufi gold" id="s5b" style="top:1430px;font-size:64px">دامت عُمان عزيزةً شامخة</div>
-    <div class="abs" id="s5c" style="top:1560px"><span class="pill" style="font-size:42px">اليوم الوطني <span style="font-family:CairoLat">56</span> · <span style="font-family:CairoLat">20</span> نوفمبر</span></div>
+    <div class="abs" id="s5c" style="top:1560px"><span class="pill" style="font-size:42px">منذ <span style="font-family:CairoLat">1744</span> · <span style="font-family:CairoLat">20</span> نوفمبر</span></div>
   </div>
 </div>
 
@@ -123,7 +125,7 @@ const ROWS=[
  {ic:'fort',bg:'#B07A22',to:5,fmt:v=>String(Math.round(v)),unit:'مواقع',lab:'ضمن التراث العالمي لليونسكو<br>منها قلعة بهلا والأفلاج',bar:.5},
  {ic:'area',bg:'#7B2CBF',to:309500,fmt:v=>(Math.round(v/100)*100).toLocaleString('en'),unit:'كم²',lab:'المساحة التقريبية<br>لسلطنة عُمان',bar:.9},
 ];
-const ROW_T=[8.8,10.8,12.8,14.8,16.8];
+const ROW_T=[22.8,24.6,26.4,28.2,30.0];
 (function(){
   let h='';ROWS.forEach((r,i)=>{
     const top=40+i*262;
@@ -241,7 +243,7 @@ function landscape(rise,dim){ // silhouettes: mountains, fort, palms
 }
 // fireworks
 const FWX=[];(function(){const r=mulberry(11);const cols=['#ffffff','#ff3b3b','#2bd46a','#F6D58E'];
-  for(let i=0;i<14;i++)FWX.push({t:24.6+i*0.38+r()*.15,x:140+r()*800,y:180+r()*520,c:cols[i%4],n:46,s:260+r()*160,seed:i+1})})();
+  for(let i=0;i<18;i++)FWX.push({t:32.6+i*0.38+r()*.15,x:140+r()*800,y:180+r()*520,c:cols[i%4],n:46,s:260+r()*160,seed:i+1})})();
 function fireworks(t){
   cx.save();cx.globalCompositeOperation='lighter';
   FWX.forEach(f=>{const dt=t-f.t;if(dt<-0.5||dt>2.0)return;
@@ -267,30 +269,26 @@ function ribbon(y,alpha,t){ if(alpha<=0)return;cx.save();cx.globalAlpha=alpha;
 
 // ---------- master render ----------
 function render(t){
-  // scene weights
-  const s1=lin(t,0,0.4)*(1-lin(t,3.7,4.2));
-  const s2=lin(t,4.0,4.4)*(1-lin(t,7.7,8.1));
-  const s3=lin(t,7.9,8.3)*(1-lin(t,19.7,20.1));
-  const s4=lin(t,19.9,20.3)*(1-lin(t,23.7,24.1));
-  const s5=lin(t,23.9,24.3);
-  // ---- canvas
-  const mood=cl(lin(t,7,9)*.55 + lin(t,23.5,25)*.45);
+  // scene weights: S1 0-6, S2 6-16, S4 heritage 16-22, S3 numbers 22-32, S5 32-40
+  const s1=lin(t,0,0.4)*(1-lin(t,5.7,6.2));
+  const s2=lin(t,6.0,6.4)*(1-lin(t,15.7,16.1));
+  const s4=lin(t,15.9,16.3)*(1-lin(t,21.7,22.1));
+  const s3=lin(t,21.9,22.3)*(1-lin(t,31.7,32.1));
+  const s5=lin(t,31.9,32.3);
+  const mood=cl(lin(t,15,17)*.55 + lin(t,31.5,33)*.45);
   sky(t,mood);
-  pattern(0.06+0.06*lin(t,8,9));
+  pattern(0.06+0.06*lin(t,16,17));
   sparkles(t,0.6);
   const rise=eo(lin(t,0,1.6));
-  const dim=cl(lin(t,4,5)*.25+lin(t,7.8,8.6)*.35-lin(t,23.6,24.6)*.6,0,.6);
+  const dim=cl(lin(t,6,7)*.3+lin(t,15.8,16.6)*.3-lin(t,31.6,32.6)*.6,0,.6);
   landscape(rise,dim);
-  // flag: scene1 on top-right corner pole; finale big
-  if(t<4.2){const a=eo(lin(t,0.6,2));cx.save();cx.globalAlpha=cl(1-lin(t,3.6,4.2));drawFlag(110,1050-a*0, 380,t,1);cx.restore();
-    // pole rising effect handled by clip
-  }
-  if(t>24.4)fireworks(t);
-  if(t>23.8){const a=eb(lin(t,24,25.2));cx.save();cx.globalAlpha=cl(lin(t,24,24.5));
+  if(t<6.2){cx.save();cx.globalAlpha=cl(1-lin(t,5.6,6.2));drawFlag(110,1050,380,t,1);cx.restore()}
+  if(t>32.6)fireworks(t);
+  if(t>31.8){const a=eb(lin(t,32,33.2));cx.save();cx.globalAlpha=cl(lin(t,32,32.5));
     const w=760*a;cx.translate(540-w/2-20,0);drawFlag(0,330+(1-a)*80,Math.max(w,1),t,1);cx.restore()}
-  ribbon(1830,cl(lin(t,0.4,1.2))*(1-lin(t,7.6,8.2))+lin(t,24.5,25.5),t);
+  ribbon(1830,cl(lin(t,0.4,1.2))*(1-lin(t,15.6,16.2))+lin(t,32.5,33.5),t);
 
-  // ---- DOM scene 1
+  // scene 1
   show($('s1'),s1);
   show($('s1a'),eo(lin(t,.4,1)),(1-eo(lin(t,.4,1)))*40);
   {const p=eb(lin(t,.7,1.5));show($('s1b'),cl(lin(t,.7,1.1)),0,.6+.4*p)}
@@ -298,14 +296,15 @@ function render(t){
   {const p=eb(lin(t,2,2.6));show($('s1d'),cl(lin(t,2,2.3)),0,.5+.5*p)}
   // scene 2
   show($('s2'),s2);
-  {const p=eo(lin(t,4.2,5.8));$('s2n').textContent=String(Math.max(1,Math.round(56*p)));
-   const pop=t>5.8?1+0.08*Math.sin(cl((t-5.8)/.35)*Math.PI):1; show($('s2n'),cl(lin(t,4.1,4.5)),0,(0.7+0.3*eo(lin(t,4.1,4.8)))*pop)}
-  show($('s2a'),eo(lin(t,5.2,5.9)),(1-eo(lin(t,5.2,5.9)))*50);
-  show($('s2b'),eo(lin(t,6.0,6.7)),(1-eo(lin(t,6.0,6.7)))*50);
-  // scene 3
+  {const p=eb(lin(t,6.2,6.8));show($('s2p'),cl(lin(t,6.2,6.5)),0,.5+.5*p)}
+  {const p=eo(lin(t,9.6,12.0));$('s2n').textContent=String(Math.max(1,Math.round(282*p)));
+   const pop=t>12?1+0.08*Math.sin(cl((t-12)/.35)*Math.PI):1; show($('s2n'),cl(lin(t,6.6,7.0)),0,(0.7+0.3*eo(lin(t,6.6,7.3)))*pop)}
+  show($('s2a'),eo(lin(t,11.4,12.1)),(1-eo(lin(t,11.4,12.1)))*50);
+  show($('s2b'),eo(lin(t,12.4,13.2)),(1-eo(lin(t,12.4,13.2)))*50);
+  // scene 3 (numbers)
   show($('s3'),s3);
-  show($('s3t'),eo(lin(t,8,8.6)),(1-eo(lin(t,8,8.6)))*-60);
-  {const p=eo(lin(t,8.1,8.9));show($('panel'),p,(1-p)*200)}
+  show($('s3t'),eo(lin(t,22,22.6)),(1-eo(lin(t,22,22.6)))*-60);
+  {const p=eo(lin(t,22.1,22.9));show($('panel'),p,(1-p)*200)}
   ROWS.forEach((r,i)=>{const t0=ROW_T[i];const p=eo(lin(t,t0,t0+.5));
     const el=$('row'+i);el.style.opacity=p;el.style.transform=`translateX(${(1-p)*-160}px)`;
     const c=eio(lin(t,t0+.1,t0+1.2));$('num'+i).textContent=r.fmt(r.to*c);
@@ -313,23 +312,22 @@ function render(t){
     const pop=t>t0+1.2?1+0.12*Math.sin(cl((t-t0-1.2)/.3)*Math.PI):1;
     $('num'+i).style.transform=`scale(${pop})`;
   });
-  // scene 4
+  // scene 4 (heritage)
   show($('s4'),s4);
-  show($('s4t'),eo(lin(t,20.0,20.6)),(1-eo(lin(t,20,20.6)))*-50);
-  HC.forEach((c,i)=>{const t0=20.4+i*.35;const p=eb(lin(t,t0,t0+.5));const el=$('hc'+i);
+  show($('s4t'),eo(lin(t,16.0,16.6)),(1-eo(lin(t,16,16.6)))*-50);
+  HC.forEach((c,i)=>{const t0=16.4+i*.35;const p=eb(lin(t,t0,t0+.5));const el=$('hc'+i);
     el.style.opacity=cl(lin(t,t0,t0+.2));el.style.transform=`scale(${.3+.7*p}) rotate(${Math.sin(t*2+i)*2}deg) translateY(${Math.sin(t*2.4+i)*8}px)`});
   // scene 5
   show($('s5'),s5);
-  {const p=eb(lin(t,25,25.8));show($('s5a'),cl(lin(t,25,25.4)),0,.6+.4*p)}
-  show($('s5b'),eo(lin(t,26,26.7)),(1-eo(lin(t,26,26.7)))*50);
-  {const p=eb(lin(t,26.6,27.2));show($('s5c'),cl(lin(t,26.6,26.9)),0,.5+.5*p)}
-  // global fade out
-  document.getElementById('stage').style.filter=`brightness(${1-lin(t,29.3,30)})`;
+  {const p=eb(lin(t,32.8,33.6));show($('s5a'),cl(lin(t,32.8,33.2)),0,.6+.4*p)}
+  show($('s5b'),eo(lin(t,35.4,36.1)),(1-eo(lin(t,35.4,36.1)))*50);
+  {const p=eb(lin(t,36.4,37));show($('s5c'),cl(lin(t,36.4,36.7)),0,.5+.5*p)}
+  document.getElementById('stage').style.filter=`brightness(${1-lin(t,39.3,40)})`;
 }
 window.render=render;
 document.fonts.ready.then(()=>{window.READY=true});
 // preview: animate in real time when opened directly
-if(!location.hash.includes('render')){let st=performance.now();(function loop(){render(((performance.now()-st)/1000)%30);requestAnimationFrame(loop)})()}
+if(!location.hash.includes('render')){let st=performance.now();(function loop(){render(((performance.now()-st)/1000)%40);requestAnimationFrame(loop)})()}
 </script>
 </body>
 </html>

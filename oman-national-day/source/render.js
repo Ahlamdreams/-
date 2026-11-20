@@ -15,9 +15,9 @@ const path = require('path');
       await page.screenshot({ path: path.join(__dirname, `still_${t}.jpg`), type: 'jpeg', quality: 80 });
     }
   } else {
-    const FPS = 30, DUR = 30, out = process.argv[3];
+    const FPS = 30, DUR = 40, out = process.argv[3];
     const ff = spawn('ffmpeg', ['-y', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
-      '-i', path.join(__dirname, 'music.wav'),
+      '-i', path.join(__dirname, 'mix.wav'),
       '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
       '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', '-shortest', out], { stdio: ['pipe', 'inherit', 'inherit'] });
     for (let f = 0; f < FPS * DUR; f++) {

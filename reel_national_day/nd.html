@@ -36,7 +36,7 @@ svg .draw{fill:none;stroke-linecap:round;stroke-linejoin:round}
   <!-- S1 -->
   <div id="s1" class="scene">
     <div id="s1logos" class="abs" style="left:50px;right:50px;top:70px;height:190px;border-radius:30px;background:#fff;border:3px solid #e9c46a;
-      display:flex;align-items:center;justify-content:center;box-shadow:0 14px 40px rgba(0,0,0,.4)"><img src="logos.png" style="width:930px"></div>
+      display:flex;align-items:center;justify-content:center;box-shadow:0 14px 40px rgba(0,0,0,.4)"><img src="logos3.png" style="height:165px"></div>
     <canvas id="flag1" class="abs" width="700" height="420" style="left:190px;top:300px"></canvas>
     <div id="t1" class="line amiri" style="top:730px;font-size:74px;color:#fff"></div>
     <div id="t2" class="line" style="top:850px;font-size:66px;font-weight:800;color:#f6dc8e"></div>
@@ -77,15 +77,14 @@ svg .draw{fill:none;stroke-linecap:round;stroke-linejoin:round}
     <canvas id="flag2" class="abs" width="620" height="360" style="left:230px;top:450px"></canvas>
     <div id="k2" class="line amiri" style="top:800px;font-size:72px;color:#fff"></div>
     <div id="k3" class="line amiri gold" style="top:895px;font-size:88px"></div>
-    <div id="sch" class="line" style="top:1030px;font-size:46px;font-weight:800;color:#9fe3b6">أسرة مدرسة أم مالك الأنصارية للبنات</div>
-    <div id="names" class="abs" style="left:60px;right:60px;top:1110px;height:170px;border-radius:30px;display:flex;background:rgba(40,8,14,.75);border:2px solid rgba(233,196,106,.6)">
+    <div id="names" class="abs" style="left:60px;right:60px;top:1060px;height:170px;border-radius:30px;display:flex;background:rgba(40,8,14,.75);border:2px solid rgba(233,196,106,.6)">
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:2px solid rgba(233,196,106,.4)">
         <div style="font-size:36px;font-weight:700;color:#9fe3b6">مديرة المدرسة</div><div class="gold" style="font-size:50px;font-weight:900">أ. أحلام الحمداني</div></div>
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">
         <div style="font-size:36px;font-weight:700;color:#9fe3b6">مساعدة المديرة</div><div class="gold" style="font-size:50px;font-weight:900">أ. فاطمة البادي</div></div>
     </div>
-    <div id="logos2" class="abs" style="left:50px;right:50px;top:1305px;height:175px;border-radius:30px;background:#fff;border:3px solid #e9c46a;
-      display:flex;align-items:center;justify-content:center"><img src="logos.png" style="width:900px"></div>
+    <div id="logos2" class="abs" style="left:50px;right:50px;top:1265px;height:175px;border-radius:30px;background:#fff;border:3px solid #e9c46a;
+      display:flex;align-items:center;justify-content:center"><img src="logos3.png" style="height:160px"></div>
   </div>
 
   <!-- persistent bar -->
@@ -226,7 +225,7 @@ function seek(t){
     kin('k1',t,C.k1,.28,.8,'zoom');
     const fp=eOut(P(t,C.k1+.4,C.k1+1.4));const f2=$('flag2');f2.style.opacity=fp;f2.style.transform=`scale(${lerp(.6,1,fp)})`;drawFlag(f2,t,1.0);
     kin('k2',t,C.k2,.25,.7);kin('k3',t,C.k3,.3,.8,'zoom');
-    fadeUp($('sch'),t,C.end+.1,.6,40);fadeUp($('names'),t,C.end+.4,.7,80);fadeUp($('logos2'),t,C.end+.8,.7,80);
+    fadeUp($('names'),t,C.end+.4,.7,80);fadeUp($('logos2'),t,C.end+.8,.7,80);
   }
 }
 window.seek=seek;window.DURATION=DURATION;

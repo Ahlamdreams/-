@@ -1097,7 +1097,8 @@ const Slides = {
       setTimeout(() => old.remove(), 700);
     }
     stage.append(el);
-    if (this.list.length > 1) stage.append(h('div', { class: 'slide-dots' }, this.list.map((_, k) => h('i', { class: k === this.i ? 'on' : '' }))));
+    if (this.list.length > 14) stage.append(h('div', { class: 'slide-dots count' }, digits(`${this.i + 1} / ${this.list.length}`)));
+    else if (this.list.length > 1) stage.append(h('div', { class: 'slide-dots' }, this.list.map((_, k) => h('i', { class: k === this.i ? 'on' : '' }))));
     if (dur > 0) stage.append(h('div', { class: 'scene-timer', style: `animation-duration:${dur}s` }));
   },
   async render(s, startAt = 0) {
@@ -1340,7 +1341,8 @@ const Slides = {
       const sb = subs.find(x => normCls(x.cls) === n && keys.has(slotKey(x.period)));
       if (sb) return h('td', { class: 'dg-sub' }, h('b', {}, '↩ ' + (sb.sub || '')), h('s', {}, sb.absent || r?.teacher || ''));
       if (!r) return h('td', { class: 'dg-empty' }, '—');
-      return h('td', {}, h('b', {}, r.teacher || r.subject), r.teacher && r.subject ? h('small', {}, r.subject) : null);
+      const nm = String(r.teacher || '').trim().split(/\s+/); const short = nm.length > 2 ? nm[0] + ' ' + nm[nm.length - 1] : r.teacher;
+      return h('td', { title: r.teacher }, h('b', {}, short || r.subject), r.teacher && r.subject ? h('small', {}, r.subject) : null);
     };
     const table = h('table', { class: 'daygrid stagger' },
       h('tr', {}, h('th', { class: 'dg-cls' }, 'الصف'), lessons.map((p, i) => h('th', { class: i === curIdx ? 'dg-cur' : (curIdx >= 0 && i < curIdx ? 'dg-past' : '') }, periodName(p).replace('الحصة ', '')))),
@@ -1641,15 +1643,21 @@ function mergeLine(tokens) {
     const it = L.items.sort((a, b) => b.xR - a.xR);
     let cur = null;
     for (const t of it) {
-      if (cur && cur.xL - t.xR < Math.max(cur.h, t.h) * 0.55) { cur.s = cur.s + (cur.xL - t.xR > cur.h * 0.15 ? ' ' : '') + t.s; cur.xL = Math.min(cur.xL, t.xL); }
-      else { cur = { ...t }; out.push(cur); }
+      if (cur && cur.xL - t.xR < Math.max(cur.h, t.h) * 0.55) { cur.s = cur.s + (cur.xL - t.xR > cur.h * 0.15 ? ' ' : '') + t.s; cur.xL = Math.min(cur.xL, t.xL); cur.parts.push(t); }
+      else { cur = { ...t, parts: [t] }; out.push(cur); }
     }
   }
-  out.forEach(t => { t.s = t.s.replace(/\s+/g, ' ').trim(); t.x = (t.xL + t.xR) / 2; });
+  out.forEach(t => {
+    // نص بلا حروف عربية (مثل 6\4 أو 8:00 - 8:45) يُقرأ من اليسار لليمين
+    if (t.parts.length > 1 && !/[\u0600-\u06FF]/.test(t.s)) t.s = t.parts.slice().sort((a, b) => a.xL - b.xL).map((p, i, arr) => (i && p.xL - arr[i - 1].xR > p.h * 0.15 ? ' ' : '') + p.s).join('');
+    t.s = t.s.replace(/\s+/g, ' ').trim(); t.x = (t.xL + t.xR) / 2;
+  });
   return out.filter(t => t.s);
 }
+const isTimeTok = t => /^\d{1,2}[:.]\d{2}(\s*[-–]\s*\d{1,2}[:.]\d{2})?$/.test(toLatin(t).trim()) || /^[-–]$/.test(t.trim());
+const isFooterTok = t => /\d{1,2}\/\d{1,2}\/\d{2,4}|asc|timetables|تم انشاء|تم إنشاء|اعداد|برنامج/i.test(norm(t));
 function parseTimetablePDFPage(raw, pageNo) {
-  const toks = mergeLine(raw);
+  const toks = mergeLine(raw).filter(t => !isTimeTok(t.s) && !isFooterTok(t.s));
   if (!toks.length) return { rows: [], reason: 'empty' };
   // 1) سطر رؤوس الحصص
   const lines = {};
@@ -1669,8 +1677,8 @@ function parseTimetablePDFPage(raw, pageNo) {
   const dayToks = toks.filter(t => t.y > hy + hh * 0.3 && t.y < hy + hh * 4 && dayIdx(t.s) >= 0 && t.s.length < 15);
   if (dayToks.length >= 2) anchors.forEach(a => { a.day = dayIdx(dayToks.reduce((b, t) => Math.abs(t.x - a.x) < Math.abs(b.x - a.x) ? t : b).s); });
   // 3) عنوان الصفحة (فوق الجدول)
-  const titleToks = toks.filter(t => t.y > hy + hh * 0.3 && !dayToks.includes(t)).sort((a, b) => b.y - a.y || b.x - a.x);
-  const title = titleToks.map(t => t.s).join(' ');
+  const titleToks = toks.filter(t => t.y > hy + hh * 0.3 && !dayToks.includes(t) && /[\u0600-\u06FF]|\d+\s*[\/\\]\s*\d+/.test(t.s) && !/[a-z]{3,}/i.test(t.s)).sort((a, b) => b.h - a.h || b.y - a.y || b.x - a.x);
+  const title = titleToks.map(t => t.s.replace(/\([^)]*\)/g, '')).join(' ').trim();
   // 4) عناوين الصفوف (خارج أعمدة الحصص)
   const body = toks.filter(t => t.y < hy - hh * 0.4);
   const side = body.filter(t => t.x > xMax || t.x < xMin);
@@ -1700,8 +1708,8 @@ function parseTimetablePDFPage(raw, pageNo) {
   const titleDay = dayIdx(title);
   let entity = '', entityIsClass = false;
   if (dayRows) {
-    const m = toLatin(title).match(/\d+\s*[\/\-\\]\s*\d+/);
-    if (m) { entity = m[0].replace(/\s+/g, ''); entityIsClass = true; }
+    const m = toLatin(title).match(/\d+\s*[\/\\]\s*\d+/);
+    if (m) { entity = m[0].replace(/\s+/g, '').replace(/\\/g, '/'); entityIsClass = true; }
     else {
       const tm = title.match(/(?:المعلم[ةه]?|الأستاذ[ةه]?|الاستاذ[ةه]?|أ\.)\s*[:：]?\s*([^\d:：]{3,40})/);
       entity = (tm ? tm[1] : title.replace(/جدول|حصص|المعلم[ةه]?|مدرس[ةه].*|العام.*|الفصل الدراسي.*/g, '')).trim().split(/\s{2,}/)[0];
@@ -1722,18 +1730,27 @@ function parseTimetablePDFPage(raw, pageNo) {
     else {
       const m = toLatin(text).match(/\d+\s*[\/\-\\]\s*\d+|\d+\s*[أ-ي](?=\s|$)/);
       row.teacher = owner;
-      row.cls = m ? m[0].replace(/\s+/g, '') : text.split('\n')[0];
+      row.cls = m ? m[0].replace(/\s+/g, '').replace(/\\/g, '/') : text.split('\n')[0];
       row.subject = m ? toLatin(text).replace(m[0], '').replace(/[-–—،,\n]/g, ' ').replace(/\s+/g, ' ').trim() : text.split('\n').slice(1).join(' ');
     }
     if (row.cls || row.teacher) out.push(row);
   }
   return { rows: out, mode: dayRows ? (entityIsClass ? 'class-page' : 'teacher-page') : (labelsAreClasses ? 'classes' : 'teachers'), entity };
 }
+/* الصف مثل 6/4: رقم الصف (5، 6) قيمه قليلة ورقم الشعبة (1..8) قيمه كثيرة؛ إن انعكس الترتيب نصححه */
+function fixClassOrder(rows) {
+  const pairs = rows.map(r => normCls(r.cls).match(/^(\d{1,2})\/(\d{1,2})$/)).filter(Boolean);
+  if (pairs.length < 4) return;
+  const a = new Set(pairs.map(m => m[1])).size, b = new Set(pairs.map(m => m[2])).size;
+  if (a > b) rows.forEach(r => { const m = normCls(r.cls).match(/^(\d{1,2})\/(\d{1,2})$/); if (m) r.cls = m[2] + '/' + m[1]; });
+  else rows.forEach(r => { const m = normCls(r.cls).match(/^(\d{1,2})\/(\d{1,2})$/); if (m) r.cls = m[1] + '/' + m[2]; });
+}
 async function parseTimetablePDF(blob) {
   const pages = await pdfTextPages(blob);
   if (!pages.some(p => p.length)) throw new Error('هذا الـ PDF عبارة عن صورة ممسوحة ضوئياً ولا يحتوي نصاً يمكن قراءته. يمكنك عرضه كشريحة في الشاشة، أو تصديره من برنامج الجداول كـ PDF نصي أو Excel.');
   const rows = [], info = [];
   pages.forEach((p, i) => { const r = parseTimetablePDFPage(p, i + 1); rows.push(...r.rows); info.push(r); });
+  fixClassOrder(rows);
   if (!rows.length) throw new Error('لم أستطع التعرف على شكل الجدول في الـ PDF. تأكد أن رؤوس الأعمدة فيها أرقام الحصص (1، 2، 3 أو الأولى، الثانية...). أرسل الملف للدعم لإضافة شكله.');
   return { rows, info };
 }

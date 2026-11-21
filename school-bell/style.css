@@ -508,3 +508,4 @@ body[data-theme$="light"] .abs-name, body[data-theme="light"] .abs-name { color:
 body[data-theme$="light"] .daygrid td.dg-sub b, body[data-theme="light"] .daygrid td.dg-sub b { color: #15803d; }
 .daygrid .dg-empty { color: var(--muted); opacity: 0.5; }
 .daygrid tr { animation: cardIn 0.6s both; animation-delay: calc(var(--i, 0) * 40ms + 200ms); }
+.slide-dots.count { color: #fff; font-size: clamp(11px, 0.9vw, 18px); font-weight: 700; padding: 2px 12px; direction: ltr; }

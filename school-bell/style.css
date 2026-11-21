@@ -446,3 +446,6 @@ body[data-theme$="light"] .abs-name, body[data-theme="light"] .abs-name { color:
 .prof-live { position: absolute; top: 8px; left: 8px; background: #16a34a; color: #fff; font-size: 11px; border-radius: 99px; padding: 1px 8px; }
 .tgroup td.tabs { background: color-mix(in srgb, #dc2626 9%, transparent) !important; }
 .shift-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #172554; border: 1px solid #1d4ed8; border-radius: 12px; padding: 10px 14px; margin: 0 auto 16px; max-width: 1250px; color: #dbeafe; font-weight: 700; }
+.ccard.wk { justify-content: flex-start; padding-top: 1.6vh; }
+.ccard.wk .names { font-size: clamp(14px, min(6.4cqw, 13cqh), 40px); gap: 0.4vh; }
+.ccard.wk .names .meta { font-size: 0.72em; }

@@ -1169,6 +1169,16 @@ const Slides = {
         h('tr', {}, cols.map(c => h('th', {}, c))),
         slice.slice(k * n, k * n + n).map(rowFn))));
   },
+  /* المناوبة مجمّعة حسب الأسبوع: بطاقة لكل أسبوع فيها معلمات اليوم المحدد فقط */
+  dutyWeekCards(rows, d) {
+    const by = new Map();
+    rows.forEach(r => { const k = r.week || 0; (by.get(k) || by.set(k, []).get(k)).push(r); });
+    const groups = [...by.entries()].sort((a, b) => (a[0] || 99) - (b[0] || 99));
+    const curW = +CFG.general.cycleWeeks > 1 ? cycleWeek(d) : -1;
+    return this.grid(groups, ([w, list]) => h('div', { class: 'ccard wk' + (w === curW ? ' cur' : '') },
+      h('span', { class: 'cls' }, w ? '🗓️ الأسبوع ' + (ORD[w - 1] || w) + (w === curW ? ' (الحالي)' : '') : '🛡️ كل الأسابيع'),
+      h('div', { class: 'names' }, list.map(r => h('div', {}, r.teacher, r.location ? h('span', { class: 'meta' }, ' — ' + r.location) : null, r.slot && slotKey(r.slot) === '*' ? null : null)))));
+  },
   heroNow(p, st, sub) {
     const s = toSec(p.start), e = toSec(p.end), cur = st.cur === p;
     const pct = cur ? Math.round((st.sec - s) / (e - s) * 100) : 0;
@@ -1198,8 +1208,10 @@ const Slides = {
     // فسحة / طابور / صلاة: اعرض المناوبين
     const duty = dutyFor(d, p).filter(r => slotKey(r.slot) !== '*').sort(byWeek);
     if (!duty.length) return this.heroNow(p, st, st.next && cur ? 'التالي: ' + periodName(st.next) : '');
-    const g = this.grid(duty, r => h('div', { class: 'ccard' + (CFG.display.dutyAllWeeks && r.week === cycleWeek(d) && +CFG.general.cycleWeeks > 1 ? ' cur' : '') }, h('span', { class: 'cls' }, r.week ? '🗓️ ' + weekTag(r) : '🛡️ مناوبة'), h('div', { class: 'tch' }, r.teacher), r.location ? h('div', { class: 'meta' }, '📍 ' + r.location) : null));
-    return h('div', { class: 'slide scene' }, this.head(p.type.startsWith('break') ? '☕' : '🕌', periodName(p) + (cur ? ' الآن' : ''), chips), g);
+    const g = CFG.display.dutyAllWeeks && duty.some(r => r.week)
+      ? this.dutyWeekCards(duty, d)
+      : this.grid(duty, r => h('div', { class: 'ccard' }, h('span', { class: 'cls' }, '🛡️ مناوبة'), h('div', { class: 'tch' }, r.teacher), r.location ? h('div', { class: 'meta' }, '📍 ' + r.location) : null));
+    return h('div', { class: 'slide scene' }, this.head(p.type.startsWith('break') ? '☕' : (p.type === 'assembly' ? '🚩' : '🕌'), periodName(p) + (cur ? ' الآن' : '') + ' — مناوبة يوم ' + DAYS[d.getDay()], chips), g);
   },
   scheduleScene() {
     const d = now(), st = currentState(d), pr = profileFor(d);
@@ -1220,7 +1232,7 @@ const Slides = {
     if (!rows.length) return null;
     const st = currentState(d), keys = st.cur ? periodKeys(st.cur) : (st.next ? periodKeys(st.next) : new Set());
     rows.sort(byWeek);
-    const g = this.grid(rows, r => h('div', { class: 'ccard' + (keys.has(slotKey(r.slot)) ? ' cur' : '') },
+    const g = CFG.display.dutyAllWeeks && rows.some(r => r.week) ? this.dutyWeekCards(rows, d) : this.grid(rows, r => h('div', { class: 'ccard' + (keys.has(slotKey(r.slot)) ? ' cur' : '') },
       h('span', { class: 'cls' }, r.slot || 'طوال اليوم'), r.week ? h('div', { class: 'subj' }, weekTag(r)) : null, h('div', { class: 'tch' }, r.teacher), r.location ? h('div', { class: 'meta' }, '📍 ' + r.location) : null));
     return h('div', { class: 'slide scene' }, this.head('🛡️', 'المناوبة اليوم', [DAYS[d.getDay()], CFG.general.cycleWeeks > 1 && !CFG.display.dutyAllWeeks ? 'الأسبوع ' + cycleWeek(d) : (CFG.display.dutyAllWeeks ? 'كل الأسابيع' : null)]), g);
   },

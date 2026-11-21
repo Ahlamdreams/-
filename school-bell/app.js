@@ -870,6 +870,7 @@ function clsSorter() {
   const o = c => { const i = order.indexOf(normCls(c)); return i < 0 ? 999 : i; };
   return (a, b) => (o(a) - o(b)) || String(a).localeCompare(String(b), 'ar', { numeric: true });
 }
+const shortName = n => { const w = String(n || '').trim().split(/\s+/).filter(x => !/^(بنت|بن)$/.test(x)); return w.length > 2 ? w[0] + ' ' + w[w.length - 1] : String(n || '').trim(); };
 const absentWord = () => ({ f: 'غائبة', m: 'غائب' }[CFG.general.gender] || 'غائب/ة');
 /* كلمات حسب نوع المدرسة: معلمات / معلمون */
 const G = k => ({
@@ -1253,7 +1254,7 @@ const Slides = {
       if (!cards.length) return this.heroNow(p, st);
       const g = CFG.display.nowStyle === 'table'
         ? this.tableView(cards, [G('teacher'), 'الصف'], c => h('tr', { class: c.sub ? 'sub' : '' },
-          h('td', { class: 'tn' }, c.sub ? [h('div', { class: 'sub-name' }, '↩ ' + (c.sub.sub || '—')), h('div', { class: 'absent' }, h('span', { class: 'abs-tag' }, absentWord()), ' ', h('s', { class: 'abs-name' }, c.sub.absent || c.teacher))] : [c.teacher || '—', c.subject ? h('span', { class: 'ts' }, ' — ' + c.subject) : null]),
+          h('td', { class: 'tn' }, c.sub ? [h('div', { class: 'sub-name' }, '↩ ' + shortName(c.sub.sub || '—')), h('div', { class: 'absent' }, h('span', { class: 'abs-tag' }, absentWord()), ' ', h('s', { class: 'abs-name' }, shortName(c.sub.absent || c.teacher)))] : [shortName(c.teacher) || '—', c.subject ? h('span', { class: 'ts' }, ' — ' + c.subject) : null]),
           h('td', { class: 'tc' }, c.cls || '—')))
         : this.grid(cards, c => this.classCard(c, p));
       return h('div', { class: 'slide scene' }, this.head(cur ? '📚' : '⏳', (cur ? '' : 'استعداد: ') + periodName(p) + (cur ? ' الآن' : ''), chips), g);
@@ -1654,6 +1655,25 @@ function mergeLine(tokens) {
   });
   return out.filter(t => t.s);
 }
+const GRADES = ['اول', 'ثاني', 'ثالث', 'رابع', 'خامس', 'سادس', 'سابع', 'ثامن', 'تاسع', 'عاشر', 'حادي عشر', 'ثاني عشر'];
+function gradeOf(t) {
+  const n = norm(t);
+  if (/ثاني عشر/.test(n)) return 12; if (/حادي عشر/.test(n)) return 11;
+  for (let i = 9; i >= 0; i--) if (new RegExp('(^|\\s)ال' + GRADES[i]).test(n)) return i + 1;
+  return 0;
+}
+/* خلية جدول صف: أسطر المادة (قد تنكسر الكلمة) ثم اسم المعلمة في السطر الأخير */
+function splitClassCell(ts) {
+  const lines = [];
+  ts.slice().sort((a, b) => b.y - a.y).forEach(t => { const L = lines.find(l => Math.abs(l.y - t.y) < t.h * 0.5); if (L) L.s += ' ' + t.s; else lines.push({ y: t.y, s: t.s }); });
+  const txt = lines.map(l => l.s.trim()).filter(Boolean);
+  if (!txt.length) return { subject: '', teacher: '' };
+  let teacher = '';
+  if (txt.length > 1 && !isSubject(txt[txt.length - 1])) teacher = txt.pop();
+  let subject = '';
+  for (const l of txt) subject += (subject && l.length > 3 ? ' ' : '') + l;
+  return { subject: subject.replace(/\s+/g, ' ').trim(), teacher };
+}
 const isTimeTok = t => /^\d{1,2}[:.]\d{2}(\s*[-–]\s*\d{1,2}[:.]\d{2})?$/.test(toLatin(t).trim()) || /^[-–]$/.test(t.trim());
 const isFooterTok = t => /\d{1,2}\/\d{1,2}\/\d{2,4}|asc|timetables|تم انشاء|تم إنشاء|اعداد|برنامج/i.test(norm(t));
 function parseTimetablePDFPage(raw, pageNo) {
@@ -1686,10 +1706,22 @@ function parseTimetablePDFPage(raw, pageNo) {
   let labels = (sideR.length >= sideL.length ? sideR : sideL);
   // اختر العمود الأقرب للجدول فقط (قد توجد أعمدة إضافية مثل رقم تسلسلي)
   labels = labels.filter(t => !/^\d{1,3}$/.test(t.s));
-  const rowsL = [];
+  const lineL = [];
   for (const t of labels.sort((a, b) => b.y - a.y)) {
-    const r = rowsL.find(r => Math.abs(r.y - t.y) < t.h * 0.6);
-    if (r) r.s = sideR.includes(t) ? r.s + ' ' + t.s : t.s + ' ' + r.s; else rowsL.push({ y: t.y, s: t.s, h: t.h });
+    const r = lineL.find(r => Math.abs(r.y - t.y) < t.h * 0.6);
+    if (r) r.s = sideR.includes(t) ? r.s + ' ' + t.s : t.s + ' ' + r.s; else lineL.push({ y: t.y, s: t.s, h: t.h });
+  }
+  // اسم مكتوب على عدة أسطر: نستعمل أسطر الخلايا كمراكز للصفوف ونضم كل سطر اسم لأقرب مركز
+  let rowsL = lineL;
+  const dayLabels = lineL.filter(l => dayIdx(l.s) >= 0).length >= lineL.length * 0.6;
+  if (!dayLabels) {
+    const anchors = [];
+    body.filter(t => t.x <= xMax && t.x >= xMin).sort((a, b) => b.y - a.y).forEach(t => { const A = anchors.find(a => Math.abs(a.y - t.y) < t.h * 0.6); if (!A) anchors.push({ y: t.y }); });
+    if (anchors.length && anchors.length < lineL.length) {
+      const groups = anchors.map(a => ({ y: a.y, h: hh, parts: [] }));
+      lineL.forEach(L => { const g = groups.reduce((b, c) => Math.abs(c.y - L.y) < Math.abs(b.y - L.y) ? c : b); g.parts.push(L); });
+      rowsL = groups.filter(g => g.parts.length).map(g => ({ y: g.y, h: g.h, s: g.parts.sort((a, b) => b.y - a.y).map(p => p.s).join(' ') }));
+    }
   }
   if (!rowsL.length) return { rows: [], reason: 'nolabels' };
   // 5) توزيع محتوى الخلايا على (صف، عمود)
@@ -1709,7 +1741,9 @@ function parseTimetablePDFPage(raw, pageNo) {
   let entity = '', entityIsClass = false;
   if (dayRows) {
     const m = toLatin(title).match(/\d+\s*[\/\\]\s*\d+/);
-    if (m) { entity = m[0].replace(/\s+/g, '').replace(/\\/g, '/'); entityIsClass = true; }
+    const gw = gradeOf(title), sec = toLatin(title).match(/\d{1,2}/);
+    if (gw && sec) { entity = gw + '/' + sec[0]; entityIsClass = true; }
+    else if (m) { entity = m[0].replace(/\s+/g, '').replace(/\\/g, '/'); entityIsClass = true; }
     else {
       const tm = title.match(/(?:المعلم[ةه]?|الأستاذ[ةه]?|الاستاذ[ةه]?|أ\.)\s*[:：]?\s*([^\d:：]{3,40})/);
       entity = (tm ? tm[1] : title.replace(/جدول|حصص|المعلم[ةه]?|مدرس[ةه].*|العام.*|الفصل الدراسي.*/g, '')).trim().split(/\s{2,}/)[0];
@@ -1726,7 +1760,8 @@ function parseTimetablePDFPage(raw, pageNo) {
     const row = { week: 0, day, period: a.raw, cls: '', subject: '', teacher: '' };
     const classOwner = dayRows ? entityIsClass : labelsAreClasses;
     const owner = dayRows ? entity : label;
-    if (classOwner) Object.assign(row, { cls: owner }, splitCell(text));
+    if (classOwner && dayRows) Object.assign(row, { cls: owner }, splitClassCell(ts));
+    else if (classOwner) Object.assign(row, { cls: owner }, splitCell(text));
     else {
       const m = toLatin(text).match(/\d+\s*[\/\-\\]\s*\d+|\d+\s*[أ-ي](?=\s|$)/);
       row.teacher = owner;
@@ -2868,6 +2903,7 @@ function timetableTab(sec) {
           if (!confirm(`تمت قراءة ${rows.length} حصة: ${nCls} صف و ${nT} معلم.\nهل تريد اعتماد هذا الجدول؟ (سيستبدل الجدول الحالي — يمكنك مراجعته وتعديله بالأسفل)`)) return;
           T.rows = rows;
           T.classes = [...new Set(rows.map(r => r.cls).filter(Boolean))].sort(clsSorter());
+          T.lastImport = { name: f.name, date: new Date().toLocaleString('ar'), periods: rows.length, classes: nCls, teachers: nT };
           save(); toast('تم استيراد ' + rows.length + ' حصة'); rerender();
         } catch (e) { toast(e.message, true); }
         if (isPdf && confirm('هل تريد أيضاً عرض ملف الـ PDF نفسه كشريحة في الشاشة الرئيسية؟')) {
@@ -2878,7 +2914,8 @@ function timetableTab(sec) {
       } }, '📥 استيراد جدول (PDF / Excel / CSV)'),
       h('button', { class: 'btn', onclick: () => downloadTemplate('timetable') }, '⬇ تحميل نموذج'),
       T.rows.length ? h('button', { class: 'btn dan', onclick: () => { if (confirm('مسح جدول المعلمين كاملاً؟')) { T.rows = []; save(); rerender(); } } }, 'مسح الكل') : null,
-      h('span', { class: 'badge' }, digits(T.rows.length) + ' حصة مسجلة'))));
+      h('span', { class: 'badge' }, digits(T.rows.length) + ' حصة مسجلة')),
+    T.lastImport ? h('p', { class: 'hint', style: 'margin-top:8px' }, `📄 آخر جدول مرفوع: ${T.lastImport.name} — ${T.lastImport.date} (${digits(T.lastImport.periods)} حصة، ${digits(T.lastImport.classes)} صف، ${digits(T.lastImport.teachers)} معلمة). عند تغيّر الجدول ارفعي الملف الجديد فقط، فيحل محل القديم.`) : null));
 
   const clsTa = h('textarea', { style: 'min-height:90px', placeholder: '5/1\n5/2\n6/1', onchange: e => { T.classes = e.target.value.split('\n').map(x => x.trim()).filter(Boolean); save(); rerender(); } }, T.classes.join('\n'));
   sec.append(panel('الصفوف (كل سطر صف — بنفس الكتابة المستخدمة في جدول الاحتياط)', clsTa,

@@ -18,9 +18,12 @@
 
   <!-- ===================== شاشة العرض ===================== -->
   <main id="display">
+    <div class="bg-anim"><i></i><i></i><i></i><div class="pattern"></div></div>
+
     <header class="topbar">
       <div class="brand">
         <img id="logo" alt="" hidden>
+        <span class="logo-ph" id="logoPh">🏫</span>
         <div>
           <div class="name" id="schoolName"></div>
           <div class="sub" id="schoolSub"></div>
@@ -34,31 +37,31 @@
       </div>
     </header>
 
+    <section class="statusbar" id="statusbar">
+      <span class="now-badge" id="nowLabel">الآن</span>
+      <div>
+        <div class="now-title" id="nowTitle">—</div>
+        <div class="now-range" id="nowRange"></div>
+      </div>
+      <div class="prog-wrap"><div class="progress"><div id="nowProg"></div></div></div>
+      <div class="now-count" id="nowCount"></div>
+      <div class="next-line" id="nextLine">—</div>
+    </section>
+
     <section class="content" id="content">
       <div class="stage" id="stage"></div>
       <aside class="side">
-        <div class="card now-card">
-          <h3 id="nowLabel">الآن</h3>
-          <div class="now-title" id="nowTitle">—</div>
-          <div class="now-range" id="nowRange"></div>
-          <div class="now-count" id="nowCount"></div>
-          <div class="progress"><div id="nowProg"></div></div>
-        </div>
-        <div class="card">
-          <h3>التالي</h3>
-          <div class="next-line" id="nextLine">—</div>
-        </div>
         <div class="card phrase-card" id="phraseCard" hidden>
           <h3 id="phraseIcon">🤲 ذِكر</h3>
           <div class="phrase-text" id="phraseText"></div>
         </div>
         <div class="card grow" id="dutyCard">
           <h3>🛡️ المناوبة <span class="pill" id="dutySlot"></span></h3>
-          <ul class="list scroller" id="dutyList"></ul>
+          <ul class="list" id="dutyList"></ul>
         </div>
         <div class="card grow" id="subsCard">
-          <h3>🔁 حصص الاحتياط اليوم <span class="pill" id="subsCount"></span></h3>
-          <ul class="list scroller" id="subsList"></ul>
+          <h3>🔁 الاحتياط اليوم <span class="pill" id="subsCount"></span></h3>
+          <ul class="list" id="subsList"></ul>
         </div>
       </aside>
     </section>
@@ -68,14 +71,14 @@
       <div class="ticker-track"><div class="ticker-inner" id="tickerInner"></div></div>
     </footer>
 
+    <button class="gear" id="gear" title="الإعدادات (S)">⚙️</button>
     <div class="controls">
-      <button id="cSettings" title="الإعدادات (S)">⚙️</button>
       <button id="cFull" title="ملء الشاشة (F)">⛶</button>
       <button id="cBell" title="جرس يدوي الآن (B)">🔔</button>
+      <button id="cQuick" title="إعلان فوري (A أو الأرقام 1-9)">📢</button>
       <button id="cMute" title="إيقاف/تشغيل الجرس التلقائي (M)">🔊</button>
       <button id="cStop" title="إيقاف الصوت الجاري (Esc)">⏹</button>
-      <button id="cNext" title="الشريحة التالية (→)">⏭</button>
-      <button id="cQuick" title="إعلان فوري (A أو الأرقام 1-9)">📢</button>
+      <button id="cNext" title="المشهد التالي (→)">⏭</button>
     </div>
     <div class="quick-menu" id="quickMenu" hidden></div>
     <div class="status-flag" id="mutedFlag" hidden>الجرس التلقائي متوقف</div>
@@ -88,11 +91,13 @@
       <h2>⚙️ إعدادات الجرس المدرسي</h2>
       <nav class="tabs" id="tabs">
         <button data-tab="general">عام</button>
+        <button data-tab="look">المظهر والثيم</button>
         <button data-tab="schedule">الجداول والتوقيت</button>
         <button data-tab="sounds">الأصوات والإعلانات</button>
         <button data-tab="reminders">تنبيهات وإعلانات</button>
         <button data-tab="phrases">أذكار وتحفيز</button>
-        <button data-tab="slides">العرض والشريط</button>
+        <button data-tab="slides">المشاهد والشريط</button>
+        <button data-tab="timetable">جدول المعلمين</button>
         <button data-tab="duty">المناوبة</button>
         <button data-tab="subs">الاحتياط</button>
         <button data-tab="backup">النسخ الاحتياطي</button>

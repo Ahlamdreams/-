@@ -201,6 +201,8 @@ function defaultConfig() {
       accent: '#14b8a6', clock24: false, arabicDigits: false, clockOffset: 0,
       workDays: [0, 1, 2, 3, 4], cycleWeeks: 1, cycleStart: '', holidays: [],
       bellEnabled: true, volume: 0.9, bannerSec: 8,
+      theme: 'oman2040', animBg: true, gender: 'f',
+      custom: { on: false, accent: '#159EC4', accent2: '#B64D9C', accent3: '#8585BB' },
     },
     profiles: [base],
     override: '', // معرّف جدول يُفرض على كل الأيام (مثلاً جدول رمضان/الاختبارات)
@@ -212,9 +214,10 @@ function defaultConfig() {
     slides: [
       { id: uid(), type: 'text', enabled: true, title: '', text: 'أهلاً وسهلاً بكم في مدرستنا\nالعلم نور', duration: 12 },
     ],
-    autoSlides: { schedule: true, duty: true, subs: true, duration: 15 },
+    autoSlides: { welcome: true, now: true, schedule: true, duty: true, subs: true, duration: 15, nowDuration: 20, perPage: 0 },
     ticker: { enabled: true, label: 'أخبار المدرسة', texts: ['أهلاً بكم في مدرستنا', 'النظافة من الإيمان', 'الالتزام بالوقت أساس النجاح'], speed: 90, includeDuty: true, includeSubs: true },
-    display: { showSide: true, showDuty: true, showSubs: true },
+    display: { layout: 'hero', tickerPos: 'bottom', transition: 'random', showStatus: true, showDuty: true, showSubs: true },
+    timetable: { source: 'manual', url: '', sheet: '', refreshMin: 60, lastFetch: '', lastError: '', rows: [], classes: [] },
     duty: { source: 'manual', url: '', sheet: '', refreshMin: 15, lastFetch: '', lastError: '', rows: [] },
     subs: { source: 'manual', url: '', sheet: '', refreshMin: 10, lastFetch: '', lastError: '', rows: [] },
     phrases: {
@@ -628,18 +631,24 @@ function renderSide(force) {
     label = 'اليوم';
   } else if (st.cur) {
     const s = toSec(st.cur.start), e = toSec(st.cur.end);
-    title = periodName(st.cur); range = digits(`من ${fmt12(st.cur.start)} إلى ${fmt12(st.cur.end)}`);
-    count = 'متبقٍ ' + digits(fmtDur(e - sec)); prog = (sec - s) / (e - s) * 100;
+    title = periodName(st.cur); range = digits(`من ${fmt12(st.cur.start)} إلى ${fmt12(st.cur.end)} — متبقٍ`);
+    count = digits(fmtDur(e - sec)); prog = (sec - s) / (e - s) * 100;
   } else if (st.next) {
     const first = st.periods[0] === st.next;
     title = first ? 'قبل بداية الدوام' : 'بين الفترات';
-    count = 'يبدأ التالي بعد ' + digits(fmtDur(toSec(st.next.start) - sec));
+    range = 'يبدأ ' + periodName(st.next) + ' بعد'; label = 'استعداد';
+    count = digits(fmtDur(toSec(st.next.start) - sec));
   } else if (st.periods.length) {
-    title = 'انتهى الدوام الدراسي'; range = 'نراكم غداً بإذن الله';
-  } else title = 'لا يوجد جدول لهذا اليوم';
+    title = 'انتهى الدوام الدراسي'; range = 'نراكم غداً بإذن الله'; label = 'اليوم';
+  } else { title = 'لا يوجد جدول لهذا اليوم'; label = 'اليوم'; }
   $('#nowLabel').textContent = label; $('#nowTitle').textContent = title; $('#nowRange').textContent = range;
   $('#nowCount').textContent = count; $('#nowProg').style.width = prog + '%';
-  $('#nextLine').innerHTML = st.next ? `${esc(periodName(st.next))} <span>${digits(fmt12(st.next.start))}</span>` : '<span>—</span>';
+  $('#nowProg').parentElement.parentElement.style.visibility = st.cur ? '' : 'hidden';
+  $('#nextLine').innerHTML = st.next && st.cur ? `التالي: <b>${esc(periodName(st.next))}</b> ${digits(fmt12(st.next.start))}` : '';
+  // عند تغيّر الفترة: اقفز لمشهد "الآن"
+  const pid = st.work ? (st.cur ? st.cur.id : 'gap-' + (st.next ? st.next.id : 'end')) : 'off';
+  if (renderSide.pid !== undefined && pid !== renderSide.pid) setTimeout(() => Slides.jump('auto-now'), 1500);
+  renderSide.pid = pid;
 
   // المناوبة والاحتياط (تُحدَّث عند تغيّر الفترة فقط)
   const slotP = st.cur || st.next;
@@ -674,7 +683,7 @@ function renderSide(force) {
       r.absent ? h('span', { class: 'loc' }, '(بدلاً من ' + r.absent + ')') : null));
   }
   if (!subs.length) sl.append(h('li', { class: 'muted' }, 'لا توجد حصص احتياط اليوم'));
-  [dl, sl].forEach(autoScroll);
+  if (CFG.display.layout === 'side') [dl, sl].forEach(autoScroll);
   updateTicker();
 }
 /* تمرير تلقائي للقوائم الطويلة */
@@ -730,6 +739,27 @@ function applyTicker(html) {
 $('#tickerInner').addEventListener('animationiteration', () => { if (tickerPending != null) { applyTicker(tickerPending); tickerPending = null; } });
 
 /* ------------------------------ الشرائح ------------------------------ */
+/* ---------- جدول المعلمين: من يدرّس أي صف في كل حصة ---------- */
+const normCls = s => norm(s).replace(/[\s\-_\\.]+/g, '/').replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+function ttFor(d, p) {
+  const dow = d.getDay(), wk = cycleWeek(d), keys = periodKeys(p);
+  return CFG.timetable.rows.filter(r => (r.day === -1 || r.day === dow) && (!r.week || r.week === wk) && keys.has(slotKey(r.period)));
+}
+function clsSorter() {
+  const order = CFG.timetable.classes.filter(Boolean).map(normCls);
+  const o = c => { const i = order.indexOf(normCls(c)); return i < 0 ? 999 : i; };
+  return (a, b) => (o(a) - o(b)) || String(a).localeCompare(String(b), 'ar', { numeric: true });
+}
+const absentWord = () => ({ f: 'غائبة', m: 'غائب' }[CFG.general.gender] || 'غائب/ة');
+function classCards(d, p) {
+  const keys = periodKeys(p);
+  const subs = subsFor(d).filter(r => keys.has(slotKey(r.period)));
+  const cards = ttFor(d, p).map(r => ({ cls: r.cls, subject: r.subject, teacher: r.teacher, sub: subs.find(x => normCls(x.cls) === normCls(r.cls)) }));
+  for (const x of subs) if (!cards.some(c => c.sub === x)) cards.push({ cls: x.cls, subject: x.note, teacher: x.absent, sub: x });
+  const cmp = clsSorter();
+  return cards.sort((a, b) => cmp(a.cls, b.cls));
+}
+
 const pdfCache = {};
 async function pdfPages(slide) {
   const key = slide.fileId || slide.url;
@@ -761,127 +791,241 @@ function embedURL(url) {
   if (/\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(url)) return { kind: 'image', src: url };
   return { kind: 'iframe', src: url };
 }
+
+const TRANS = ['tr-fade', 'tr-up', 'tr-zoom', 'tr-side', 'tr-flip'];
 const Slides = {
-  list: [], i: -1, timer: null, el: null, building: false, video: null,
+  list: [], i: -1, page: 0, more: false, timer: null, building: false, video: null, skips: 0,
   async rebuild() {
     if (this.building) { this.again = true; return; }
     this.building = true;
-    const out = [];
+    const media = [];
     for (const s of CFG.slides) {
       if (!s.enabled) continue;
       if (s.type === 'pdf') {
         let pages = null;
         try { pages = await pdfPages(s); } catch (e) { console.warn(e); }
-        if (pages && pages.length) pages.forEach((src, pi) => out.push({ ...s, type: 'image', src, title: s.title ? s.title + (pages.length > 1 ? ` (${pi + 1}/${pages.length})` : '') : '' }));
-        else if (s.url) out.push({ ...s, type: 'url' });
-      } else out.push(s);
+        if (pages && pages.length) pages.forEach((src, pi) => media.push({ ...s, type: 'image', src, title: (s.title || '') + (pages.length > 1 ? ` (${pi + 1}/${pages.length})` : '') }));
+        else if (s.url) media.push({ ...s, type: 'url' });
+      } else media.push(s);
     }
-    const A = CFG.autoSlides;
-    if (A.schedule) out.push({ type: 'auto-schedule', duration: A.duration });
-    if (A.duty && CFG.duty.rows.length) out.push({ type: 'auto-duty', duration: A.duration });
-    if (A.subs) out.push({ type: 'auto-subs', duration: A.duration });
+    const A = CFG.autoSlides, auto = [];
+    if (A.welcome) auto.push({ type: 'auto-welcome', duration: 10 });
+    if (A.schedule) auto.push({ type: 'auto-schedule', duration: A.duration });
+    if (A.duty) auto.push({ type: 'auto-duty', duration: A.duration });
+    if (A.subs) auto.push({ type: 'auto-subs', duration: A.duration });
+    // تبادل: مشهد معلومات ثم وسائط
+    let out = [];
+    for (let k = 0; k < Math.max(auto.length, media.length); k++) { if (auto[k]) out.push(auto[k]); if (media[k]) out.push(media[k]); }
+    // مشهد "الآن" هو الأهم: يتكرر كل 3 مشاهد
+    if (A.now) {
+      const res = [];
+      out.forEach((s, k) => { if (k % 3 === 0) res.push({ type: 'auto-now', duration: A.nowDuration || 20 }); res.push(s); });
+      if (!out.length) res.push({ type: 'auto-now', duration: A.nowDuration || 20 });
+      out = res;
+    }
     if (CFG.phrases.enabled && CFG.phrases.slide) {
-      // شريحة ذكر/تحفيز بعد كل شريحتين تقريباً
-      const n = Math.max(1, Math.floor(out.length / 2));
-      for (let k = n; k >= 1; k--) out.splice(Math.min(out.length, k * 2), 0, { type: 'auto-phrase', duration: 10 });
+      const res = [];
+      out.forEach((s, k) => { res.push(s); if (k % 3 === 2) res.push({ type: 'auto-phrase', duration: 10 }); });
+      if (out.length < 3) res.push({ type: 'auto-phrase', duration: 10 });
+      out = res;
     }
     this.list = out;
     this.building = false;
     if (this.again) { this.again = false; return this.rebuild(); }
-    if (this.i >= out.length || this.i < 0) this.i = -1;
+    this.i = -1; this.page = 0; this.more = false;
     this.next();
   },
-  skips: 0,
+  jump(type) {
+    const k = this.list.findIndex(s => s.type === type);
+    if (k < 0) return;
+    this.i = k - 1; this.page = 0; this.more = false; this.next();
+  },
   skip() {
-    if (++this.skips > this.list.length) { this.skips = 0; this.showEmpty(); this.timer = setTimeout(() => this.next(), 30000); return; }
-    setTimeout(() => this.next(), 10);
+    if (++this.skips > this.list.length + 1) { this.skips = 0; this.showEmpty(); this.timer = setTimeout(() => this.next(true), 30000); return; }
+    setTimeout(() => this.next(true), 10);
   },
   showEmpty() {
-    const stage = $('#stage'); stage.innerHTML = '';
-    stage.append(h('div', { class: 'slide' }, h('div', { class: 'slide-empty' }, 'أضف جدول الحصص (PDF) أو صوراً أو فيديو من الإعدادات ← العرض والشريط')));
+    this.mount(h('div', { class: 'slide welcome' }, ...this.welcomeKids()), 0);
   },
-  next() {
+  next(advance) {
     clearTimeout(this.timer);
-    const stage = $('#stage');
-    if (!this.list.length) { stage.innerHTML = ''; stage.append(h('div', { class: 'slide' }, h('div', { class: 'slide-empty' }, 'أضف جدول الحصص (PDF) أو صوراً أو فيديو من الإعدادات ← العرض والشريط'))); return; }
-    this.i = (this.i + 1) % this.list.length;
+    if (!this.list.length) { this.showEmpty(); return; }
+    if (this.more && !advance) this.page++;
+    else { this.page = 0; this.i = (this.i + 1) % this.list.length; }
+    this.more = false;
     const s = this.list[this.i];
     this.render(s).then(dur => {
       if (dur !== null) this.skips = 0;
       if (dur > 0) this.timer = setTimeout(() => this.next(), dur * 1000);
     });
   },
-  async render(s) {
+  /* تركيب المشهد مع حركة الدخول والخروج */
+  mount(el, dur) {
     const stage = $('#stage');
+    const t = CFG.display.transition;
+    el.classList.add(t === 'random' || !t ? TRANS[Math.floor(Math.random() * TRANS.length)] : 'tr-' + t);
+    for (const old of [...stage.children]) {
+      if (old.classList.contains('slide-dots') || old.classList.contains('scene-timer')) { old.remove(); continue; }
+      old.classList.add('tr-out');
+      old.querySelectorAll('video').forEach(v => v.pause());
+      setTimeout(() => old.remove(), 700);
+    }
+    stage.append(el);
+    if (this.list.length > 1) stage.append(h('div', { class: 'slide-dots' }, this.list.map((_, k) => h('i', { class: k === this.i ? 'on' : '' }))));
+    if (dur > 0) stage.append(h('div', { class: 'scene-timer', style: `animation-duration:${dur}s` }));
+  },
+  async render(s) {
     let el, dur = +s.duration || 12;
     this.video = null;
     const title = s.title ? h('div', { class: 'slide-title' }, s.title) : null;
-    if (s.type === 'image' || (s.type === 'file' && s.kind === 'image')) {
+    if (s.type === 'image') {
       const src = s.src || await fileURL(s.fileId);
+      if (!src) { this.skip(); return null; }
       const img = h('img', { src, alt: '' });
-      el = h('div', { class: 'slide' + (s.fit === 'scroll' ? ' scroll' : '') }, img, title);
+      el = h('div', { class: 'slide media' + (s.fit === 'scroll' ? ' scroll' : '') }, img, title);
       if (s.fit === 'scroll') img.onload = () => {
-        const over = img.clientHeight - stage.clientHeight;
+        const over = img.clientHeight - $('#stage').clientHeight;
         if (over > 0) img.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(0)', offset: 0.12 }, { transform: `translateY(${-over}px)`, offset: 0.88 }, { transform: `translateY(${-over}px)` }], { duration: dur * 1000, fill: 'forwards' });
       };
     } else if (s.type === 'video') {
       const src = s.fileId ? await fileURL(s.fileId) : s.url;
+      if (!src) { this.skip(); return null; }
       const v = h('video', { src, autoplay: true, playsinline: true });
       v.muted = s.muted !== false; v.volume = CFG.general.volume;
       v.loop = !!(s.duration > 0);
-      if (!(s.duration > 0)) { v.onended = () => this.next(); v.onerror = () => setTimeout(() => this.next(), 3000); dur = 0; }
+      if (!(s.duration > 0)) { v.onended = () => this.next(true); v.onerror = () => setTimeout(() => this.next(true), 3000); dur = 0; }
       v.play().catch(() => { v.muted = true; v.play().catch(() => { }); });
       this.video = v;
-      el = h('div', { class: 'slide' }, v, title);
+      el = h('div', { class: 'slide media' }, v, title);
     } else if (s.type === 'url') {
       const e = embedURL(s.url || '');
       if (e.kind === 'video') return this.render({ ...s, type: 'video', url: e.src });
       if (e.kind === 'image') return this.render({ ...s, type: 'image', src: e.src });
       el = h('div', { class: 'slide' }, h('iframe', { src: e.src, allow: 'autoplay' }), title);
     } else if (s.type === 'text') {
-      el = h('div', { class: 'slide text-slide' }, s.text || '');
-    } else if (s.type === 'auto-schedule') {
-      el = this.scheduleSlide();
-    } else if (s.type === 'auto-duty') {
-      el = this.dutySlide();
-    } else if (s.type === 'auto-subs') {
-      el = this.subsSlide();
+      el = h('div', { class: 'slide text-slide plain' }, h('div', { class: 'ps-icon' }, '📣'), h('div', { class: 'ps-text' }, s.text || ''));
     } else if (s.type === 'auto-phrase') {
       const ph = Phrases.pick();
-      if (ph) el = h('div', { class: 'slide text-slide phrase-slide ' + (ph.k === 'd' ? 'dhikr' : 'moti') }, h('div', { class: 'ps-icon' }, ph.k === 'd' ? '🤲' : '⭐'), h('div', {}, ph.t));
-    }
+      if (ph) el = h('div', { class: 'slide text-slide' }, h('div', { class: 'ps-icon' }, ph.k === 'd' ? '🤲' : '⭐'),
+        h('div', { class: 'ps-kind' }, ph.k === 'd' ? 'ذِكر' : 'كلمة اليوم'), h('div', { class: 'ps-text' }, ph.t));
+    } else if (s.type === 'auto-welcome') {
+      el = h('div', { class: 'slide welcome' }, ...this.welcomeKids());
+    } else if (s.type === 'auto-now') el = this.nowScene();
+    else if (s.type === 'auto-schedule') el = this.scheduleScene();
+    else if (s.type === 'auto-duty') el = this.dutyScene();
+    else if (s.type === 'auto-subs') el = this.subsScene();
     if (!el) { this.skip(); return null; }
-    const dots = h('div', { class: 'slide-dots' }, this.list.map((_, i) => h('i', { class: i === this.i ? 'on' : '' })));
-    stage.innerHTML = ''; stage.append(el, dots);
+    // المشاهد ذات الصفحات: وزّع المدة على الصفحات
+    if (this.pages > 1) dur = Math.max(8, Math.round(dur / Math.min(this.pages, 2)));
+    this.pages = 1;
+    this.mount(el, dur);
     return dur;
   },
-  scheduleSlide() {
-    const d = now(), st = currentState(d);
-    const pr = profileFor(d);
-    if (!st.work || !pr) return null;
-    const rows = sortedPeriods(pr).map(p => {
-      const cls = st.cur === p ? 'cur' : (toSec(p.end) <= st.sec ? 'past' : '');
-      return h('tr', { class: cls }, h('td', {}, periodName(p)), h('td', {}, digits(fmt12(p.start))), h('td', {}, digits(fmt12(p.end))));
-    });
-    return h('div', { class: 'slide table-slide' }, h('h2', {}, '⏰ توقيت اليوم — ' + pr.name),
-      h('table', { class: 'big-table' }, h('tr', {}, h('th', {}, 'الفترة'), h('th', {}, 'من'), h('th', {}, 'إلى')), rows));
+
+  /* ---------- أدوات المشاهد ---------- */
+  welcomeKids() {
+    const g = CFG.general, d = now(), st = currentState(d);
+    const logo = g.logo && urlCache[g.logo] ? h('img', { class: 'wlogo', src: urlCache[g.logo] }) : h('div', { class: 'wlogo-ph' }, '🏫');
+    let line = '';
+    if (!st.work) line = st.holiday ? '🌴 ' + (st.holiday.name || 'إجازة') : '🌙 عطلة نهاية الأسبوع';
+    else if (st.cur) line = '📚 ' + periodName(st.cur) + ' الآن';
+    else if (st.next) line = '⏳ يبدأ ' + periodName(st.next) + ' الساعة ' + digits(fmt12(st.next.start));
+    else if (st.periods.length) line = '👋 انتهى الدوام، نراكم غداً بإذن الله';
+    let date = DAYS[d.getDay()];
+    try { date += ' — ' + fmtHijri().format(d); } catch { }
+    return [logo, h('h1', {}, g.schoolName), g.schoolSub ? h('p', {}, g.schoolSub) : null, h('p', {}, date), line ? h('div', { class: 'wnow' }, line) : null];
   },
-  dutySlide() {
+  head(icon, title, chips = []) {
+    return h('div', { class: 'scene-head' }, h('span', { class: 'ic' }, icon), h('h2', {}, title),
+      chips.filter(Boolean).map(c => h('span', { class: 'chip' + (c.hot ? ' hot' : '') }, c.t || c)),
+      this.pages > 1 ? h('span', { class: 'pg' }, digits(`${this.page + 1} / ${this.pages}`)) : null);
+  },
+  /* توزيع البطاقات على شبكة تملأ المساحة + تقسيمها إلى صفحات */
+  grid(items, mk) {
+    const stage = $('#stage');
+    const W = stage.clientWidth || 1200, H = (stage.clientHeight || 600) - Math.max(90, stage.clientHeight * 0.16);
+    const maxCols = Math.max(1, Math.min(6, Math.floor(W / 270)));
+    const rowH = Math.max(110, H * 0.24);
+    const maxRows = Math.max(1, Math.floor(H / rowH));
+    const per = +CFG.autoSlides.perPage || maxCols * maxRows;
+    this.pages = Math.max(1, Math.ceil(items.length / per));
+    if (this.page >= this.pages) this.page = 0;
+    this.more = this.page < this.pages - 1;
+    const slice = items.slice(this.page * per, this.page * per + per);
+    const n = Math.max(1, slice.length);
+    let cols = Math.min(maxCols, Math.max(1, Math.ceil(Math.sqrt(n * (W / H) / 1.7))));
+    const rows = Math.ceil(n / cols);
+    cols = Math.ceil(n / rows);
+    return h('div', { class: 'cards stagger', style: `grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},minmax(0,${n <= 4 ? '1fr' : '1fr'}))` },
+      slice.map((it, k) => { const c = mk(it); c.style.setProperty('--i', k); return c; }));
+  },
+  classCard(c, curP) {
+    if (c.sub) return h('div', { class: 'ccard sub' }, h('span', { class: 'flag' }, '🔁 احتياط'),
+      h('span', { class: 'cls' }, c.cls || '—'), c.subject ? h('div', { class: 'subj' }, c.subject) : null,
+      h('div', { class: 'tch' }, c.sub.sub || '—'),
+      (c.sub.absent || c.teacher) ? h('div', { class: 'absent' }, 'بدلاً من ', h('s', {}, c.sub.absent || c.teacher), ' (' + absentWord() + ')') : null);
+    return h('div', { class: 'ccard' }, h('span', { class: 'cls' }, c.cls || '—'), c.subject ? h('div', { class: 'subj' }, c.subject) : null, h('div', { class: 'tch' }, c.teacher || '—'));
+  },
+  heroNow(p, st, sub) {
+    const s = toSec(p.start), e = toSec(p.end), cur = st.cur === p;
+    const pct = cur ? Math.round((st.sec - s) / (e - s) * 100) : 0;
+    const left = cur ? e - st.sec : s - st.sec;
+    return h('div', { class: 'slide hero-now' },
+      h('div', { class: 'ring', style: `--p:${pct}` }, h('span', {}, digits(fmtDur(left)))),
+      h('h1', {}, (cur ? '' : 'استعداد: ') + periodName(p)),
+      h('p', {}, sub || (cur ? digits(`من ${fmt12(p.start)} إلى ${fmt12(p.end)}`) : 'تبدأ الساعة ' + digits(fmt12(p.start)))));
+  },
+  nowScene() {
+    const d = now(), st = currentState(d);
+    if (!st.work) return null;
+    const p = st.cur || st.next;
+    if (!p) return null;
+    const cur = st.cur === p;
+    const chips = [digits(`${fmt12(p.start)} — ${fmt12(p.end)}`), { t: (cur ? 'متبقٍ ' : 'بعد ') + digits(fmtDur(cur ? toSec(p.end) - st.sec : toSec(p.start) - st.sec)), hot: true }];
+    if (isLesson(p)) {
+      const cards = classCards(d, p);
+      if (!cards.length) return this.heroNow(p, st);
+      const g = this.grid(cards, c => this.classCard(c, p));
+      return h('div', { class: 'slide scene' }, this.head(cur ? '📚' : '⏳', (cur ? '' : 'استعداد: ') + periodName(p) + (cur ? ' الآن' : ''), chips), g);
+    }
+    // فسحة / طابور / صلاة: اعرض المناوبين
+    const duty = dutyFor(d, p).filter(r => slotKey(r.slot) !== '*');
+    if (!duty.length) return this.heroNow(p, st, st.next && cur ? 'التالي: ' + periodName(st.next) : '');
+    const g = this.grid(duty, r => h('div', { class: 'ccard' }, h('span', { class: 'cls' }, '🛡️ مناوبة'), h('div', { class: 'tch' }, r.teacher), r.location ? h('div', { class: 'meta' }, '📍 ' + r.location) : null));
+    return h('div', { class: 'slide scene' }, this.head(p.type.startsWith('break') ? '☕' : '🕌', periodName(p) + (cur ? ' الآن' : ''), chips), g);
+  },
+  scheduleScene() {
+    const d = now(), st = currentState(d), pr = profileFor(d);
+    if (!st.work || !pr || !st.periods.length) return null;
+    this.pages = 1; this.page = 0;
+    const g = this.grid(st.periods, p => {
+      const s = toSec(p.start), e = toSec(p.end), cur = st.cur === p, past = e <= st.sec;
+      return h('div', { class: 'ccard' + (cur ? ' cur' : past ? ' past' : '') },
+        h('div', { class: 'big' }, periodName(p)),
+        h('div', { class: 'meta' }, digits(`${fmt12(p.start)} — ${fmt12(p.end)}`)),
+        cur ? h('div', { class: 'bar' }, h('div', { style: `width:${Math.round((st.sec - s) / (e - s) * 100)}%` })) : null);
+    });
+    return h('div', { class: 'slide scene' }, this.head('⏰', 'توقيت اليوم', [pr.name, DAYS[d.getDay()]]), g);
+  },
+  dutyScene() {
     const d = now(); if (!isWorkDay(d)) return null;
     const rows = CFG.duty.rows.filter(r => (r.date ? r.date === ymd(d) : (r.day === -1 || r.day === d.getDay())) && (!r.week || r.week === cycleWeek(d)));
     if (!rows.length) return null;
-    const st = currentState(d), keys = st.cur ? periodKeys(st.cur) : new Set();
-    return h('div', { class: 'slide table-slide' }, h('h2', {}, '🛡️ المناوبة اليوم — ' + DAYS[d.getDay()]),
-      h('table', { class: 'big-table' }, h('tr', {}, h('th', {}, 'الفترة'), h('th', {}, 'المناوب'), h('th', {}, 'المكان')),
-        rows.map(r => h('tr', { class: keys.has(slotKey(r.slot)) ? 'cur' : '' }, h('td', {}, r.slot || 'طوال اليوم'), h('td', {}, r.teacher), h('td', {}, r.location || '')))));
+    const st = currentState(d), keys = st.cur ? periodKeys(st.cur) : (st.next ? periodKeys(st.next) : new Set());
+    const g = this.grid(rows, r => h('div', { class: 'ccard' + (keys.has(slotKey(r.slot)) ? ' cur' : '') },
+      h('span', { class: 'cls' }, r.slot || 'طوال اليوم'), h('div', { class: 'tch' }, r.teacher), r.location ? h('div', { class: 'meta' }, '📍 ' + r.location) : null));
+    return h('div', { class: 'slide scene' }, this.head('🛡️', 'المناوبة اليوم', [DAYS[d.getDay()], CFG.general.cycleWeeks > 1 ? 'الأسبوع ' + cycleWeek(d) : null]), g);
   },
-  subsSlide() {
+  subsScene() {
     const d = now(); if (!isWorkDay(d)) return null;
     const rows = subsFor(d); if (!rows.length) return null;
     const st = currentState(d), keys = st.cur ? periodKeys(st.cur) : new Set();
-    return h('div', { class: 'slide table-slide' }, h('h2', {}, '🔁 حصص الاحتياط اليوم'),
-      h('table', { class: 'big-table' }, h('tr', {}, h('th', {}, 'الحصة'), h('th', {}, 'الصف'), h('th', {}, 'المعلم البديل'), h('th', {}, 'بدلاً من')),
-        rows.map(r => h('tr', { class: keys.has(slotKey(r.period)) ? 'cur' : '' }, h('td', {}, r.period), h('td', {}, r.cls), h('td', {}, r.sub), h('td', {}, r.absent || '')))));
+    const g = this.grid(rows, r => {
+      const c = this.classCard({ cls: r.cls, subject: (r.period ? 'الحصة ' + r.period : '') + (r.note ? ' — ' + r.note : ''), teacher: r.absent, sub: r });
+      if (keys.has(slotKey(r.period))) c.classList.add('cur');
+      return c;
+    });
+    return h('div', { class: 'slide scene' }, this.head('🔁', 'حصص الاحتياط اليوم', [{ t: digits(rows.length) + ' حصة', hot: true }]), g);
   },
   duck(on) {
     if (!this.video) return;
@@ -995,14 +1139,95 @@ function parseSubs(aoa) {
   }
   return out;
 }
+/* قراءة كل أوراق الملف (لجدول المعلمين: ورقة لكل يوم مثلاً) */
+async function sheetsFromBlob(blob) {
+  const buf = new Uint8Array(await blob.arrayBuffer());
+  if (buf[0] === 0x50 && buf[1] === 0x4B || (buf[0] === 0xD0 && buf[1] === 0xCF)) {
+    const wb = XLSX.read(buf, { type: 'array' });
+    return wb.SheetNames.map(name => ({ name, aoa: XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: false, defval: '' }) }));
+  }
+  const text = new TextDecoder('utf-8').decode(buf);
+  if (/^\s*<(!doctype|html)/i.test(text)) throw new Error('الرابط أعاد صفحة ويب وليس جدولاً. تأكد من مشاركة الملف للجميع.');
+  return [{ name: '', aoa: parseCSV(text) }];
+}
+const SUBJ_RE = /رياض|عربي|لغه|انجليز|english|علوم|اسلام|قران|تربيه|اجتماع|دراسات|فنون|موسيق|حاسوب|تقنيه|مهارات|فيزياء|كيمياء|احياء|جغراف|تاريخ|حياتيه|نشاط|رياده|math|science|بدنيه/;
+const isSubject = t => SUBJ_RE.test(norm(t));
+const isTeacher = t => /^(ا\.|ا\/|استاذ|المعلم|معلم)/.test(norm(t));
+function splitCell(t) {
+  t = String(t).trim();
+  const parts = t.split(/\n|\s[-–—|]\s|\s*[\/،,]\s*(?=(?:ا|أ)\.|المعلم)/).map(x => x.trim()).filter(Boolean);
+  if (parts.length < 2) return isSubject(t) && !isTeacher(t) ? { subject: t, teacher: '' } : { subject: '', teacher: t };
+  let i = parts.findIndex(isTeacher);
+  if (i >= 0) return { teacher: parts[i], subject: parts.filter((_, k) => k !== i).join(' ') };
+  i = parts.findIndex(isSubject);
+  if (i >= 0) return { subject: parts[i], teacher: parts.filter((_, k) => k !== i).join(' ') };
+  return { subject: parts[0], teacher: parts.slice(1).join(' ') };
+}
+function parseTimetable(sheets, only) {
+  const out = [];
+  for (const sh of sheets) {
+    if (only && !norm(sh.name).includes(norm(only))) continue;
+    const aoa = sh.aoa.filter(r => r.some(c => String(c).trim()));
+    const sheetDay = dayIdx(sh.name);
+    // 1) شكل مصفوفة: الحصص في الأعمدة
+    let mh = -1, pcols = [];
+    for (let r = 0; r < Math.min(15, aoa.length); r++) {
+      const cols = aoa[r].map((c, j) => [j, slotKey(c), String(c).trim()]).filter(([, k, raw]) => /^p\d$/.test(k) && raw.length < 25);
+      if (cols.length >= 3) { mh = r; pcols = cols; break; }
+    }
+    if (mh >= 0) {
+      const hd = aoa[mh].map(norm), pset = new Set(pcols.map(x => x[0]));
+      const dCol = hd.findIndex((c, j) => !pset.has(j) && /يوم/.test(c));
+      const wCol = hd.findIndex((c, j) => !pset.has(j) && /اسبوع/.test(c));
+      let kCol = hd.findIndex((c, j) => !pset.has(j) && /صف|فصل|شعب|معلم|اسم/.test(c));
+      if (kCol < 0) kCol = hd.findIndex((c, j) => !pset.has(j) && j !== dCol && j !== wCol);
+      const byTeacher = kCol >= 0 && /معلم|اسم/.test(hd[kCol]) && !/صف|فصل|شعب/.test(hd[kCol]);
+      let day = sheetDay, wk = 0;
+      for (const row of aoa.slice(mh + 1)) {
+        const filled = row.map(c => String(c).trim()).filter(Boolean);
+        if (filled.length === 1 && dayIdx(filled[0]) >= 0) { day = dayIdx(filled[0]); continue; }
+        if (dCol >= 0 && cell(row, dCol)) day = dayIdx(cell(row, dCol));
+        if (wCol >= 0 && cell(row, wCol)) wk = weekNum(cell(row, wCol));
+        const key = cell(row, kCol);
+        if (!key || pcols.filter(([j]) => /^p\d$/.test(slotKey(cell(row, j)))).length >= 3) continue;
+        for (const [j, , raw] of pcols) {
+          const t = cell(row, j); if (!t) continue;
+          if (byTeacher) {
+            const m = toLatin(t).match(/\d+\s*[\/\-\\]\s*\d+|\d+\s*[أ-ي]\b/);
+            const cls = m ? m[0].replace(/\s+/g, '') : t;
+            out.push({ week: wk, day, period: raw, cls, subject: m ? toLatin(t).replace(m[0], '').replace(/[-–—،,]/g, ' ').trim() : '', teacher: key });
+          }
+          else { const x = splitCell(t); out.push({ week: wk, day, period: raw, cls: key, subject: x.subject, teacher: x.teacher }); }
+        }
+      }
+      continue;
+    }
+    // 2) شكل قائمة
+    const hr = findHeader(aoa, [/صف|فصل|شعب/, /معلم|اسم/, /حص/], 3);
+    if (hr < 0) continue;
+    const hd = aoa[hr].map(norm), col = re => hd.findIndex(c => re.test(c));
+    const c = { day: col(/يوم/), week: col(/اسبوع/), period: col(/حص/), cls: col(/صف|فصل|شعب/), teacher: col(/معلم|اسم/), subject: col(/ماده/) };
+    let day = sheetDay, wk = 0;
+    for (const row of aoa.slice(hr + 1)) {
+      if (cell(row, c.day)) day = dayIdx(cell(row, c.day));
+      if (cell(row, c.week)) wk = weekNum(cell(row, c.week));
+      if (!cell(row, c.cls) || !cell(row, c.period)) continue;
+      out.push({ week: wk, day, period: cell(row, c.period), cls: cell(row, c.cls), subject: cell(row, c.subject), teacher: cell(row, c.teacher) });
+    }
+  }
+  if (!out.length) throw new Error('لم أتعرف على جدول المعلمين. الصيغ المقبولة: (1) الصفوف في الصفوف والحصص (الأولى، الثانية...) في الأعمدة، وكل ورقة ليوم أو عمود "اليوم". (2) قائمة بأعمدة: اليوم، الحصة، الصف، المعلم، المادة.');
+  return out;
+}
+
 async function refreshSource(which, manual) {
   const src = CFG[which];
   if (src.source !== 'link' || !src.url) return;
   try {
     const r = await fetch(sheetFetchURL(src.url), { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const aoa = await aoaFromBlob(await r.blob(), src.sheet);
-    src.rows = which === 'duty' ? parseDuty(aoa) : parseSubs(aoa);
+    const blob = await r.blob();
+    if (which === 'timetable') src.rows = parseTimetable(await sheetsFromBlob(blob), src.sheet);
+    else { const aoa = await aoaFromBlob(blob, src.sheet); src.rows = which === 'duty' ? parseDuty(aoa) : parseSubs(aoa); }
     src.lastFetch = new Date().toLocaleString('ar'); src.lastError = '';
     if (manual) toast(`تم التحديث: ${src.rows.length} سجل`);
   } catch (e) {
@@ -1012,10 +1237,10 @@ async function refreshSource(which, manual) {
   CFG._rev = (CFG._rev || 0) + 1;
   save();
 }
-function refreshAllSources() { refreshSource('duty'); refreshSource('subs'); }
-const lastRefresh = { duty: 0, subs: 0 };
+function refreshAllSources() { refreshSource('duty'); refreshSource('subs'); refreshSource('timetable'); }
+const lastRefresh = { duty: 0, subs: 0, timetable: 0 };
 function maybeRefresh() {
-  for (const w of ['duty', 'subs']) {
+  for (const w of ['duty', 'subs', 'timetable']) {
     const s = CFG[w];
     if (s.source === 'link' && s.url && Date.now() - lastRefresh[w] > Math.max(1, +s.refreshMin || 10) * 60000) {
       lastRefresh[w] = Date.now(); refreshSource(w);
@@ -1033,13 +1258,19 @@ function onConfigChanged() {
   renderSide(true); updateTicker(true);
 }
 function applyTheme() {
-  const g = CFG.general;
-  document.documentElement.style.setProperty('--accent', g.accent || '#14b8a6');
+  const g = CFG.general, D = CFG.display, B = document.body;
+  B.dataset.theme = g.theme || 'oman2040';
+  [['--accent', 'accent'], ['--accent2', 'accent2'], ['--accent3', 'accent3']].forEach(([v, k]) => {
+    if (g.custom?.on && g.custom[k]) B.style.setProperty(v, g.custom[k]); else B.style.removeProperty(v);
+  });
+  B.classList.toggle('no-anim', !g.animBg);
   $('#schoolName').textContent = g.schoolName; $('#schoolSub').textContent = g.schoolSub;
-  if (g.logo) fileURL(g.logo).then(u => { if (u) { $('#logo').src = u; $('#logo').hidden = false; } });
-  else $('#logo').hidden = true;
-  $('#content').classList.toggle('no-side', !CFG.display.showSide);
-  $('#dutyCard').hidden = !CFG.display.showDuty; $('#subsCard').hidden = !CFG.display.showSubs;
+  if (g.logo) fileURL(g.logo).then(u => { if (u) { $('#logo').src = u; $('#logo').hidden = false; $('#logoPh').hidden = true; } });
+  else { $('#logo').hidden = true; $('#logoPh').hidden = false; }
+  $('#display').classList.toggle('ticker-top', D.tickerPos === 'top');
+  $('#statusbar').hidden = !D.showStatus;
+  $('#content').classList.toggle('with-side', D.layout === 'side');
+  $('#dutyCard').hidden = !D.showDuty; $('#subsCard').hidden = !D.showSubs;
   $('#mutedFlag').hidden = g.bellEnabled; $('#cMute').classList.toggle('off', !g.bellEnabled);
   $('#cMute').textContent = g.bellEnabled ? '🔊' : '🔇';
 }
@@ -1095,6 +1326,14 @@ function audioOptions() {
 }
 const testBtn = (fn, label = '▶') => h('button', { class: 'btn sm', title: 'تجربة', onclick: e => { e.preventDefault(); Audio_.ensure(); fn(); } }, label);
 
+const THEMES = [
+  { k: 'oman2040', n: 'رؤية عُمان 2040 — داكن', c: ['#0a0f2e', '#1a1146', '#B64D9C', '#8585BB', '#159EC4'] },
+  { k: 'oman2040-light', n: 'رؤية عُمان 2040 — فاتح', c: ['#f4f3fb', '#e6f4fa', '#a8418d', '#6f6fae', '#128bb0'] },
+  { k: 'flag', n: 'ألوان علم عُمان', c: ['#12080a', '#1f0d11', '#d0103a', '#f5f5f5', '#0a9a4a'] },
+  { k: 'night', n: 'ليلي (فيروزي)', c: ['#0b1220', '#111a2e', '#14b8a6', '#f59e0b', '#6366f1'] },
+  { k: 'sand', n: 'رمال (ذهبي)', c: ['#241a10', '#3a2917', '#d9a441', '#2a9d8f', '#e07a5f'] },
+  { k: 'light', n: 'فاتح كلاسيكي', c: ['#eef2f7', '#ffffff', '#0e7490', '#d97706', '#7c3aed'] },
+];
 const READY = [
   { name: 'صلاة الظهر', mode: 'fixed', time: '12:15', text: 'حان الآن وقت صلاة الظهر، يرجى التوجه إلى المصلى' },
   { name: 'الصلاة على النبي', mode: 'mid', text: 'اللهم صلِّ وسلم على نبينا محمد' },
@@ -1112,8 +1351,7 @@ const TABS = {
     sec.append(panel('بيانات المدرسة',
       h('div', { class: 'row' },
         field('اسم المدرسة', bindInput(g, 'schoolName', { style: 'width:340px' })),
-        field('سطر فرعي', bindInput(g, 'schoolSub', { style: 'width:340px' })),
-        field('اللون الرئيسي', bindInput(g, 'accent', { type: 'color' }))),
+        field('سطر فرعي', bindInput(g, 'schoolSub', { style: 'width:340px' }))),
       h('div', { class: 'row' },
         h('button', { class: 'btn', onclick: async () => { const f = await pickFile('image/*'); if (!f) return; if (g.logo) await removeFile(g.logo); g.logo = await addFile(f, 'logo'); save(); rerender(); } }, '🖼️ رفع شعار المدرسة'),
         g.logo ? h('button', { class: 'btn dan', onclick: async () => { await removeFile(g.logo); g.logo = ''; save(); rerender(); } }, 'حذف الشعار') : null)));
@@ -1379,10 +1617,15 @@ const TABS = {
       h('p', { class: 'hint' }, 'ملاحظة: الروابط تحتاج إنترنت، وبعض المواقع تمنع عرضها داخل برامج أخرى. الأفضل رفع الملف نفسه ليعمل بدون إنترنت.')));
 
     const A = CFG.autoSlides;
-    sec.append(panel('شرائح تلقائية',
+    sec.append(panel('المشاهد التلقائية (تتبدل مع الصور والفيديو في وسط الشاشة)',
+      h('p', { class: 'hint' }, 'مشهد "الحصة الآن" يعرض كل صف ومعلمه في الحصة الحالية (من تبويب جدول المعلمين) مع إبراز حصص الاحتياط: المعلم الغائب ← المعلم البديل. وفي الفسحة يعرض المناوبين. يتكرر كل 3 مشاهد، ويظهر فوراً عند بداية كل حصة.'),
       h('div', { class: 'row' },
-        chk(A, 'schedule', 'توقيت حصص اليوم'), chk(A, 'duty', 'جدول مناوبة اليوم'), chk(A, 'subs', 'حصص الاحتياط اليوم'),
-        field('مدة كل منها (ث)', bindInput(A, 'duration', { type: 'number', style: 'width:90px' })))));
+        chk(A, 'welcome', '🏫 ترحيب (الشعار واسم المدرسة)'), chk(A, 'now', '📚 الحصة الآن'), chk(A, 'schedule', '⏰ توقيت اليوم'),
+        chk(A, 'duty', '🛡️ المناوبة'), chk(A, 'subs', '🔁 الاحتياط')),
+      h('div', { class: 'row' },
+        field('مدة مشهد "الآن" (ث)', bindInput(A, 'nowDuration', { type: 'number', style: 'width:90px' })),
+        field('مدة المشاهد الأخرى (ث)', bindInput(A, 'duration', { type: 'number', style: 'width:90px' })),
+        field('عدد البطاقات في الصفحة (0 = تلقائي)', bindInput(A, 'perPage', { type: 'number', min: 0, style: 'width:90px' })))));
 
     const T = CFG.ticker;
     const ta = h('textarea', { onchange: e => { T.texts = e.target.value.split('\n').map(s => s.trim()).filter(Boolean); save(); } }, T.texts.join('\n'));
@@ -1391,10 +1634,37 @@ const TABS = {
         chk(T, 'includeDuty', 'إضافة المناوبة الحالية'), chk(T, 'includeSubs', 'إضافة حصص الاحتياط')),
       h('p', { class: 'hint' }, 'كل سطر = خبر:'), ta));
 
-    const D = CFG.display;
-    sec.append(panel('تخطيط الشاشة',
-      h('div', { class: 'row' }, chk(D, 'showSide', 'إظهار العمود الجانبي (الحصة الحالية/المناوبة/الاحتياط)'), chk(D, 'showDuty', 'بطاقة المناوبة'), chk(D, 'showSubs', 'بطاقة الاحتياط'))));
   },
+
+  /* ---------------- المظهر ---------------- */
+  look(sec) {
+    const g = CFG.general, D = CFG.display;
+    const grid = h('div', { class: 'theme-grid' });
+    for (const t of THEMES) grid.append(h('button', { class: 'theme-card' + (g.theme === t.k ? ' on' : ''), onclick: () => { g.theme = t.k; save(); rerender(); } },
+      h('div', { class: 'sw', style: `background:linear-gradient(135deg, ${t.c[0]}, ${t.c[1]})` },
+        t.c.slice(2).map((c, i) => h('i', { style: `background:${c};right:${10 + i * 28}px` }))),
+      h('div', { class: 'nm' }, t.n)));
+    sec.append(panel('الثيم', h('p', { class: 'hint' }, 'ثيم "رؤية عُمان 2040" مستوحى من ألوان شعار الرؤية (البنفسجي الوردي، الأزرق السماوي، اللافندر). يمكنك تعديل الألوان بدقة من "ألوان مخصصة".'), grid));
+    sec.append(panel('ألوان مخصصة',
+      h('div', { class: 'row' },
+        chk(g.custom, 'on', 'استخدام ألواني بدلاً من ألوان الثيم'),
+        field('اللون الأساسي', bindInput(g.custom, 'accent', { type: 'color' })),
+        field('اللون الثاني', bindInput(g.custom, 'accent2', { type: 'color' })),
+        field('اللون الثالث', bindInput(g.custom, 'accent3', { type: 'color' })))));
+    sec.append(panel('الشاشة الرئيسية',
+      h('div', { class: 'row' },
+        field('التخطيط', bindSelect(D, 'layout', [['hero', 'شاشة كاملة للمشاهد (موصى به)'], ['side', 'مشاهد + عمود جانبي للمناوبة والاحتياط']])),
+        field('مكان الشريط المتحرك', bindSelect(D, 'tickerPos', [['bottom', 'أسفل الشاشة'], ['top', 'أعلى الشاشة']])),
+        field('حركة الانتقال بين المشاهد', bindSelect(D, 'transition', [['random', 'متنوعة عشوائياً'], ['fade', 'تلاشي'], ['up', 'صعود'], ['zoom', 'تكبير'], ['side', 'انزلاق جانبي'], ['flip', 'دوران']]))),
+      h('div', { class: 'row' },
+        chk(g, 'animBg', 'خلفية متحركة'),
+        chk(D, 'showStatus', 'شريط "الحصة الآن" أعلى الشاشة'),
+        field('المعلمون في المدرسة', bindSelect(g, 'gender', [['f', 'معلمات (المعلمة غائبة)'], ['m', 'معلمون (المعلم غائب)'], ['mixed', 'مختلط']]))),
+      D.layout === 'side' ? h('div', { class: 'row' }, chk(D, 'showDuty', 'بطاقة المناوبة'), chk(D, 'showSubs', 'بطاقة الاحتياط'), chk(CFG.phrases, 'showCard', 'بطاقة الأذكار')) : null));
+  },
+
+  /* ---------------- جدول المعلمين ---------------- */
+  timetable(sec) { timetableTab(sec); },
 
   /* ---------------- الأذكار والتحفيز ---------------- */
   phrases(sec) {
@@ -1523,7 +1793,85 @@ function sourceTab(sec, which) {
         save(); rerender();
       } }, '+ إضافة سجل'))));
 }
+let ttDay = null;
+function timetableTab(sec) {
+  const T = CFG.timetable;
+  sec.append(panel('جدول المعلمين (من يدرّس كل صف في كل حصة)',
+    h('p', { class: 'hint' }, 'هذا الجدول يجعل الشاشة تعرض في كل حصة: الصف ← المادة ← المعلم، ومعه الاحتياط (الغائب ← البديل). يمكن استيراده من Excel: الصفوف في الأسطر والحصص (الأولى، الثانية...) في الأعمدة، وكل ورقة باسم يوم (الأحد، الاثنين...)، والخلية مثل "رياضيات - أ. فاطمة". أو جدول المعلمين (المعلم في السطر والصف في الخلية). أو أدخله يدوياً بالأسفل.'),
+    h('div', { class: 'row' },
+      field('المصدر', bindSelect(T, 'source', [['manual', 'إدخال يدوي / استيراد ملف'], ['link', 'رابط (Google Sheets / Excel)']], rerender))),
+    T.source === 'link' ? h('div', {},
+      h('div', { class: 'row' },
+        field('الرابط', bindInput(T, 'url', { type: 'url', style: 'width:520px;direction:ltr' })),
+        field('اسم ورقة محددة (اختياري)', bindInput(T, 'sheet', { style: 'width:140px' })),
+        field('التحديث كل (دقيقة)', bindInput(T, 'refreshMin', { type: 'number', min: 5, style: 'width:90px' })),
+        h('button', { class: 'btn pri', onclick: async () => { await refreshSource('timetable', true); rerender(); } }, '⟳ تحديث الآن')),
+      h('p', { class: 'hint' }, 'ملاحظة: رابط Google Sheets يقرأ ورقة واحدة فقط (الظاهرة في الرابط). لملف بعدة أوراق استخدم الاستيراد من ملف أو ضع عمود "اليوم".'),
+      h('div', { class: 'row' }, T.lastFetch ? h('span', { class: 'badge ok' }, 'آخر تحديث: ' + T.lastFetch) : null, T.lastError ? h('span', { class: 'badge err' }, 'خطأ: ' + T.lastError) : null)) : null,
+    h('div', { class: 'row' },
+      h('button', { class: 'btn', onclick: async () => {
+        const f = await pickFile('.xlsx,.xls,.csv'); if (!f) return;
+        try {
+          const rows = parseTimetable(await sheetsFromBlob(f), T.sheet);
+          T.rows = rows;
+          if (!T.classes.length) T.classes = [...new Set(rows.map(r => r.cls))].sort(clsSorter());
+          save(); toast('تم استيراد ' + rows.length + ' حصة'); rerender();
+        } catch (e) { toast(e.message, true); }
+      } }, '📥 استيراد من Excel / CSV'),
+      h('button', { class: 'btn', onclick: () => downloadTemplate('timetable') }, '⬇ تحميل نموذج'),
+      T.rows.length ? h('button', { class: 'btn dan', onclick: () => { if (confirm('مسح جدول المعلمين كاملاً؟')) { T.rows = []; save(); rerender(); } } }, 'مسح الكل') : null,
+      h('span', { class: 'badge' }, digits(T.rows.length) + ' حصة مسجلة'))));
+
+  const clsTa = h('textarea', { style: 'min-height:90px', placeholder: '5/1\n5/2\n6/1', onchange: e => { T.classes = e.target.value.split('\n').map(x => x.trim()).filter(Boolean); save(); rerender(); } }, T.classes.join('\n'));
+  sec.append(panel('الصفوف (كل سطر صف — بنفس الكتابة المستخدمة في جدول الاحتياط)', clsTa,
+    h('div', { class: 'row', style: 'margin-top:8px' }, h('button', { class: 'btn sm', onclick: () => { T.classes = [...new Set(T.rows.map(r => r.cls))].sort(clsSorter()); save(); rerender(); } }, 'استخراج الصفوف من الجدول'))));
+
+  if (ttDay == null) ttDay = CFG.general.workDays.includes(now().getDay()) ? now().getDay() : (CFG.general.workDays[0] ?? 0);
+  const pr = CFG.override ? CFG.profiles.find(p => p.id === CFG.override) : (CFG.profiles.find(p => p.days.includes(ttDay)) || CFG.profiles[0]);
+  const lessons = sortedPeriods(pr).filter(isLesson);
+  const classes = T.classes.length ? T.classes : [...new Set(T.rows.map(r => r.cls))].sort(clsSorter());
+  const find = (cls, p) => T.rows.find(r => (r.day === ttDay || r.day === -1) && slotKey(r.period) === slotKey(periodName(p)) && normCls(r.cls) === normCls(cls));
+  const upd = (cls, p, key, val) => {
+    let r = find(cls, p);
+    if (!r) { r = { week: 0, day: ttDay, period: periodName(p), cls, subject: '', teacher: '' }; T.rows.push(r); }
+    r[key] = val.trim();
+    if (!r.teacher && !r.subject) T.rows.splice(T.rows.indexOf(r), 1);
+    save(false);
+  };
+  const tb = h('tbody');
+  for (const cls of classes) tb.append(h('tr', {}, h('td', { class: 'cl' }, cls), lessons.map(p => {
+    const r = find(cls, p);
+    return h('td', {},
+      h('input', { type: 'text', value: r?.teacher || '', placeholder: 'المعلم', onchange: e => upd(cls, p, 'teacher', e.target.value) }),
+      h('input', { type: 'text', class: 'sj', value: r?.subject || '', placeholder: 'المادة', onchange: e => upd(cls, p, 'subject', e.target.value) }));
+  })));
+  sec.append(panel('تعديل يدوي',
+    h('div', { class: 'row' }, DAYS.map((d, i) => CFG.general.workDays.includes(i) ? h('button', { class: 'btn' + (i === ttDay ? ' pri' : ''), onclick: () => { ttDay = i; rerender(); } }, d) : null),
+      h('button', { class: 'btn sm', onclick: () => {
+        if (!confirm('نسخ جدول ' + DAYS[ttDay] + ' إلى باقي أيام الدوام؟ (سيستبدل الموجود)')) return;
+        const src = T.rows.filter(r => r.day === ttDay);
+        T.rows = T.rows.filter(r => r.day === ttDay || !CFG.general.workDays.includes(r.day));
+        for (const d of CFG.general.workDays) if (d !== ttDay) src.forEach(r => T.rows.push({ ...r, day: d }));
+        save(); rerender(); toast('تم النسخ');
+      } }, 'نسخ هذا اليوم لكل الأيام')),
+    !classes.length ? h('p', { class: 'hint' }, 'اكتب أسماء الصفوف أولاً في المربع أعلاه.') :
+      !lessons.length ? h('p', { class: 'hint' }, 'لا توجد حصص في جدول التوقيت لهذا اليوم.') :
+        h('div', { class: 'tbl-wrap' }, h('table', { class: 'edit tt-grid' },
+          h('thead', {}, h('tr', {}, h('th', { class: 'cl' }, 'الصف'), lessons.map(p => h('th', {}, periodName(p))))), tb))));
+}
+
 function downloadTemplate(which) {
+  if (which === 'timetable') {
+    const wb = XLSX.utils.book_new();
+    for (const d of CFG.general.workDays) {
+      const rows = [['الصف', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة'],
+        ['5/1', 'رياضيات - أ. فاطمة', 'لغة عربية - أ. مريم', 'علوم - أ. سارة', '', '', '', '', ''],
+        ['5/2', 'لغة عربية - أ. مريم', 'رياضيات - أ. فاطمة', 'إنجليزي - أ. هدى', '', '', '', '', '']];
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), DAYS[d]);
+    }
+    XLSX.writeFile(wb, 'نموذج-جدول-المعلمين.xlsx');
+    return;
+  }
   const rows = which === 'duty'
     ? [['الأسبوع', 'اليوم', 'الفترة', 'المعلم المناوب', 'المكان'], ['1', 'الأحد', 'الطابور', 'أ. محمد', 'الساحة'], ['1', 'الأحد', 'الفسحة', 'أ. أحمد', 'المقصف'], ['1', 'الأحد', 'الحصة الأولى', 'أ. سالم', 'الممر'], ['2', 'الأحد', 'الفسحة', 'أ. خالد', 'الساحة']]
     : [['التاريخ', 'الحصة', 'الصف', 'المعلم الغائب', 'المعلم البديل'], [ymd(now()), 'الأولى', '5/1', 'أ. علي', 'أ. يوسف'], [ymd(now()), 'الثالثة', '7/2', 'أ. علي', 'أ. ناصر']];
@@ -1611,12 +1959,12 @@ async function init() {
   setInterval(maybeRefresh, 30000); maybeRefresh();
 
   // أزرار التحكم
-  $('#cSettings').onclick = () => openSettings();
+  $('#gear').onclick = () => openSettings();
   $('#cFull').onclick = toggleFull;
   $('#cBell').onclick = () => { Audio_.ensure(); manualBell(); };
   $('#cMute').onclick = toggleBell;
   $('#cStop').onclick = () => Audio_.stop();
-  $('#cNext').onclick = () => Slides.next();
+  $('#cNext').onclick = () => Slides.next(true);
   $('#cQuick').onclick = toggleQuickMenu;
   $('#closeSettings').onclick = closeSettings;
   $$('#tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
@@ -1633,7 +1981,7 @@ async function init() {
     else if (k === 'b' || k === 'لا') manualBell();
     else if (k === 'm' || k === 'ة') toggleBell();
     else if (k === 'escape') Audio_.stop();
-    else if (k === 'arrowright' || k === 'arrowleft') Slides.next();
+    else if (k === 'arrowright' || k === 'arrowleft') Slides.next(true);
     else if (k === 'a' || k === 'ش') toggleQuickMenu();
     else if (/^[1-9]$/.test(toLatin(e.key)) && CFG.quick[+toLatin(e.key) - 1]) quickAnnounce(CFG.quick[+toLatin(e.key) - 1]);
   });

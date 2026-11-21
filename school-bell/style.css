@@ -509,3 +509,14 @@ body[data-theme$="light"] .daygrid td.dg-sub b, body[data-theme="light"] .daygri
 .daygrid .dg-empty { color: var(--muted); opacity: 0.5; }
 .daygrid tr { animation: cardIn 0.6s both; animation-delay: calc(var(--i, 0) * 40ms + 200ms); }
 .slide-dots.count { color: #fff; font-size: clamp(11px, 0.9vw, 18px); font-weight: 700; padding: 2px 12px; direction: ltr; }
+
+/* ===== لا يوجد دوام ===== */
+.off-scene { flex-direction: column; gap: 1.8vh; text-align: center; padding: 3vh 3vw 5vh; }
+.off-ic { font-size: clamp(50px, 9vw, 180px); animation: floatY 6s ease-in-out infinite; filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.35)); }
+.off-scene h1 { font-size: clamp(30px, 5vw, 110px); font-weight: 900; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1.2; }
+.off-sub { font-size: clamp(16px, 2vw, 44px); color: var(--muted); }
+.off-next { display: flex; flex-direction: column; gap: 0.6vh; align-items: center; background: var(--card); border: 1px solid var(--card-b); border-radius: 22px; padding: 1.6vh 3vw; margin-top: 1vh; }
+.off-next span { color: var(--muted); font-size: clamp(12px, 1.2vw, 26px); }
+.off-next b { font-size: clamp(18px, 2.4vw, 52px); font-weight: 900; }
+.off-count { color: var(--accent); font-weight: 800; font-size: clamp(14px, 1.5vw, 32px); }
+.off-ph { margin-top: 1vh; font-size: clamp(16px, 1.9vw, 40px); font-weight: 700; color: var(--text); opacity: 0.85; }

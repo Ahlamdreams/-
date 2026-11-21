@@ -940,6 +940,28 @@ function slideActive(s, d = now()) {
   }
   return true;
 }
+/* وضع "لا يوجد دوام": إجازة/عطلة، أو بعد نهاية الدوام، أو قبل بدايته بوقت طويل */
+function offState(d = now()) {
+  const st = currentState(d);
+  if (!st.work) return { off: true, why: st.holiday ? 'holiday' : 'weekend', st };
+  if (!st.periods.length) return { off: true, why: 'nosched', st };
+  const a = toSec(st.periods[0].start), b = toSec(st.periods[st.periods.length - 1].end);
+  if (st.sec >= b + 15 * 60) return { off: true, why: 'ended', st };
+  if (st.sec < a - 90 * 60) return { off: true, why: 'early', st };
+  return { off: false, st };
+}
+/* أول يوم دوام قادم وموعد بدايته */
+function nextSchoolStart(d = now()) {
+  for (let k = 0; k <= 45; k++) {
+    const x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + k);
+    if (!isWorkDay(x)) continue;
+    const ps = sortedPeriods(profileFor(x)); if (!ps.length) continue;
+    const t = new Date(x.getTime() + toSec(ps[0].start) * 1000);
+    if (t > d) return t;
+  }
+  return null;
+}
+const OFF_TYPES = new Set(['auto-off', 'auto-phrase', 'auto-welcome', 'text']);
 const SCENE_FN = { classday: 'classDayScene', now: 'nowScene', subs: 'subsScene', duty: 'dutyScene', absent: 'absentScene', schedule: 'scheduleScene', welcome: 'welcomeScene' };
 const SCENE_NAMES = { classday: '🗓️ جدول اليوم', now: '📚 الحصة الآن', subs: '🔁 الاحتياط', duty: '🛡️ المناوبة', absent: '📋 الغياب', schedule: '⏰ التوقيت', welcome: '🏫 الترحيب' };
 const TRANS = ['tr-fade', 'tr-up', 'tr-zoom', 'tr-side', 'tr-flip'];
@@ -956,7 +978,7 @@ const Slides = {
       if (s.type === 'pdf') {
         let pages = null;
         try { pages = await pdfPages(s); } catch (e) { console.warn(e); }
-        if (pages && pages.length) pages.forEach((src, pi) => dest.push({ ...s, _key: s.id + ':' + pi, type: 'image', src, title: (s.title || '') + (pages.length > 1 ? ` (${pi + 1}/${pages.length})` : '') }));
+        if (pages && pages.length) pages.forEach((src, pi) => dest.push({ ...s, _key: s.id + ':' + pi, fromPdf: true, type: 'image', src, title: (s.title || '') + (pages.length > 1 ? ` (${pi + 1}/${pages.length})` : '') }));
         else if (s.url) dest.push({ ...s, _key: s.id, type: 'url' });
       } else dest.push({ ...s, _key: s.id });
     }
@@ -1011,6 +1033,8 @@ const Slides = {
   activeTakeovers() { const d = now(); return (this.takeovers || []).filter(t => slideActive(t, d)); },
   watch() {
     if (this.building) return;
+    const off = CFG.display.offMode !== false && offState().off;
+    if (this.isOff !== undefined && off !== this.isOff && !this.takeover) { this.next(true); return; }
     const tk = this.activeTakeovers();
     if (tk.length && !this.takeover) this.next(true);
     else if (this.takeover && !this.interrupting && !tk.some(t => t._key === this.takeover._key)) { this.takeover = null; this.next(true); }
@@ -1072,6 +1096,16 @@ const Slides = {
     const tk = this.activeTakeovers();
     if (tk.length) { if (!this.interrupting) this.runTakeover(tk); return; }
     if (this.takeover) { this.takeover = null; advance = true; }
+    // يوم بلا دوام: مشهد "لا يوجد دوام" مع الأذكار والترحيب والنصوص (وفيديو/صور مضبوطة لتظهر دائماً)
+    const off = CFG.display.offMode !== false && offState().off;
+    this.isOff = off;
+    if (off) {
+      const offList = [{ type: 'auto-off', duration: 15 }, ...this.list.filter(s => OFF_TYPES.has(s.type) || ((s.type === 'image' || s.type === 'video') && !s.fromPdf && s._key && s.when && s.when !== 'always' && slideActive(s)))];
+      if (CFG.phrases.enabled) offList.push({ type: 'auto-phrase', duration: 10 });
+      this.oi = ((this.oi ?? -1) + 1) % offList.length;
+      this.render(offList[this.oi]).then(dur => { if (dur > 0) this.timer = setTimeout(() => this.next(), dur * 1000); });
+      return;
+    }
     const pin = this.pinned();
     if (pin && this.runPin(pin, advance)) return;
     this.pinKind = null;
@@ -1098,8 +1132,9 @@ const Slides = {
       setTimeout(() => old.remove(), 700);
     }
     stage.append(el);
-    if (this.list.length > 14) stage.append(h('div', { class: 'slide-dots count' }, digits(`${this.i + 1} / ${this.list.length}`)));
-    else if (this.list.length > 1) stage.append(h('div', { class: 'slide-dots' }, this.list.map((_, k) => h('i', { class: k === this.i ? 'on' : '' }))));
+    if (this.isOff) { /* لا عدّاد في وضع لا يوجد دوام */ }
+    else if (this.list.length > 14) stage.append(h('div', { class: 'slide-dots count' }, digits(`${this.i + 1} / ${this.list.length}`)));
+    else if (this.list.length > 1 && !this.isOff) stage.append(h('div', { class: 'slide-dots' }, this.list.map((_, k) => h('i', { class: k === this.i ? 'on' : '' }))));
     if (dur > 0) stage.append(h('div', { class: 'scene-timer', style: `animation-duration:${dur}s` }));
   },
   async render(s, startAt = 0) {
@@ -1143,7 +1178,8 @@ const Slides = {
         h('div', { class: 'ps-kind' }, ph.k === 'd' ? 'ذِكر' : 'كلمة اليوم'), h('div', { class: 'ps-text' }, ph.t));
     } else if (s.type === 'auto-welcome') {
       el = h('div', { class: 'slide welcome' }, ...this.welcomeKids());
-    } else if (s.type === 'auto-now') el = this.nowScene();
+    } else if (s.type === 'auto-off') { el = this.offScene(); this.offTick(el); }
+    else if (s.type === 'auto-now') el = this.nowScene();
     else if (s.type === 'auto-schedule') el = this.scheduleScene();
     else if (s.type === 'auto-duty') el = this.dutyScene();
     else if (s.type === 'auto-subs') el = this.subsScene();
@@ -1320,6 +1356,39 @@ const Slides = {
       return c;
     });
     return h('div', { class: 'slide scene' }, this.head('🔁', 'حصص الاحتياط اليوم', [{ t: digits(rows.length) + ' حصة', hot: true }]), g);
+  },
+  offScene() {
+    const o = offState(), d = now();
+    const info = {
+      weekend: ['🌙', 'لا يوجد دوام اليوم', 'عطلة نهاية الأسبوع — نتمنى لكم راحة سعيدة'],
+      holiday: ['🌴', 'لا يوجد دوام اليوم', o.st.holiday?.name || 'إجازة'],
+      nosched: ['📅', 'لا يوجد دوام اليوم', 'لا توجد حصص مسجلة لهذا اليوم'],
+      ended: ['🌇', 'انتهى الدوام الدراسي', 'شكراً لجهودكم — نراكم بإذن الله'],
+      early: ['🌅', 'صباح الخير', 'لم يبدأ الدوام بعد'],
+    }[o.why];
+    const nx = nextSchoolStart(d);
+    let when = '';
+    if (nx) {
+      const sameDay = ymd(nx) === ymd(d), tmr = ymd(nx) === ymd(new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
+      let date = ''; try { date = fmtGreg().format(nx); } catch { }
+      const hh = nx.getHours(), t12 = digits(fmt12(pad(hh) + ':' + pad(nx.getMinutes()))) + (CFG.general.clock24 ? '' : (hh < 12 ? ' ص' : ' م'));
+      when = (sameDay ? 'اليوم' : tmr ? 'غداً ' + DAYS[nx.getDay()] : DAYS[nx.getDay()] + ' ' + date) + ' — الساعة ' + t12;
+    }
+    const ph = CFG.phrases.enabled ? Phrases.pick('d') : null;
+    return h('div', { class: 'slide off-scene' },
+      h('div', { class: 'off-ic' }, info[0]),
+      h('h1', {}, info[1]), h('p', { class: 'off-sub' }, info[2]),
+      nx ? h('div', { class: 'off-next' }, h('span', {}, '📚 الدوام القادم'), h('b', {}, when), h('div', { class: 'off-count', 'data-t': nx.getTime() })) : null,
+      ph ? h('div', { class: 'off-ph' }, '🤲 ' + ph.t) : null);
+  },
+  offTick(el) {
+    clearInterval(this.offT);
+    const c = el.querySelector('.off-count'); if (!c) return;
+    const upd = () => {
+      const s = Math.max(0, Math.round((+c.dataset.t - now()) / 1000)), dd = Math.floor(s / 86400), hh = Math.floor(s / 3600) % 24, mm = Math.floor(s / 60) % 60;
+      c.textContent = 'بعد ' + digits([dd ? dd + ' يوم' : '', hh ? hh + ' ساعة' : '', mm + ' دقيقة'].filter(Boolean).join(' و '));
+    };
+    upd(); this.offT = setInterval(() => { if (!el.isConnected) return clearInterval(this.offT); upd(); }, 20000);
   },
   /* جدول اليوم: الصفوف × الحصص، مع إبراز الحصة الحالية والاحتياط */
   classDayScene() {
@@ -2648,7 +2717,12 @@ const TABS = {
           }
           save(); rerender(); Slides.rebuild(); toast('تمت الإضافة');
         } }, '⬆ رفع ملفات (PDF / صور / فيديو)'),
-        h('button', { class: 'btn', onclick: () => { CFG.slides.push({ id: uid(), type: 'text', enabled: true, text: 'نص الإعلان هنا', duration: 12 }); save(); rerender(); } }, '+ شريحة نصية')),
+        h('button', { class: 'btn', onclick: () => { CFG.slides.push({ id: uid(), type: 'text', enabled: true, text: 'نص الإعلان هنا', duration: 12 }); save(); rerender(); } }, '+ شريحة نصية'),
+        CFG.slides.some(s => s.type === 'pdf') ? h('button', { class: 'btn dan', onclick: async () => {
+          const pdfs = CFG.slides.filter(s => s.type === 'pdf'); if (!confirm(`حذف ${pdfs.length} ملف PDF من المشاهد؟ (جدول المعلمين لا يتأثر)`)) return;
+          for (const s of pdfs) if (s.fileId) await removeFile(s.fileId);
+          CFG.slides = CFG.slides.filter(s => s.type !== 'pdf'); save(); rerender(); Slides.rebuild();
+        } }, '🗑️ حذف كل ملفات PDF من المشاهد') : null),
       h('div', { class: 'row' }, addUrl,
         h('button', { class: 'btn', onclick: () => {
           const u = addUrl.value.trim(); if (!u) return;
@@ -2659,6 +2733,9 @@ const TABS = {
       h('p', { class: 'hint' }, 'ملاحظة: الروابط تحتاج إنترنت، وبعض المواقع تمنع عرضها داخل برامج أخرى. الأفضل رفع الملف نفسه ليعمل بدون إنترنت.')));
 
     const A = CFG.autoSlides;
+    sec.append(panel('يوم بلا دوام',
+      h('div', { class: 'row' }, h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: CFG.display.offMode !== false, onchange: e => { CFG.display.offMode = e.target.checked; save(); } }), '🌙 في الإجازات وبعد نهاية الدوام: عرض "لا يوجد دوام" وموعد الدوام القادم مع الأذكار، وإخفاء الجداول')),
+      h('p', { class: 'hint' }, 'الصور والفيديو المضبوطة بزر ⏱ الجدولة على أيام أو أوقات معينة تظهر في هذا الوضع أيضاً إن وافق وقتها.')));
     sec.append(panel('المشاهد التلقائية (تتبدل مع الصور والفيديو في وسط الشاشة)',
       h('p', { class: 'hint' }, 'مشهد "الحصة الآن" يعرض كل صف ومعلمه في الحصة الحالية (من تبويب جدول المعلمين) مع إبراز حصص الاحتياط: المعلم الغائب ← المعلم البديل. وفي الفسحة يعرض المناوبين. يتكرر كل 3 مشاهد، ويظهر فوراً عند بداية كل حصة.'),
       h('div', { class: 'row' },

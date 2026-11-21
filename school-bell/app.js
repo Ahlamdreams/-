@@ -237,6 +237,7 @@ function defaultConfig() {
       { id: uid(), text: 'تنبيه: تدريب إخلاء، يرجى التوجه إلى نقطة التجمع بهدوء', sound: 'beep', audio: '' },
     ],
     files: [],
+    shifts: { enabled: false, list: [{ id: 's1', name: 'الفترة الصباحية' }, { id: 's2', name: 'الفترة المسائية' }] },
   };
 }
 function mergeDefaults(def, cur) {
@@ -251,11 +252,46 @@ function mergeDefaults(def, cur) {
 }
 const LS_KEY = 'schoolBell.config.v1';
 let CFG;
+/* ---------- مدرسة بفترتين: لكل فترة بياناتها (التوقيت، جدول المعلمين، المناوبة، الاحتياط، الغياب) ---------- */
+const SHIFT_KEYS = ['profiles', 'override', 'timetable', 'duty', 'subs', 'absent'];
+let CUR_SHIFT = 's1';
+function shiftDefaults(id) {
+  const d = defaultConfig(), o = {};
+  SHIFT_KEYS.forEach(k => o[k] = d[k]);
+  if (id === 's2') o.profiles = [{ id: 'pr_' + uid(), name: 'توقيت الفترة المسائية', icon: '🌇', days: [0, 1, 2, 3, 4], periods: genPeriods({ start: '13:15', assembly: 10, count: 6, len: 35, breakAfter: 3, breakLen: 15 }).map(p => p.type === 'assembly' ? { ...p, label: 'الطابور', startText: 'بدأ الآن الطابور', endText: 'انتهى الطابور، يرجى التوجه إلى الفصول' } : p) }];
+  return o;
+}
 function loadConfig() {
   let cur = null;
   try { cur = JSON.parse(localStorage.getItem(LS_KEY)); } catch { }
   CFG = cur ? mergeDefaults(defaultConfig(), cur) : defaultConfig();
+  // ترحيل: البيانات القديمة تصبح بيانات الفترة الأولى
+  if (!CFG.shiftData) { CFG.shiftData = { s1: {} }; SHIFT_KEYS.forEach(k => CFG.shiftData.s1[k] = CFG[k]); }
+  SHIFT_KEYS.forEach(k => delete CFG[k]);
+  for (const id of Object.keys(CFG.shiftData)) CFG.shiftData[id] = mergeDefaults(shiftDefaults(id), CFG.shiftData[id]);
+  if (CFG.shifts.enabled && !CFG.shiftData.s2) CFG.shiftData.s2 = shiftDefaults('s2');
+  // CFG.profiles وغيرها تشير لبيانات الفترة الحالية (ولا تُحفظ مرتين)
+  SHIFT_KEYS.forEach(k => Object.defineProperty(CFG, k, {
+    get() { return (CFG.shiftData[CUR_SHIFT] || CFG.shiftData.s1)[k]; },
+    set(v) { (CFG.shiftData[CUR_SHIFT] || CFG.shiftData.s1)[k] = v; },
+    enumerable: false, configurable: true,
+  }));
+  if (!CFG.shiftData[CUR_SHIFT]) CUR_SHIFT = 's1';
 }
+const shiftIds = () => CFG.shifts.enabled ? CFG.shifts.list.map(s => s.id).filter(id => CFG.shiftData[id]) : ['s1'];
+const shiftName = id => CFG.shifts.list.find(s => s.id === id)?.name || '';
+function inShift(id, fn) { const prev = CUR_SHIFT; CUR_SHIFT = id; try { return fn(); } finally { CUR_SHIFT = prev; } }
+/* الفترة المعروضة الآن: التي يقع الوقت الحالي ضمن دوامها (مع 45 دقيقة قبل بدايتها)، وإلا القادمة */
+function displayShift(d = now()) {
+  const ids = shiftIds(); if (ids.length < 2) return 's1';
+  const sec = secOfDay(d);
+  const spans = ids.map(id => inShift(id, () => { const ps = sortedPeriods(profileFor(d)); return ps.length ? { id, a: toSec(ps[0].start) - 45 * 60, b: toSec(ps[ps.length - 1].end) } : null; })).filter(Boolean);
+  const inside = spans.find(x => sec >= x.a && sec < x.b); if (inside) return inside.id;
+  const next = spans.filter(x => x.a > sec).sort((a, b) => a.a - b.a)[0]; if (next) return next.id;
+  return spans.length ? spans[spans.length - 1].id : 's1';
+}
+let EDIT_SHIFT = 's1';
+function syncShift() { CUR_SHIFT = $('#settings').hidden ? displayShift() : EDIT_SHIFT; }
 let saveT;
 function save(rerender = true) {
   clearTimeout(saveT);
@@ -462,7 +498,13 @@ function reminderApplies(r, p) {
 /* كل الأحداث الصوتية لليوم */
 function eventsFor(d) {
   if (!isWorkDay(d)) return [];
-  const pr = profileFor(d); if (!pr) return [];
+  // الجرس يرن لكل الفترات (الصباحية والمسائية)
+  const all = [];
+  shiftIds().forEach((id, i) => inShift(id, () => all.push(...shiftEvents(d, i === 0).map(e => ({ ...e, key: id + ':' + e.key })))));
+  return all.sort((a, b) => a.t - b.t || a.order - b.order);
+}
+function shiftEvents(d, withFixed) {
+  const pr = profileFor(d); if (!pr) return withFixed ? fixedReminders() : [];
   const ev = [];
   for (const p of sortedPeriods(pr)) {
     const s = toSec(p.start), e = toSec(p.end), name = periodName(p);
@@ -479,10 +521,11 @@ function eventsFor(d) {
       if (t != null && t > s && t < e) ev.push({ key: p.id + ':r:' + r.id, t, kind: 'rem', sound: r.sound, text: r.text, audio: r.audio, banner: r.text || r.name, icon: '📢', order: 2 });
     }
   }
-  for (const r of CFG.reminders) {
-    if (r.enabled && r.mode === 'fixed' && r.time) ev.push({ key: 'fix:' + r.id, t: toSec(r.time), kind: 'rem', sound: r.sound, text: r.text, audio: r.audio, banner: r.text || r.name, icon: '📢', order: 2 });
-  }
-  return ev.sort((a, b) => a.t - b.t || a.order - b.order);
+  if (withFixed) ev.push(...fixedReminders());
+  return ev;
+}
+function fixedReminders() {
+  return CFG.reminders.filter(r => r.enabled && r.mode === 'fixed' && r.time).map(r => ({ key: 'fix:' + r.id, t: toSec(r.time), kind: 'rem', sound: r.sound, text: r.text, audio: r.audio, banner: r.text || r.name, icon: '📢', order: 2 }));
 }
 
 const FIRED_KEY = 'schoolBell.fired';
@@ -648,6 +691,8 @@ function renderDates(d = now()) {
     const n = +CFG.general.cycleWeeks || 1;
     $('#weekLabel').textContent = n > 1 ? 'الأسبوع ' + (ORD[cycleWeek(d) - 1] || cycleWeek(d)) : '';
     $('#weekLabel').hidden = n <= 1;
+    $('#shiftLabel').textContent = CFG.shifts.enabled ? (CUR_SHIFT === 's1' ? '☀️ ' : '🌇 ') + shiftName(CUR_SHIFT) : '';
+    $('#shiftLabel').hidden = !CFG.shifts.enabled;
   }
 }
 let lastSideSig = '';
@@ -1730,15 +1775,17 @@ async function refreshSource(which, manual) {
   CFG._rev = (CFG._rev || 0) + 1;
   save();
 }
-function refreshAllSources() { ['duty', 'subs', 'timetable', 'absent'].forEach(w => refreshSource(w)); }
-const lastRefresh = { duty: 0, subs: 0, timetable: 0, absent: 0 };
+function refreshAllSources() { shiftIds().forEach(id => inShift(id, () => ['duty', 'subs', 'timetable', 'absent'].forEach(w => refreshSource(w)))); }
+const lastRefresh = {};
 function maybeRefresh() {
-  for (const w of ['duty', 'subs', 'timetable', 'absent']) {
-    const s = CFG[w];
-    if (s.source === 'link' && s.url && Date.now() - lastRefresh[w] > Math.max(1, +s.refreshMin || 10) * 60000) {
-      lastRefresh[w] = Date.now(); refreshSource(w);
+  for (const id of shiftIds()) inShift(id, () => {
+    for (const w of ['duty', 'subs', 'timetable', 'absent']) {
+      const s = CFG[w], k = id + ':' + w;
+      if (s.source === 'link' && s.url && Date.now() - (lastRefresh[k] || 0) > Math.max(1, +s.refreshMin || 10) * 60000) {
+        lastRefresh[k] = Date.now(); refreshSource(w);
+      }
     }
-  }
+  });
 }
 
 /* ------------------------------ تحديث عام ------------------------------ */
@@ -1927,15 +1974,20 @@ async function scheduleFromImage(pr) {
    ===================================================================== */
 let curTab = 'general', curProfile = null;
 function openSettings(tab) {
+  EDIT_SHIFT = CFG.shiftData[CUR_SHIFT] ? CUR_SHIFT : 's1'; CUR_SHIFT = EDIT_SHIFT;
   $('#settings').hidden = false; document.body.classList.add('mouse');
   showTab(tab || curTab);
 }
-function closeSettings() { $('#settings').hidden = true; Slides.rebuild(); onConfigChanged(); }
+function closeSettings() { $('#settings').hidden = true; syncShift(); Slides.rebuild(); onConfigChanged(); }
 function showTab(tab) {
   curTab = tab;
   $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   const body = $('#setBody'); const top = body.scrollTop; body.innerHTML = '';
   const sec = h('section'); body.append(sec);
+  // اختيار الفترة التي تُعدَّل بياناتها
+  if (CFG.shifts.enabled && ['schedule', 'timetable', 'duty', 'subs', 'absent'].includes(tab))
+    sec.append(h('div', { class: 'shift-bar' }, h('span', {}, '🏫 تعديل بيانات:'),
+      shiftIds().map(id => h('button', { class: 'btn' + (id === EDIT_SHIFT ? ' pri' : ''), onclick: () => { EDIT_SHIFT = CUR_SHIFT = id; curProfile = null; ttDay = null; rerender(); } }, (id === 's1' ? '☀️ ' : '🌇 ') + shiftName(id)))));
   TABS[tab](sec);
   body.scrollTop = top;
 }
@@ -2087,6 +2139,17 @@ const TABS = {
     sec.append(panel('الإجازات (لا يرن الجرس فيها)', hl,
       h('div', { class: 'row', style: 'margin-top:10px' }, h('button', { class: 'btn', onclick: () => { g.holidays.push({ from: ymd(now()), to: ymd(now()), name: 'إجازة' }); save(); rerender(); } }, '+ إضافة إجازة'))));
 
+    const SH = CFG.shifts;
+    sec.append(panel('مدرسة بفترتين (صباحية ومسائية)',
+      h('p', { class: 'hint' }, 'عند التفعيل يصبح لكل فترة توقيتها وجدول معلميها ومناوبتها واحتياطها وغيابها. الجرس يرن لكلتا الفترتين، والشاشة تعرض بيانات الفترة الحالية تلقائياً (وتنتقل للفترة المسائية قبل بدايتها بـ 45 دقيقة). تختار الفترة التي تعدّلها من أعلى صفحات التوقيت والجداول.'),
+      h('div', { class: 'row' },
+        h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: SH.enabled, onchange: e => {
+          SH.enabled = e.target.checked;
+          if (SH.enabled && !CFG.shiftData.s2) CFG.shiftData.s2 = shiftDefaults('s2');
+          if (!SH.enabled) { EDIT_SHIFT = CUR_SHIFT = 's1'; }
+          save(); rerender(); toast(SH.enabled ? 'تم تفعيل الفترتين — اضبط توقيت الفترة المسائية من "الجداول والتوقيت"' : 'تم الرجوع لفترة واحدة (بيانات المسائية محفوظة)');
+        } }), 'تفعيل نظام الفترتين'),
+        SH.enabled ? SH.list.map(x => field('اسم ' + (x.id === 's1' ? 'الفترة الأولى' : 'الفترة الثانية'), bindInput(x, 'name', { style: 'width:200px' }))) : null)));
     sec.append(panel('الجرس',
       h('div', { class: 'row' },
         chk(g, 'bellEnabled', 'تشغيل الجرس التلقائي'),
@@ -2727,7 +2790,11 @@ async function init() {
   } catch { $('#startOverlay').hidden = false; }
   $('#startBtn').onclick = start;
 
-  setInterval(() => { renderClock(); renderSide(); checkEvents(); Phrases.tick(); Slides.watch(); }, 1000);
+  setInterval(() => {
+    const prev = CUR_SHIFT; syncShift();
+    if (prev !== CUR_SHIFT && $('#settings').hidden) { renderDates(); renderSide(true); Slides.rebuild(); }
+    renderClock(); renderSide(); checkEvents(); Phrases.tick(); Slides.watch();
+  }, 1000);
   Phrases.renderCard();
   setInterval(maybeRefresh, 30000); maybeRefresh();
 

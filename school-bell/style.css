@@ -389,3 +389,59 @@ table.edit tr:hover td { background: rgba(255, 255, 255, 0.02); }
 .now-badge, .ticker-label, .slide-title, .chip.hot, .banner .box, .flag { text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); }
 .ccard .names { display: flex; flex-direction: column; gap: 0.3vh; font-size: clamp(13px, min(7cqw, 11cqh), 36px); font-weight: 700; line-height: 1.35; overflow: hidden; }
 .ccard .names .meta { font-weight: 400; }
+
+/* منتقي الوقت */
+.time-btn { direction: rtl; min-width: 110px; font-variant-numeric: tabular-nums; }
+.tp-ov { position: fixed; inset: 0; z-index: 300; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; }
+.tp-box { background: #1e293b; color: #f1f5f9; border: 1px solid #334155; border-radius: 22px; padding: 22px 26px; width: min(560px, 94vw); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); }
+.tp-box h3 { text-align: center; font-size: 22px; margin-bottom: 10px; }
+.tp-top { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 10px; }
+.tp-big { font-size: 56px; font-weight: 900; color: var(--accent); direction: ltr; font-variant-numeric: tabular-nums; }
+.tp-ap { display: flex; border: 1px solid #475569; border-radius: 12px; overflow: hidden; }
+.tp-ap button { background: transparent; color: #cbd5e1; border: 0; padding: 10px 18px; font-size: 17px; cursor: pointer; }
+.tp-ap button.on { background: var(--accent); color: #fff; font-weight: 800; }
+.tp-l { color: #94a3b8; margin: 10px 0 6px; font-size: 15px; }
+.tp-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.tp-grid button, .tp-row button { background: #0f172a; color: #f1f5f9; border: 1px solid #334155; border-radius: 10px; padding: 11px 0; font-size: 19px; font-weight: 700; cursor: pointer; }
+.tp-grid button:hover, .tp-row button:hover { border-color: var(--accent); }
+.tp-grid button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.tp-row { display: flex; gap: 10px; justify-content: center; margin-top: 14px; }
+.tp-row button { padding: 10px 22px; font-size: 16px; }
+.tp-row .tp-ok { background: var(--accent); color: #fff; border-color: var(--accent); min-width: 140px; }
+
+/* الغائب والبديل */
+.abs-tag { display: inline-block; background: #dc2626; color: #fff; border-radius: 99px; padding: 0 0.6em; font-size: 0.8em; font-weight: 800; text-shadow: none; vertical-align: middle; }
+.abs-name { color: #f87171; text-decoration-thickness: 2px; }
+.sub-name { color: #4ade80 !important; font-weight: 900; }
+body[data-theme$="light"] .sub-name, body[data-theme="light"] .sub-name { color: #15803d !important; }
+body[data-theme$="light"] .abs-name, body[data-theme="light"] .abs-name { color: #b91c1c; }
+.ccard.sub { border-color: #dc2626; background: color-mix(in srgb, #dc2626 12%, var(--card)); }
+.ccard.sub::before { background: linear-gradient(#dc2626, #16a34a); }
+.ccard.sub .flag { background: #dc2626; }
+
+/* العرض الجدولي */
+.tview { display: grid; gap: 1vw; flex: 1; min-height: 0; align-content: start; }
+.tgroup { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card); border: 1px solid var(--card-b); border-radius: 14px; overflow: hidden; font-size: clamp(14px, 1.45vw, 34px); }
+.tgroup th { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--muted); font-weight: 700; text-align: right; padding: 0.4em 0.8em; font-size: 0.75em; }
+.tgroup td { padding: 0.45em 0.8em; border-top: 1px solid var(--card-b); font-weight: 800; vertical-align: middle; }
+.tgroup tr:nth-child(odd) td { background: color-mix(in srgb, var(--text) 4%, transparent); }
+.tgroup td.tc { color: var(--accent2); white-space: nowrap; width: 1%; font-weight: 900; }
+.tgroup td .ts { color: var(--muted); font-weight: 400; font-size: 0.75em; }
+.tgroup tr.sub td { background: color-mix(in srgb, #dc2626 13%, transparent); }
+.tgroup tr.cur td { background: color-mix(in srgb, var(--accent) 25%, transparent); }
+.tgroup td .absent { font-size: 0.72em; font-weight: 600; color: var(--muted); }
+.tgroup td.tabs { font-size: 0.95em; }
+.tgroup td.cont { border-top-color: transparent; }
+
+/* بطاقات التواقيت */
+.prof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.prof-card { position: relative; background: #0b1220; border: 2px solid #1f2937; border-radius: 16px; padding: 16px 12px 12px; text-align: center; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.prof-card.sel { border-color: var(--accent); }
+.prof-card.live { box-shadow: 0 0 0 2px #16a34a inset; }
+.prof-card.add { border-style: dashed; }
+.prof-card select { width: 100%; }
+.prof-ic { font-size: 34px; width: 62px; height: 62px; display: grid; place-items: center; border-radius: 50%; background: #1e293b; }
+.prof-nm { font-weight: 800; font-size: 16px; color: #f1f5f9; }
+.prof-meta { color: #94a3b8; font-size: 12.5px; }
+.prof-live { position: absolute; top: 8px; left: 8px; background: #16a34a; color: #fff; font-size: 11px; border-radius: 99px; padding: 1px 8px; }
+.tgroup td.tabs { background: color-mix(in srgb, #dc2626 9%, transparent) !important; }

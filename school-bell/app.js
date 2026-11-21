@@ -217,6 +217,20 @@ function defaultConfig() {
     display: { showSide: true, showDuty: true, showSubs: true },
     duty: { source: 'manual', url: '', sheet: '', refreshMin: 15, lastFetch: '', lastError: '', rows: [] },
     subs: { source: 'manual', url: '', sheet: '', refreshMin: 10, lastFetch: '', lastError: '', rows: [] },
+    phrases: {
+      enabled: true, showCard: true, cardSec: 15, slide: true, ticker: false,
+      dhikr: ['سبحان الله', 'الحمد لله', 'لا إله إلا الله', 'الله أكبر', 'أستغفر الله', 'سبحان الله وبحمده، سبحان الله العظيم', 'لا حول ولا قوة إلا بالله', 'اللهم صلِّ وسلم على نبينا محمد', 'اذكروا الله يذكركم', 'حسبي الله ونعم الوكيل'],
+      motivation: ['الانضباط طريقك إلى النجاح', 'احترامك للوقت احترام لنفسك', 'كن منظماً تكن متميزاً', 'النظام سر التفوق', 'الالتزام بالدوام عنوان الطالب المتميز', 'حافظ على نظافة مدرستك فهي بيتك الثاني', 'ابتسم وابدأ يومك بنشاط', 'كل يوم فرصة جديدة لتتعلم', 'احترم معلمك تنل علماً', 'الهدوء في الممرات دليل الرقي', 'ثق بنفسك، أنت قادر', 'العلم نور والجهل ظلام'],
+      speak: false, speakWhen: 'breaks', speakEvery: 5, speakVolume: 0.3, speakRate: 1.2, speakDhikr: true, speakMotivation: true, audios: [],
+    },
+    quick: [
+      { id: uid(), text: 'حان الآن وقت صلاة الظهر', sound: 'chime', audio: '' },
+      { id: uid(), text: 'يرجى من جميع الطلاب التوجه إلى الساحة', sound: 'chime', audio: '' },
+      { id: uid(), text: 'نرجو من الطلاب الالتزام بالهدوء والنظام', sound: 'soft', audio: '' },
+      { id: uid(), text: 'يرجى من المعلمين المناوبين التوجه إلى مواقع المناوبة', sound: 'chime', audio: '' },
+      { id: uid(), text: 'بدأ الآن السلام السلطاني', sound: 'none', audio: '' },
+      { id: uid(), text: 'تنبيه: تدريب إخلاء، يرجى التوجه إلى نقطة التجمع بهدوء', sound: 'beep', audio: '' },
+    ],
     files: [],
   };
 }
@@ -310,10 +324,10 @@ const Audio_ = {
     }
     await this.playFile(id);
   },
-  async playFile(id) {
+  async playFile(id, vol) {
     const url = await fileURL(id);
     if (!url || this.stopFlag) return;
-    const a = new Audio(url); a.volume = CFG.general.volume; this.current = a;
+    const a = new Audio(url); a.volume = Math.min(1, vol ?? CFG.general.volume); this.current = a;
     await new Promise(res => {
       a.onended = a.onerror = res; a.play().catch(res);
       setTimeout(res, 5 * 60 * 1000);
@@ -322,16 +336,16 @@ const Audio_ = {
   },
   voices() { return (window.speechSynthesis?.getVoices() || []); },
   arabicVoices() { return this.voices().filter(v => /^ar/i.test(v.lang)); },
-  speak(text) {
+  speak(text, opt = {}) {
     return new Promise(res => {
       if (!text || !window.speechSynthesis || this.stopFlag) return res();
       const u = new SpeechSynthesisUtterance(text);
       const vs = this.voices();
       const v = vs.find(v => v.name === CFG.voice.voiceName) || this.arabicVoices()[0];
       if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'ar-SA';
-      u.rate = +CFG.voice.rate || 0.9; u.volume = Math.min(1, CFG.general.volume + 0.1);
+      u.rate = opt.rate || +CFG.voice.rate || 0.9; u.volume = Math.min(1, opt.volume ?? CFG.general.volume + 0.1);
       const done = () => { clearTimeout(tm); res(); };
-      const tm = setTimeout(done, 2500 + text.length * 180);
+      const tm = setTimeout(done, 2500 + text.length * 180 / u.rate);
       u.onend = u.onerror = done;
       if (speechSynthesis.speaking) speechSynthesis.cancel();
       speechSynthesis.speak(u);
@@ -357,19 +371,19 @@ const Queue = {
       const it = this.items.shift();
       Audio_.stopFlag = false;
       if (it.banner) showBanner(it.banner, it.bannerIcon);
-      Slides.duck(true);
+      if (!it.quiet) Slides.duck(true);
       try {
         await Audio_.playSound(it.sound);
-        for (let r = 0; r < Math.max(1, +CFG.voice.repeat || 1); r++) {
+        for (let r = 0; r < (it.quiet ? 1 : Math.max(1, +CFG.voice.repeat || 1)); r++) {
           for (const p of it.parts || []) {
             if (Audio_.stopFlag) break;
-            if (p.audio) await Audio_.playFile(p.audio);
-            else if (p.text && CFG.voice.tts) await Audio_.speak(p.text);
+            if (p.audio) await Audio_.playFile(p.audio, p.volume);
+            else if (p.text && CFG.voice.tts) await Audio_.speak(p.text, { volume: p.volume, rate: p.rate });
             await sleep(+CFG.voice.gapMs || 300);
           }
         }
       } catch (e) { console.error(e); }
-      Slides.duck(false);
+      if (!it.quiet) Slides.duck(false);
       if (it.banner) setTimeout(hideBanner, Math.max(1000, CFG.general.bannerSec * 1000 - 3000));
     }
     this.busy = false;
@@ -474,6 +488,78 @@ function checkEvents() {
 function manualBell() {
   const pr = profileFor(now());
   Queue.push({ sound: 'classic', parts: [], banner: 'جرس يدوي' });
+}
+
+/* ------------------------------ الأذكار والعبارات التحفيزية ------------------------------ */
+const Phrases = {
+  flip: false, last: '', cardT: null, lastSpoken: Date.now(),
+  pick(kind) {
+    const P = CFG.phrases;
+    const d = P.dhikr.filter(Boolean), m = P.motivation.filter(Boolean);
+    let k = kind || ((this.flip = !this.flip) ? 'd' : 'm');
+    let arr = k === 'd' ? d : m;
+    if (!arr.length) { k = k === 'd' ? 'm' : 'd'; arr = k === 'd' ? d : m; }
+    if (!arr.length) return null;
+    let t = arr[Math.floor(Math.random() * arr.length)];
+    if (t === this.last && arr.length > 1) t = arr[(arr.indexOf(t) + 1) % arr.length];
+    this.last = t;
+    return { t, k };
+  },
+  renderCard() {
+    clearTimeout(this.cardT);
+    const P = CFG.phrases, card = $('#phraseCard');
+    card.hidden = !(P.enabled && P.showCard);
+    if (card.hidden) return;
+    const ph = this.pick();
+    if (ph) {
+      $('#phraseIcon').textContent = ph.k === 'd' ? '🤲 ذِكر' : '⭐ كلمة تحفيزية';
+      const el = $('#phraseText'); el.textContent = ph.t;
+      el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    }
+    // يتبدل أسرع في أوقات الفسحة وبين الحصص
+    const st = currentState();
+    const free = !st.cur || !isLesson(st.cur);
+    card.classList.toggle('free', free && st.work);
+    this.cardT = setTimeout(() => this.renderCard(), Math.max(5, +P.cardSec || 15) * 1000 * (free ? 0.7 : 1));
+  },
+  /* نطق عبارة بصوت خافت وسريع على فترات (لا يتداخل مع الجرس) */
+  tick() {
+    const P = CFG.phrases;
+    if (!P.enabled || !P.speak || !started || !CFG.general.bellEnabled || Queue.busy) return;
+    if (Date.now() - this.lastSpoken < Math.max(1, +P.speakEvery || 5) * 60000) return;
+    const st = currentState(); if (!st.work || !st.periods.length) return;
+    const first = toSec(st.periods[0].start) - 30 * 60, last = toSec(st.periods[st.periods.length - 1].end);
+    if (st.sec < first || st.sec > last) return;
+    if (P.speakWhen === 'breaks' && st.cur && isLesson(st.cur)) return;
+    // لا تنطق قبل جرس قريب بدقيقة
+    if (eventsFor(now()).some(e => e.t - st.sec >= 0 && e.t - st.sec < 60)) return;
+    this.lastSpoken = Date.now();
+    this.speakOne();
+  },
+  speakOne() {
+    const P = CFG.phrases;
+    const pool = [];
+    if (P.speakDhikr) P.dhikr.filter(Boolean).forEach(t => pool.push({ text: t }));
+    if (P.speakMotivation) P.motivation.filter(Boolean).forEach(t => pool.push({ text: t }));
+    P.audios.filter(id => CFG.files.some(f => f.id === id)).forEach(id => pool.push({ audio: id }));
+    if (!pool.length) return;
+    const it = pool[Math.floor(Math.random() * pool.length)];
+    Queue.push({ sound: 'none', quiet: true, parts: [{ ...it, volume: +P.speakVolume || 0.3, rate: +P.speakRate || 1.2 }] });
+  },
+};
+function quickAnnounce(q) {
+  Audio_.ensure();
+  Queue.push({ sound: q.sound, parts: [{ text: q.text, audio: q.audio }], banner: q.text, bannerIcon: '📢' });
+  $('#quickMenu').hidden = true;
+}
+function toggleQuickMenu() {
+  const m = $('#quickMenu');
+  if (!m.hidden) { m.hidden = true; return; }
+  m.innerHTML = '';
+  m.append(h('div', { class: 'qm-title' }, '📢 إعلان فوري'));
+  CFG.quick.forEach((q, i) => m.append(h('button', { onclick: () => quickAnnounce(q) }, h('b', {}, digits(i + 1)), q.text)));
+  if (!CFG.quick.length) m.append(h('div', { class: 'qm-empty' }, 'أضف إعلانات من الإعدادات ← تنبيهات وإعلانات'));
+  m.hidden = false;
 }
 
 /* ------------------------------ الحالة الحالية ------------------------------ */
@@ -620,6 +706,7 @@ function tickerHTML() {
     const s = subsFor(d);
     if (s.length) items.push('حصص الاحتياط اليوم: ' + s.map(r => `${r.period || ''} ${r.cls || ''}: ${r.sub || ''}`.trim()).join(' ◆ '));
   }
+  if (CFG.phrases.enabled && CFG.phrases.ticker) items.push(...CFG.phrases.dhikr.filter(Boolean).slice(0, 4), ...CFG.phrases.motivation.filter(Boolean).slice(0, 3));
   return items.map(esc).join('<span class="sep">◆</span>');
 }
 function updateTicker(force) {
@@ -693,6 +780,11 @@ const Slides = {
     if (A.schedule) out.push({ type: 'auto-schedule', duration: A.duration });
     if (A.duty && CFG.duty.rows.length) out.push({ type: 'auto-duty', duration: A.duration });
     if (A.subs) out.push({ type: 'auto-subs', duration: A.duration });
+    if (CFG.phrases.enabled && CFG.phrases.slide) {
+      // شريحة ذكر/تحفيز بعد كل شريحتين تقريباً
+      const n = Math.max(1, Math.floor(out.length / 2));
+      for (let k = n; k >= 1; k--) out.splice(Math.min(out.length, k * 2), 0, { type: 'auto-phrase', duration: 10 });
+    }
     this.list = out;
     this.building = false;
     if (this.again) { this.again = false; return this.rebuild(); }
@@ -754,6 +846,9 @@ const Slides = {
       el = this.dutySlide();
     } else if (s.type === 'auto-subs') {
       el = this.subsSlide();
+    } else if (s.type === 'auto-phrase') {
+      const ph = Phrases.pick();
+      if (ph) el = h('div', { class: 'slide text-slide phrase-slide ' + (ph.k === 'd' ? 'dhikr' : 'moti') }, h('div', { class: 'ps-icon' }, ph.k === 'd' ? '🤲' : '⭐'), h('div', {}, ph.t));
     }
     if (!el) { this.skip(); return null; }
     const dots = h('div', { class: 'slide-dots' }, this.list.map((_, i) => h('i', { class: i === this.i ? 'on' : '' })));
@@ -931,6 +1026,7 @@ function maybeRefresh() {
 /* ------------------------------ تحديث عام ------------------------------ */
 let slideRebuildT;
 function onConfigChanged() {
+  Phrases.renderCard && setTimeout(() => Phrases.renderCard(), 0);
   applyTheme();
   CFG._rev = (CFG._rev || 0) + 1;
   renderDates(); renderClock();
@@ -999,6 +1095,16 @@ function audioOptions() {
 }
 const testBtn = (fn, label = '▶') => h('button', { class: 'btn sm', title: 'تجربة', onclick: e => { e.preventDefault(); Audio_.ensure(); fn(); } }, label);
 
+const READY = [
+  { name: 'صلاة الظهر', mode: 'fixed', time: '12:15', text: 'حان الآن وقت صلاة الظهر، يرجى التوجه إلى المصلى' },
+  { name: 'الصلاة على النبي', mode: 'mid', text: 'اللهم صلِّ وسلم على نبينا محمد' },
+  { name: 'استغفار', mode: 'mid', applies: 'all', text: 'أستغفر الله العظيم وأتوب إليه' },
+  { name: 'تسبيح', mode: 'mid', text: 'سبحان الله وبحمده، سبحان الله العظيم' },
+  { name: 'قبل نهاية الفسحة', mode: 'beforeEnd', minutes: 3, applies: 'break', text: 'تبقى ثلاث دقائق على نهاية الفسحة، استعدوا للعودة إلى الفصول' },
+  { name: 'الالتزام بالنظام', mode: 'afterStart', minutes: 2, applies: 'break', sound: 'soft', text: 'نرجو من الطلاب المحافظة على النظام والنظافة أثناء الفسحة' },
+  { name: 'أذكار الصباح', mode: 'afterStart', minutes: 3, applies: 'assembly', text: 'أصبحنا وأصبح الملك لله، والحمد لله' },
+  { name: 'تنبيه المعلمين', mode: 'beforeEnd', minutes: 5, text: 'تبقى خمس دقائق على نهاية الحصة' },
+];
 const TABS = {
   /* ---------------- عام ---------------- */
   general(sec) {
@@ -1209,7 +1315,23 @@ const TABS = {
       h('p', { class: 'hint' }, 'أمثلة: في منتصف كل حصة "اللهم صلِّ على محمد"، قبل نهاية الحصة بـ 5 دقائق تنبيه للمعلم، أو في وقت محدد (مثلاً 10:00 أذكار / النشيد الوطني). يمكن استخدام النطق الآلي أو ملف صوتي مرفوع.'),
       list,
       h('div', { class: 'row', style: 'margin-top:12px' },
-        h('button', { class: 'btn pri', onclick: () => { CFG.reminders.push({ id: uid(), enabled: true, name: 'تنبيه جديد', mode: 'mid', minutes: 5, time: '10:00', applies: 'lessons', sound: 'chime', text: '', audio: '' }); save(); rerender(); } }, '+ إضافة تنبيه'))));
+        h('button', { class: 'btn pri', onclick: () => { CFG.reminders.push({ id: uid(), enabled: true, name: 'تنبيه جديد', mode: 'mid', minutes: 5, time: '10:00', applies: 'lessons', sound: 'chime', text: '', audio: '' }); save(); rerender(); } }, '+ إضافة تنبيه')),
+      h('p', { class: 'hint', style: 'margin-top:12px' }, 'إضافة سريعة من عبارات جاهزة (يمكن تعديل الوقت والنص بعد الإضافة، أو اختيار تسجيل صوتي ترفعه لاحقاً):'),
+      h('div', { class: 'row' }, READY.map(t => h('button', { class: 'btn sm', onclick: () => { CFG.reminders.push({ id: uid(), enabled: true, sound: 'chime', audio: '', minutes: 5, applies: 'lessons', ...clone(t) }); save(); rerender(); } }, '+ ' + t.name)))));
+
+    const ql = h('div', { class: 'list-items' });
+    CFG.quick.forEach((q, i) => ql.append(h('div', { class: 'item' },
+      h('b', { style: 'width:22px' }, digits(i + 1)),
+      field('النص', bindInput(q, 'text', { style: 'width:380px' })),
+      field('الصوت قبله', bindSelect(q, 'sound', soundOptions(), null, { style: 'width:150px' })),
+      field('أو تسجيل', bindSelect(q, 'audio', audioOptions(), null, { style: 'width:150px' })),
+      testBtn(() => quickAnnounce(q)),
+      h('button', { class: 'btn dan sm', onclick: () => { CFG.quick.splice(i, 1); save(); rerender(); } }, 'حذف'))));
+    sec.append(panel('إعلانات فورية بضغطة زر',
+      h('p', { class: 'hint' }, 'تظهر عند الضغط على زر 📢 في الشاشة الرئيسية (أو حرف A)، أو بالضغط على رقمها من 1 إلى 9 مباشرة.'),
+      ql,
+      h('div', { class: 'row', style: 'margin-top:12px' },
+        h('button', { class: 'btn pri', onclick: () => { CFG.quick.push({ id: uid(), text: 'نص الإعلان', sound: 'chime', audio: '' }); save(); rerender(); } }, '+ إضافة إعلان'))));
   },
 
   /* ---------------- العرض والشريط ---------------- */
@@ -1272,6 +1394,40 @@ const TABS = {
     const D = CFG.display;
     sec.append(panel('تخطيط الشاشة',
       h('div', { class: 'row' }, chk(D, 'showSide', 'إظهار العمود الجانبي (الحصة الحالية/المناوبة/الاحتياط)'), chk(D, 'showDuty', 'بطاقة المناوبة'), chk(D, 'showSubs', 'بطاقة الاحتياط'))));
+  },
+
+  /* ---------------- الأذكار والتحفيز ---------------- */
+  phrases(sec) {
+    const P = CFG.phrases;
+    const lines = key => h('textarea', { style: 'min-height:220px', onchange: e => { P[key] = e.target.value.split('\n').map(s => s.trim()).filter(Boolean); save(); } }, P[key].join('\n'));
+    sec.append(panel('عرض الأذكار والعبارات التحفيزية تلقائياً',
+      h('p', { class: 'hint' }, 'تظهر تلقائياً على الشاشة بدون أي إعداد: بطاقة في العمود الجانبي تتبدل باستمرار (أسرع في الفسحة وبين الحصص)، وشرائح كبيرة بين شرائح العرض. عدّل القوائم كما تريد — كل سطر عبارة.'),
+      h('div', { class: 'row' },
+        chk(P, 'enabled', 'تفعيل الأذكار والعبارات'),
+        chk(P, 'showCard', 'بطاقة في العمود الجانبي'),
+        chk(P, 'slide', 'شرائح كبيرة بين شرائح العرض'),
+        chk(P, 'ticker', 'إضافتها للشريط الإخباري'),
+        field('مدة كل عبارة (ث)', bindInput(P, 'cardSec', { type: 'number', min: 5, style: 'width:90px' }))),
+      h('div', { class: 'grid2' },
+        field('🤲 الأذكار', lines('dhikr')),
+        field('⭐ عبارات تعزيزية وتحفيزية (الانتظام، الانضباط، النظافة...)', lines('motivation')))));
+
+    const audios = CFG.files.filter(f => f.kind === 'audio');
+    sec.append(panel('نطقها بصوت خافت',
+      h('p', { class: 'hint' }, 'ينطق البرنامج عبارة عشوائية بصوت منخفض وسرعة أعلى كل عدة دقائق. يُفضّل اختيار "الفسحة وبين الحصص فقط" حتى لا يزعج الحصص. لا تُنطق قبل الجرس بدقيقة ولا أثناء إعلان آخر.'),
+      h('div', { class: 'row' },
+        chk(P, 'speak', 'تفعيل النطق'),
+        field('متى', bindSelect(P, 'speakWhen', [['breaks', 'الطابور والفسحة وبين الحصص فقط'], ['always', 'طوال الدوام (حتى أثناء الحصص)']])),
+        field('كل (دقيقة)', bindInput(P, 'speakEvery', { type: 'number', min: 1, style: 'width:80px' })),
+        field('مستوى الصوت', bindInput(P, 'speakVolume', { type: 'range', min: 0.05, max: 1, step: 0.05 })),
+        field('السرعة', bindInput(P, 'speakRate', { type: 'range', min: 0.7, max: 1.8, step: 0.05 }))),
+      h('div', { class: 'row' },
+        chk(P, 'speakDhikr', 'نطق الأذكار'), chk(P, 'speakMotivation', 'نطق العبارات التحفيزية'),
+        testBtn(() => Phrases.speakOne(), '▶ تجربة')),
+      h('p', { class: 'hint' }, 'ملفات صوتية تُشغَّل ضمن العبارات (مثلاً أذكار مسجلة بصوت قارئ) — ارفعها من تبويب "الأصوات والإعلانات" ثم حددها هنا:'),
+      audios.length ? h('div', { class: 'row' }, audios.map(f => h('label', { class: 'chk' },
+        h('input', { type: 'checkbox', checked: P.audios.includes(f.id), onchange: e => { P.audios = e.target.checked ? [...P.audios, f.id] : P.audios.filter(x => x !== f.id); save(); } }), f.name)))
+        : h('p', { class: 'hint' }, '(لا توجد ملفات صوتية مرفوعة بعد)')));
   },
 
   duty(sec) { sourceTab(sec, 'duty'); },
@@ -1450,7 +1606,8 @@ async function init() {
   } catch { $('#startOverlay').hidden = false; }
   $('#startBtn').onclick = start;
 
-  setInterval(() => { renderClock(); renderSide(); checkEvents(); }, 1000);
+  setInterval(() => { renderClock(); renderSide(); checkEvents(); Phrases.tick(); }, 1000);
+  Phrases.renderCard();
   setInterval(maybeRefresh, 30000); maybeRefresh();
 
   // أزرار التحكم
@@ -1460,6 +1617,7 @@ async function init() {
   $('#cMute').onclick = toggleBell;
   $('#cStop').onclick = () => Audio_.stop();
   $('#cNext').onclick = () => Slides.next();
+  $('#cQuick').onclick = toggleQuickMenu;
   $('#closeSettings').onclick = closeSettings;
   $$('#tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
   $('#banner').onclick = hideBanner;
@@ -1476,6 +1634,8 @@ async function init() {
     else if (k === 'm' || k === 'ة') toggleBell();
     else if (k === 'escape') Audio_.stop();
     else if (k === 'arrowright' || k === 'arrowleft') Slides.next();
+    else if (k === 'a' || k === 'ش') toggleQuickMenu();
+    else if (/^[1-9]$/.test(toLatin(e.key)) && CFG.quick[+toLatin(e.key) - 1]) quickAnnounce(CFG.quick[+toLatin(e.key) - 1]);
   });
   window.addEventListener('storage', e => { if (e.key === LS_KEY) { loadConfig(); onConfigChanged(); Slides.rebuild(); } });
 }

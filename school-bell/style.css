@@ -280,3 +280,27 @@ table.edit tr:hover td { background: rgba(255, 255, 255, 0.02); }
 .preview-box td, .preview-box th { padding: 4px 6px; border-bottom: 1px solid #1f2937; text-align: right; }
 .rec-dot { display: inline-block; width: 10px; height: 10px; background: var(--danger); border-radius: 50%; animation: blink 1s infinite; }
 @keyframes blink { 50% { opacity: 0.2; } }
+
+/* ===== الأذكار والتحفيز ===== */
+.phrase-card { text-align: center; background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(255, 255, 255, 0.04)); }
+.phrase-card h3 { justify-content: center; }
+.phrase-card.free { border-color: var(--accent2); box-shadow: 0 0 24px rgba(245, 158, 11, 0.25); }
+.phrase-text { font-size: clamp(16px, 1.9vw, 40px); font-weight: 800; line-height: 1.5; animation: fadeIn 0.9s ease; }
+.phrase-slide { flex-direction: column; gap: 2vh; }
+.phrase-slide .ps-icon { font-size: clamp(40px, 6vw, 120px); }
+.phrase-slide.dhikr { background: radial-gradient(circle at center, rgba(20, 184, 166, 0.35), transparent 70%); }
+.phrase-slide.moti { background: radial-gradient(circle at center, rgba(245, 158, 11, 0.3), transparent 70%); }
+.quick-menu {
+  position: fixed; left: 70px; top: 50%; transform: translateY(-50%); z-index: 55;
+  background: #0f172a; border: 1px solid var(--accent); border-radius: 14px; padding: 10px;
+  display: flex; flex-direction: column; gap: 6px; max-width: 520px; max-height: 80vh; overflow: auto; cursor: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+.quick-menu .qm-title { font-weight: 800; color: var(--accent); padding: 4px 8px; }
+.quick-menu .qm-empty { color: var(--muted); padding: 8px; }
+.quick-menu button {
+  text-align: right; background: #1e293b; color: var(--text); border: 1px solid #334155; border-radius: 10px;
+  padding: 10px 12px; font-size: 16px; cursor: pointer; display: flex; gap: 10px; align-items: center;
+}
+.quick-menu button:hover { background: var(--accent); color: #000; }
+.quick-menu button b { background: rgba(0, 0, 0, 0.3); border-radius: 6px; padding: 0 7px; }

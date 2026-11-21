@@ -217,7 +217,7 @@ function defaultConfig() {
     ],
     autoSlides: { welcome: true, now: true, schedule: true, duty: true, subs: true, absent: true, duration: 15, nowDuration: 20, perPage: 0 },
     ticker: { enabled: true, label: 'أخبار المدرسة', texts: ['أهلاً بكم في مدرستنا', 'النظافة من الإيمان', 'الالتزام بالوقت أساس النجاح'], speed: 90, includeDuty: true, includeSubs: true },
-    display: { layout: 'hero', tickerPos: 'bottom', transition: 'random', showStatus: true, showDuty: true, showSubs: true, nowStyle: 'table', subsStyle: 'grouped' },
+    display: { layout: 'hero', tickerPos: 'bottom', transition: 'random', showStatus: true, showDuty: true, showSubs: true, nowStyle: 'table', subsStyle: 'grouped', dutyAllWeeks: true },
     absent: { source: 'manual', url: '', sheet: '', refreshMin: 10, lastFetch: '', lastError: '', rows: [], showScene: false, showNames: true, datedOnly: false },
     timetable: { source: 'manual', url: '', sheet: '', refreshMin: 60, lastFetch: '', lastError: '', rows: [], classes: [] },
     duty: { source: 'manual', url: '', sheet: '', refreshMin: 15, lastFetch: '', lastError: '', rows: [] },
@@ -654,12 +654,16 @@ function dutyFor(d, slotPeriod) {
   return CFG.duty.rows.filter(r => {
     if (r.date) { if (r.date !== day) return false; }
     else if (r.day !== -1 && r.day !== dow) return false;
-    if (r.week && r.week !== wk) return false;
+    if (!weekOK(r, d)) return false;
     const k = slotKey(r.slot);
     if (!keys) return k === '*';
     return k === '*' || keys.has(k);
   });
 }
+/* المناوبة: إظهار كل الأسابيع لنفس اليوم، أو الأسبوع الحالي فقط */
+const weekOK = (r, d) => !r.week || CFG.display.dutyAllWeeks || r.week === cycleWeek(d);
+const weekTag = r => r.week ? 'الأسبوع ' + (ORD[r.week - 1] || r.week) : '';
+const byWeek = (a, b) => (a.week || 0) - (b.week || 0) || String(a.location || '').localeCompare(String(b.location || ''), 'ar');
 function subsFor(d) {
   const day = ymd(d), dow = d.getDay();
   return CFG.subs.rows.filter(r => r.date ? r.date === day : (r.day === dow))
@@ -738,7 +742,7 @@ function renderSide(force) {
     for (const r of all) dl.append(h('li', {}, h('span', { class: 'tag' }, r.slot || 'اليوم'), h('span', {}, r.teacher), r.location ? h('span', { class: 'loc' }, '— ' + r.location) : null));
     if (!cur.length && !all.length) {
       // عرض مناوبة اليوم كاملة إن لم توجد مناوبة للفترة الحالية
-      const today = CFG.duty.rows.filter(r => (r.date ? r.date === ymd(d) : (r.day === -1 || r.day === d.getDay())) && (!r.week || r.week === cycleWeek(d)));
+      const today = CFG.duty.rows.filter(r => (r.date ? r.date === ymd(d) : (r.day === -1 || r.day === d.getDay())) && weekOK(r, d));
       if (today.length) $('#dutySlot').textContent = 'مناوبة اليوم';
       if (today.length) today.forEach(r => dl.append(h('li', {}, h('span', { class: 'tag' }, r.slot || '—'), h('span', {}, r.teacher), r.location ? h('span', { class: 'loc' }, '— ' + r.location) : null)));
       else dl.append(h('li', { class: 'muted' }, 'لا توجد مناوبة مسجلة لهذا الوقت'));
@@ -1192,9 +1196,9 @@ const Slides = {
       return h('div', { class: 'slide scene' }, this.head(cur ? '📚' : '⏳', (cur ? '' : 'استعداد: ') + periodName(p) + (cur ? ' الآن' : ''), chips), g);
     }
     // فسحة / طابور / صلاة: اعرض المناوبين
-    const duty = dutyFor(d, p).filter(r => slotKey(r.slot) !== '*');
+    const duty = dutyFor(d, p).filter(r => slotKey(r.slot) !== '*').sort(byWeek);
     if (!duty.length) return this.heroNow(p, st, st.next && cur ? 'التالي: ' + periodName(st.next) : '');
-    const g = this.grid(duty, r => h('div', { class: 'ccard' }, h('span', { class: 'cls' }, '🛡️ مناوبة'), h('div', { class: 'tch' }, r.teacher), r.location ? h('div', { class: 'meta' }, '📍 ' + r.location) : null));
+    const g = this.grid(duty, r => h('div', { class: 'ccard' + (CFG.display.dutyAllWeeks && r.week === cycleWeek(d) && +CFG.general.cycleWeeks > 1 ? ' cur' : '') }, h('span', { class: 'cls' }, r.week ? '🗓️ ' + weekTag(r) : '🛡️ مناوبة'), h('div', { class: 'tch' }, r.teacher), r.location ? h('div', { class: 'meta' }, '📍 ' + r.location) : null));
     return h('div', { class: 'slide scene' }, this.head(p.type.startsWith('break') ? '☕' : '🕌', periodName(p) + (cur ? ' الآن' : ''), chips), g);
   },
   scheduleScene() {
@@ -1212,12 +1216,13 @@ const Slides = {
   },
   dutyScene() {
     const d = now(); if (!isWorkDay(d)) return null;
-    const rows = CFG.duty.rows.filter(r => (r.date ? r.date === ymd(d) : (r.day === -1 || r.day === d.getDay())) && (!r.week || r.week === cycleWeek(d)));
+    const rows = CFG.duty.rows.filter(r => (r.date ? r.date === ymd(d) : (r.day === -1 || r.day === d.getDay())) && weekOK(r, d));
     if (!rows.length) return null;
     const st = currentState(d), keys = st.cur ? periodKeys(st.cur) : (st.next ? periodKeys(st.next) : new Set());
+    rows.sort(byWeek);
     const g = this.grid(rows, r => h('div', { class: 'ccard' + (keys.has(slotKey(r.slot)) ? ' cur' : '') },
-      h('span', { class: 'cls' }, r.slot || 'طوال اليوم'), h('div', { class: 'tch' }, r.teacher), r.location ? h('div', { class: 'meta' }, '📍 ' + r.location) : null));
-    return h('div', { class: 'slide scene' }, this.head('🛡️', 'المناوبة اليوم', [DAYS[d.getDay()], CFG.general.cycleWeeks > 1 ? 'الأسبوع ' + cycleWeek(d) : null]), g);
+      h('span', { class: 'cls' }, r.slot || 'طوال اليوم'), r.week ? h('div', { class: 'subj' }, weekTag(r)) : null, h('div', { class: 'tch' }, r.teacher), r.location ? h('div', { class: 'meta' }, '📍 ' + r.location) : null));
+    return h('div', { class: 'slide scene' }, this.head('🛡️', 'المناوبة اليوم', [DAYS[d.getDay()], CFG.general.cycleWeeks > 1 && !CFG.display.dutyAllWeeks ? 'الأسبوع ' + cycleWeek(d) : (CFG.display.dutyAllWeeks ? 'كل الأسابيع' : null)]), g);
   },
   subsScene() {
     const d = now(); if (!isWorkDay(d)) return null;
@@ -2575,6 +2580,8 @@ function sourceTab(sec, which) {
       h('button', { class: 'btn', onclick: () => downloadTemplate(which) }, '⬇ تحميل نموذج فارغ'),
       S.fileRows?.length ? h('button', { class: 'btn dan', onclick: () => { S.rows = (S.linkRows || []).slice(); S.fileRows = []; save(); rerender(); } }, `حذف بيانات الملف المرفوع (${S.fileRows.length})`) : null,
       S.rows.length ? h('button', { class: 'btn dan', onclick: () => { if (confirm('مسح كل السجلات؟')) { S.rows = []; S.fileRows = []; S.linkRows = []; save(); rerender(); } } }, 'مسح الكل') : null)));
+  if (isDuty) sec.append(panel('خيارات العرض',
+    h('div', { class: 'row' }, chk(CFG.display, 'dutyAllWeeks', 'إظهار مناوبات كل الأسابيع لنفس اليوم (مع اسم الأسبوع بجانب كل معلمة) — بدل الأسبوع الحالي فقط'))));
   if (isAbs) sec.append(panel('خيارات العرض',
     h('div', { class: 'row' },
       chk(S, 'showNames', 'إظهار أسماء الطلاب (إلغاؤه يعرض عدد الغائبين لكل صف فقط)'),
@@ -2584,7 +2591,7 @@ function sourceTab(sec, which) {
   // معاينة اليوم
   const d = now();
   const todayRows = isDuty
-    ? S.rows.filter(r => (r.date ? r.date === ymd(d) : (r.day === -1 || r.day === d.getDay())) && (!r.week || r.week === cycleWeek(d)))
+    ? S.rows.filter(r => (r.date ? r.date === ymd(d) : (r.day === -1 || r.day === d.getDay())) && weekOK(r, d))
     : isAbs ? absentFor(d) : subsFor(d);
   sec.append(panel(`ما سيظهر اليوم (${DAYS[d.getDay()]}${isDuty && CFG.general.cycleWeeks > 1 ? ' — الأسبوع ' + cycleWeek(d) : ''}) — ${todayRows.length}`,
     todayRows.length ? h('div', { class: 'preview-box' }, h('table', {},

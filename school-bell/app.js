@@ -217,7 +217,7 @@ function defaultConfig() {
     ],
     autoSlides: { welcome: true, now: true, schedule: true, duty: true, subs: true, absent: true, duration: 15, nowDuration: 20, perPage: 0 },
     ticker: { enabled: true, label: 'أخبار المدرسة', texts: ['أهلاً بكم في مدرستنا', 'النظافة من الإيمان', 'الالتزام بالوقت أساس النجاح'], speed: 90, includeDuty: true, includeSubs: true },
-    display: { layout: 'hero', tickerPos: 'bottom', transition: 'random', showStatus: true, showDuty: true, showSubs: true, nowStyle: 'table', subsStyle: 'grouped', dutyAllWeeks: true },
+    display: { layout: 'hero', tickerPos: 'bottom', transition: 'random', showStatus: true, showDuty: true, showSubs: true, nowStyle: 'table', subsStyle: 'grouped', dutyAllWeeks: true, dutyStrip: true, dutyStripSec: 7 },
     absent: { source: 'manual', url: '', sheet: '', refreshMin: 10, lastFetch: '', lastError: '', rows: [], showScene: false, showNames: true, datedOnly: false },
     timetable: { source: 'manual', url: '', sheet: '', refreshMin: 60, lastFetch: '', lastError: '', rows: [], classes: [] },
     duty: { source: 'manual', url: '', sheet: '', refreshMin: 15, lastFetch: '', lastError: '', rows: [] },
@@ -816,6 +816,47 @@ function applyTicker(html) {
   });
 }
 $('#tickerInner').addEventListener('animationiteration', () => { if (tickerPending != null) { applyTicker(tickerPending); tickerPending = null; } });
+
+/* ------------------------------ شريط المناوبة (أسفل الشاشة) ------------------------------ */
+const DutyStrip = {
+  pages: [], i: 0, sig: '', t: null,
+  build() {
+    const el = $('#dutyStrip'), d = now(), st = currentState(d);
+    const p = st.work ? (st.cur || st.next) : null;
+    let rows = CFG.display.dutyStrip && p ? dutyFor(d, p) : [];
+    const sig = (p ? p.id : '-') + '|' + rows.length + '|' + CFG._rev + '|' + cycleWeek(d);
+    if (sig === this.sig) return;
+    this.sig = sig;
+    if (!rows.length) { el.hidden = true; this.pages = []; return; }
+    // صفحات: صفحة لكل أسبوع (الحالي أولاً)، والسجلات العامة في صفحة "كل الأسابيع"
+    const cw = +CFG.general.cycleWeeks > 1 ? cycleWeek(d) : 0;
+    const byW = new Map(); rows.forEach(r => { const k = r.week || 0; (byW.get(k) || byW.set(k, []).get(k)).push(r); });
+    const weeks = [...byW.keys()].sort((a, b) => (a === cw ? -1 : b === cw ? 1 : (a || 99) - (b || 99)));
+    const pages = [];
+    for (const w of weeks) {
+      const locs = new Map(); byW.get(w).forEach(r => { const k = r.location || r.slot || ''; (locs.get(k) || locs.set(k, []).get(k)).push(r.teacher); });
+      const chips = [...locs.entries()];
+      for (let k = 0; k < chips.length; k += 3) pages.push({ w, cur: w === cw && cw > 0, chips: chips.slice(k, k + 3) });
+    }
+    this.pages = pages; this.i = -1;
+    $('#dsSlot').textContent = periodName(p) + (st.cur === p ? '' : ' (القادمة)');
+    el.hidden = false;
+    this.next();
+  },
+  next() {
+    clearTimeout(this.t);
+    if (!this.pages.length) return;
+    this.i = (this.i + 1) % this.pages.length;
+    const pg = this.pages[this.i], box = $('#dsPage');
+    const page = h('div', { class: 'ds-in' },
+      h('span', { class: 'ds-week' + (pg.cur ? ' cur' : '') }, pg.w ? (pg.cur ? '● ' : '') + 'الأسبوع ' + (ORD[pg.w - 1] || pg.w) : 'كل الأسابيع'),
+      pg.chips.map(([loc, names], k) => h('span', { class: 'ds-chip', style: `--i:${k}` }, loc ? h('em', {}, loc) : null, h('b', {}, names.join(' • ')))));
+    box.innerHTML = ''; box.append(page);
+    $('#dsDots').innerHTML = '';
+    if (this.pages.length > 1) $('#dsDots').append(...this.pages.map((_, k) => h('i', { class: k === this.i ? 'on' : '' })));
+    if (this.pages.length > 1) this.t = setTimeout(() => this.next(), Math.max(3, +CFG.display.dutyStripSec || 7) * 1000);
+  },
+};
 
 /* ------------------------------ الشرائح ------------------------------ */
 /* ---------- جدول المعلمين: من يدرّس أي صف في كل حصة ---------- */
@@ -1919,6 +1960,7 @@ function maybeRefresh() {
 /* ------------------------------ تحديث عام ------------------------------ */
 let slideRebuildT;
 function onConfigChanged() {
+  if (typeof DutyStrip !== 'undefined') DutyStrip.sig = '';
   Phrases.renderCard && setTimeout(() => Phrases.renderCard(), 0);
   applyTheme();
   CFG._rev = (CFG._rev || 0) + 1;
@@ -2701,6 +2743,8 @@ function sourceTab(sec, which) {
       S.fileRows?.length ? h('button', { class: 'btn dan', onclick: () => { S.rows = (S.linkRows || []).slice(); S.fileRows = []; save(); rerender(); } }, `حذف بيانات الملف المرفوع (${S.fileRows.length})`) : null,
       S.rows.length ? h('button', { class: 'btn dan', onclick: () => { if (confirm('مسح كل السجلات؟')) { S.rows = []; S.fileRows = []; S.linkRows = []; save(); rerender(); } } }, 'مسح الكل') : null)));
   if (isDuty) sec.append(panel('خيارات العرض',
+    h('div', { class: 'row' }, chk(CFG.display, 'dutyStrip', '🛡️ شريط "المناوبة الآن" أسفل الشاشة'),
+      field('مدة كل صفحة في الشريط (ث)', bindInput(CFG.display, 'dutyStripSec', { type: 'number', min: 3, style: 'width:80px' }))),
     h('div', { class: 'row' }, chk(CFG.display, 'dutyAllWeeks', 'إظهار مناوبات كل الأسابيع لنفس اليوم (مع اسم الأسبوع بجانب كل معلمة) — بدل الأسبوع الحالي فقط'))));
   if (isAbs) sec.append(panel('خيارات العرض',
     h('div', { class: 'row' },
@@ -2924,7 +2968,7 @@ async function init() {
   setInterval(() => {
     const prev = CUR_SHIFT; syncShift();
     if (prev !== CUR_SHIFT && $('#settings').hidden) { renderDates(); renderSide(true); Slides.rebuild(); }
-    renderClock(); renderSide(); checkEvents(); Phrases.tick(); Slides.watch();
+    renderClock(); renderSide(); checkEvents(); Phrases.tick(); Slides.watch(); DutyStrip.build();
   }, 1000);
   Phrases.renderCard();
   setInterval(maybeRefresh, 30000); maybeRefresh();

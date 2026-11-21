@@ -1126,11 +1126,11 @@ const Slides = {
       this.pages > 1 ? h('span', { class: 'pg' }, digits(`${this.page + 1} / ${this.pages}`)) : null);
   },
   /* توزيع البطاقات على شبكة تملأ المساحة + تقسيمها إلى صفحات */
-  grid(items, mk) {
+  grid(items, mk, opt = {}) {
     const stage = $('#stage');
     const W = stage.clientWidth || 1200, H = (stage.clientHeight || 600) - Math.max(90, stage.clientHeight * 0.16);
-    const maxCols = Math.max(1, Math.min(6, Math.floor(W / 270)));
-    const rowH = Math.max(110, H * 0.24);
+    const maxCols = Math.max(1, Math.min(6, Math.floor(W / (opt.minW || 270))));
+    const rowH = Math.max(110, H * (opt.rowFrac || 0.24));
     const maxRows = Math.max(1, Math.floor(H / rowH));
     const per = +CFG.autoSlides.perPage || maxCols * maxRows;
     this.pages = Math.max(1, Math.ceil(items.length / per));
@@ -1177,7 +1177,11 @@ const Slides = {
     const curW = +CFG.general.cycleWeeks > 1 ? cycleWeek(d) : -1;
     return this.grid(groups, ([w, list]) => h('div', { class: 'ccard wk' + (w === curW ? ' cur' : '') },
       h('span', { class: 'cls' }, w ? '🗓️ الأسبوع ' + (ORD[w - 1] || w) + (w === curW ? ' (الحالي)' : '') : '🛡️ كل الأسابيع'),
-      h('div', { class: 'names' }, list.map(r => h('div', {}, r.teacher, r.location ? h('span', { class: 'meta' }, ' — ' + r.location) : null, r.slot && slotKey(r.slot) === '*' ? null : null)))));
+      // سطر لكل موقع: 📍 الموقع ثم أسماء المناوبات
+      h('div', { class: 'names' }, (() => {
+        const locs = new Map(); list.forEach(r => { const k = r.location || ''; (locs.get(k) || locs.set(k, []).get(k)).push(r.teacher); });
+        return [...locs.entries()].map(([l, ns]) => h('div', { class: 'loc-line' }, l ? h('div', { class: 'meta' }, '📍 ' + l) : null, h('div', {}, ns.join('، '))));
+      })())));
   },
   heroNow(p, st, sub) {
     const s = toSec(p.start), e = toSec(p.end), cur = st.cur === p;
@@ -1232,7 +1236,19 @@ const Slides = {
     if (!rows.length) return null;
     const st = currentState(d), keys = st.cur ? periodKeys(st.cur) : (st.next ? periodKeys(st.next) : new Set());
     rows.sort(byWeek);
-    const g = CFG.display.dutyAllWeeks && rows.some(r => r.week) ? this.dutyWeekCards(rows, d) : this.grid(rows, r => h('div', { class: 'ccard' + (keys.has(slotKey(r.slot)) ? ' cur' : '') },
+    // بطاقة لكل (موقع + أسبوع) فيها أسماء المناوبات، موزعة على صفحات
+    const cw = +CFG.general.cycleWeeks > 1 ? cycleWeek(d) : -1;
+    const grp = new Map();
+    rows.forEach(r => { const k = (r.week || 0) + '|' + (r.location || '') + '|' + (r.location ? '' : r.slot); (grp.get(k) || grp.set(k, []).get(k)).push(r); });
+    const groups = [...grp.values()].sort((a, b) => (a[0].week || 99) - (b[0].week || 99));
+    const g = this.grid(groups, list => {
+      const r = list[0], byPeriod = list.length > 2 && /الحصه/.test(norm(r.slot));
+      return h('div', { class: 'ccard' + (r.week && r.week === cw ? ' cur' : '') },
+        h('span', { class: 'cls' }, r.week ? weekTag(r) : 'كل الأسابيع'), h('div', { class: 'subj' }, '📍 ' + (r.location || r.slot || '') + (r.slot && !byPeriod ? ' — ' + r.slot : '')),
+        byPeriod ? h('div', { class: 'names small' }, list.map(x => h('div', {}, x.slot.replace('الحصة ', '') + ': ', h('b', {}, x.teacher))))
+          : h('div', { class: 'tch' }, list.map(x => x.teacher).join('، ')));
+    }, { minW: 340, rowFrac: 0.31 });
+    if (false) this.grid(rows, r => h('div', { class: 'ccard' + (keys.has(slotKey(r.slot)) ? ' cur' : '') },
       h('span', { class: 'cls' }, r.slot || 'طوال اليوم'), r.week ? h('div', { class: 'subj' }, weekTag(r)) : null, h('div', { class: 'tch' }, r.teacher), r.location ? h('div', { class: 'meta' }, '📍 ' + r.location) : null));
     return h('div', { class: 'slide scene' }, this.head('🛡️', 'المناوبة اليوم', [DAYS[d.getDay()], CFG.general.cycleWeeks > 1 && !CFG.display.dutyAllWeeks ? 'الأسبوع ' + cycleWeek(d) : (CFG.display.dutyAllWeeks ? 'كل الأسابيع' : null)]), g);
   },

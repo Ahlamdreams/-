@@ -1365,21 +1365,65 @@ function parseDuty(aoa) {
 }
 function parseSubs(aoa) {
   aoa = aoa.filter(r => r.some(c => String(c).trim()));
-  const hr = findHeader(aoa, [/تاريخ/, /يوم/, /حص/, /صف|فصل|شعب/, /غائب|غياب/, /احتياط|بديل|منفذ|المكلف|القائم/, /معلم|اسم/]);
+  // يدعم العناوين العربية، والإنجليزية (مثل برنامج الاحتياط: date, period, classSection, absentTeacherId...)
+  const hr = findHeader(aoa, [/تاريخ|^date$/, /يوم|^day$/, /حص|^period$/, /صف|فصل|شعب|class/, /غائب|غياب|absent/, /احتياط|بديل|منفذ|المكلف|القائم|substitute/, /معلم|اسم/]);
   if (hr < 0) throw new Error('لم أتعرف على أعمدة جدول الاحتياط. يجب أن يحتوي على أعمدة مثل: التاريخ أو اليوم، الحصة، الصف، المعلم الغائب، المعلم البديل.');
   const hd = aoa[hr].map(norm);
   const col = (re, not) => hd.findIndex(c => re.test(c) && !(not && not.test(c)));
-  const c = { date: col(/تاريخ/), day: col(/يوم/, /تاريخ/), period: col(/حص/, /احتياط/), cls: col(/صف|فصل|شعب/), absent: col(/غائب|غياب/), sub: col(/احتياط|بديل|منفذ|المكلف|القائم/), subject: col(/ماده/), note: col(/ملاحظ/) };
-  if (c.sub < 0) c.sub = hd.findIndex((x, j) => /معلم|اسم/.test(x) && j !== c.absent);
+  const c = {
+    date: col(/تاريخ|^date$/, /created|updated|received/), day: col(/يوم|^day$/, /تاريخ/), period: col(/حص|^period$/, /احتياط/),
+    cls: col(/صف|فصل|شعب|class/), absent: col(/غائب|غياب|absentteacher|^absent$/, /specialty|تخصص/),
+    sub: col(/احتياط|بديل|منفذ|المكلف|القائم|substituteteacher|^substitute$/, /specialty|تخصص/),
+    subject: col(/ماده|absentspecialty/), note: col(/ملاحظ|^notes?$/),
+  };
+  if (c.absent < 0) c.absent = col(/absent/);
+  if (c.sub < 0) c.sub = hd.findIndex((x, j) => /معلم|اسم|substitute/.test(x) && j !== c.absent);
   let dt = '', dy = -1;
   const out = [];
   for (const row of aoa.slice(hr + 1)) {
     if (cell(row, c.date)) dt = parseDate(cell(row, c.date));
     if (cell(row, c.day)) dy = dayIdx(cell(row, c.day));
     const sub = cell(row, c.sub); if (!sub && !cell(row, c.cls)) continue;
-    out.push({ date: dt, day: dt ? -1 : dy, period: cell(row, c.period), cls: cell(row, c.cls), absent: cell(row, c.absent), sub, note: cell(row, c.subject) || cell(row, c.note) });
+    let period = cell(row, c.period);
+    const pn = toLatin(period).match(/^\d$/); if (pn && TYPE['p' + pn[0]]) period = TYPE['p' + pn[0]].n.replace('الحصة ', '');
+    out.push({ date: dt, day: dt ? -1 : dy, period, cls: cell(row, c.cls), absent: cell(row, c.absent), sub, note: cell(row, c.subject) || cell(row, c.note) });
   }
   return out;
+}
+/* بعض البرامج تحفظ رموز المعلمين (T1fc73278ed) بدل الأسماء: نحولها لأسماء من ورقة المعلمين */
+const isIdCode = v => /^T[0-9a-f]{6,}$/i.test(String(v || '').trim());
+function nameMapFromAoa(aoa) {
+  aoa = aoa.filter(r => r.some(c => String(c).trim()));
+  const hd = (aoa[0] || []).map(norm);
+  let ci = hd.findIndex(x => /^id$|رمز|الرقم/.test(x)), ni = hd.findIndex(x => /^name$|الاسم|اسم/.test(x));
+  if (ci < 0) ci = 0; if (ni < 0) ni = 1;
+  const m = {}; aoa.slice(1).forEach(r => { const k = String(r[ci] ?? '').trim(); if (k) m[k] = String(r[ni] ?? '').trim(); });
+  return m;
+}
+function applyNameMap(rows, map, keys = ['absent', 'sub']) {
+  let n = 0;
+  rows.forEach(r => keys.forEach(k => { const v = String(r[k] || '').trim(); if (map[v]) { r[k] = map[v]; n++; } }));
+  return n;
+}
+async function resolveTeacherIds(rows, src) {
+  if (!rows.some(r => isIdCode(r.absent) || isIdCode(r.sub))) return;
+  let map = null;
+  try {
+    if (src.namesUrl) { const res = await smartRead(src.namesUrl); const sh = res.type === 'pdf' ? await pdfToSheets(res.blob) : res.sheets; map = nameMapFromAoa(sh[0].aoa); }
+    else {
+      const m = normURL(src.url).match(/docs\.google\.com\/spreadsheets\/d\/([\w-]+)/);
+      if (m) {
+        for (const sheet of ['Teachers', 'المعلمين', 'المعلمون', 'المعلمات']) {
+          try {
+            const mm = nameMapFromAoa(await gsheetJSONP(m[1], { sheet }));
+            if (Object.keys(mm).some(isIdCode)) { map = mm; break; }
+          } catch { }
+        }
+      }
+    }
+  } catch (e) { console.warn(e); }
+  if (map) { applyNameMap(rows, map); src.namesCache = map; }
+  else if (src.namesCache) applyNameMap(rows, src.namesCache);
 }
 /* قراءة كل أوراق الملف (لجدول المعلمين: ورقة لكل يوم مثلاً) */
 async function sheetsFromBlob(blob) {
@@ -1727,8 +1771,39 @@ async function smartFromBlob(blob, name = '') {
   if (/^</.test(t) || /<html|<table|<body/i.test(t.slice(0, 3000))) return { type: 'html', sheets: htmlToSheets(text) };
   return { type: 'sheets', sheets: [{ name: '', aoa: parseCSV(text) }] };
 }
+/* Google Sheets: البرنامج يعمل من ملف على القرص، وجوجل لا يسمح بقراءته بالطريقة العادية من هناك،
+   لذلك نقرأه بطريقة JSONP (تحميل البيانات كسكربت) التي لا تحتاج إذناً خاصاً */
+let jsonpN = 0;
+function gsheetJSONP(id, { gid, sheet } = {}) {
+  return new Promise((res, rej) => {
+    const cb = '__gs' + (++jsonpN) + Date.now();
+    const sc = document.createElement('script');
+    const done = (fn, v) => { clearTimeout(tm); delete window[cb]; sc.remove(); fn(v); };
+    const tm = setTimeout(() => done(rej, new Error('انتهت مهلة قراءة Google Sheets — تحقق من الإنترنت ومن مشاركة الملف "لأي شخص لديه الرابط"')), 30000);
+    window[cb] = data => {
+      if (!data || data.status !== 'ok') return done(rej, new Error('Google Sheets: ' + (data?.errors?.[0]?.detailed_message || data?.errors?.[0]?.message || 'تعذر القراءة — تأكد من مشاركة الملف')));
+      const t = data.table, cell = c => c == null ? '' : (c.f != null ? c.f : (c.v == null ? '' : String(c.v)));
+      const head = t.cols.map(c => c.label || '');
+      const rows = t.rows.map(r => (r.c || []).map(cell));
+      done(res, head.some(Boolean) ? [head, ...rows] : rows);
+    };
+    sc.onerror = () => done(rej, new Error('تعذر الاتصال بـ Google Sheets — تحقق من الإنترنت ومن مشاركة الملف'));
+    sc.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1` + (gid ? '&gid=' + gid : '') + (sheet ? '&sheet=' + encodeURIComponent(sheet) : '');
+    document.head.append(sc);
+  });
+}
+function gsheetRef(url) {
+  const m = normURL(url).match(/docs\.google\.com\/spreadsheets\/d\/([\w-]+)/);
+  if (!m || m[1] === 'e') return null;
+  return { id: m[1], gid: (url.match(/[#&?]gid=(\d+)/) || [])[1] };
+}
 async function smartRead(url) {
   url = normURL(url);
+  const gs = gsheetRef(url);
+  if (gs) {
+    try { return { type: 'sheets', sheets: [{ name: '', aoa: await gsheetJSONP(gs.id, { gid: gs.gid }) }], via: 'gsheet', gs }; }
+    catch (e) { console.warn(e); /* نجرب الطرق الأخرى */ }
+  }
   let res = null, err = null;
   try {
     const r = await fetch(fixLinkURL(url), { cache: 'no-store', redirect: 'follow' });
@@ -1749,9 +1824,24 @@ async function rowsFromSmart(which, res, sheetName) {
   let sheets = res.type === 'pdf' ? await pdfToSheets(res.blob) : res.sheets;
   if (sheetName) { const f = sheets.filter(s => norm(s.name).includes(norm(sheetName))); if (f.length) sheets = f; }
   const fn = PARSERS[which];
+  // ملف بعدة أوراق: فضّل الورقة الأساسية (Assignments / الاحتياط) وتجاهل النسخ الاحتياطية والسجلات
+  const pref = { subs: /^assignments$|^الاحتياط$|احتياط/i, duty: /مناوب/, absent: /غياب|غائب/ }[which];
+  const usable = sheets.filter(s => !/backup|audit|log|session|admin|سجل|ارشيف|أرشيف/i.test(s.name || ''));
+  const ordered = [...usable.filter(s => pref && pref.test(s.name || '')), ...usable.filter(s => !(pref && pref.test(s.name || ''))), ...sheets.filter(s => !usable.includes(s))];
   let best = [], lastErr = null;
-  for (const s of sheets) { try { const r = fn(s.aoa); if (r.length > best.length) best = r; } catch (e) { lastErr = e; } }
+  for (const s of ordered) { try { const r = fn(s.aoa); if (r.length > best.length) best = r; if (best.length && pref && pref.test(s.name || '')) break; } catch (e) { lastErr = e; } }
+  // رابط Google Sheets على ورقة أخرى (مثل التعليمات): جرّب الورقة الأساسية بالاسم
+  if (!best.length && res.via === 'gsheet' && which !== 'timetable') {
+    for (const name of ({ subs: ['Assignments', 'الاحتياط'], duty: ['المناوبة', 'Duty'], absent: ['الغياب', 'Absent'] }[which] || [])) {
+      try { const r = fn(await gsheetJSONP(res.gs.id, { sheet: name })); if (r.length) { best = r; break; } } catch (e) { lastErr = e; }
+    }
+  }
   if (!best.length) throw lastErr || new Error('لم يُعثر على بيانات مناسبة في المصدر.');
+  // أسماء المعلمين من ورقة Teachers في نفس الملف (عند وجود رموز بدل الأسماء)
+  if (which === 'subs' && best.some(r => isIdCode(r.absent) || isIdCode(r.sub))) {
+    const t = sheets.find(s => /teachers|المعلم/i.test(s.name || ''));
+    if (t) applyNameMap(best, nameMapFromAoa(t.aoa));
+  }
   return best;
 }
 
@@ -1786,6 +1876,7 @@ async function refreshSource(which, manual) {
   if (src.source !== 'link' || !src.url) return;
   try {
     src.linkRows = await rowsFromSmart(which, await smartRead(src.url), src.sheet);
+    if (which === 'subs') await resolveTeacherIds(src.linkRows, src);
     src.rows = src.linkRows.concat(src.fileRows || []);
     src.lastFetch = new Date().toLocaleString('ar'); src.lastError = '';
     if (manual) toast(`تم التحديث: ${src.rows.length} سجل`);
@@ -2542,7 +2633,8 @@ function linkPanel(S, which) {
     h('div', { class: 'row' },
       field('الرابط — أي رابط', bindInput(S, 'url', { type: 'url', style: 'width:560px;max-width:100%;direction:ltr', placeholder: 'Google Sheets / Apps Script / Canva / PDF / Excel / صفحة ويب...' })),
       field('اسم الورقة (اختياري)', bindInput(S, 'sheet', { style: 'width:130px' })),
-      field('التحديث كل (دقيقة)', bindInput(S, 'refreshMin', { type: 'number', min: 1, style: 'width:80px' }))),
+      field('التحديث كل (دقيقة)', bindInput(S, 'refreshMin', { type: 'number', min: 1, style: 'width:80px' })),
+      which === 'subs' ? field('رابط أسماء المعلمين (اختياري — عند وجود رموز بدل الأسماء)', bindInput(S, 'namesUrl', { type: 'url', style: 'width:330px;direction:ltr', placeholder: 'يُكتشف تلقائياً من ورقة Teachers' })) : null),
     h('div', { class: 'row' },
       h('button', { class: 'btn pri', onclick: async () => { await refreshSource(which, true); rerender(); } }, '⟳ قراءة البيانات الآن'),
       h('button', { class: 'btn', onclick: async e => {
@@ -2551,7 +2643,7 @@ function linkPanel(S, which) {
           const res = await smartRead(S.url);
           const kind = { pdf: 'ملف PDF', html: 'صفحة ويب', sheets: res.via === 'iframe' ? 'صفحة ويب (بعد تحميلها)' : 'جدول بيانات' }[res.type];
           let rows = [], perr = '';
-          try { rows = await rowsFromSmart(which, res, S.sheet); } catch (x) { perr = x.message; }
+          try { rows = await rowsFromSmart(which, res, S.sheet); if (which === 'subs') await resolveTeacherIds(rows, S); } catch (x) { perr = x.message; }
           const first = res.type === 'pdf' ? (await pdfToSheets(res.blob))[0] : res.sheets[0];
           result.innerHTML = '';
           result.append(h('p', { class: 'hint' }, `✅ تمت قراءة الرابط: ${kind}. ` + (rows.length ? `تم التعرف على ${rows.length} سجل.` : '⚠️ لكن لم أتعرف على أعمدة البيانات: ' + perr)),

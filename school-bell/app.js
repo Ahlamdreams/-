@@ -859,6 +859,7 @@ async function pdfPages(slide) {
   return (pdfCache[key] = out);
 }
 function embedURL(url) {
+  url = normURL(url);
   let m;
   if ((m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/))) return { kind: 'iframe', src: `https://www.youtube.com/embed/${m[1]}?autoplay=1&mute=1&loop=1&playlist=${m[1]}&controls=0` };
   if ((m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/))) return { kind: 'iframe', src: `https://drive.google.com/file/d/${m[1]}/preview` };
@@ -1588,8 +1589,10 @@ async function parseTimetablePDF(blob) {
    قارئ الروابط والملفات الذكي: Google Sheets/Docs/Drive، Excel، CSV، PDF،
    JSON (مثل Google Apps Script)، صفحات ويب فيها جداول، وأي صفحة نصية.
    --------------------------------------------------------------------- */
+/* رابط بدون https:// → نضيفها تلقائياً */
+const normURL = u => { u = String(u || '').trim(); return u && !/^[a-z][a-z0-9+.-]*:/i.test(u) ? 'https://' + u.replace(/^\/+/, '') : u; };
 function fixLinkURL(url) {
-  url = String(url || '').trim();
+  url = normURL(url);
   let m;
   if ((m = url.match(/docs\.google\.com\/spreadsheets\/d\/([\w-]+)/)) && !/output=|format=|tqx=/.test(url)) {
     if (/\/d\/e\//.test(url)) return url.replace(/\/pubhtml.*$/, '/pub?output=csv');
@@ -1708,6 +1711,7 @@ async function smartFromBlob(blob, name = '') {
   return { type: 'sheets', sheets: [{ name: '', aoa: parseCSV(text) }] };
 }
 async function smartRead(url) {
+  url = normURL(url);
   let res = null, err = null;
   try {
     const r = await fetch(fixLinkURL(url), { cache: 'no-store', redirect: 'follow' });

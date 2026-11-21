@@ -387,3 +387,5 @@ table.edit tr:hover td { background: rgba(255, 255, 255, 0.02); }
 .ccard .flag { font-size: clamp(11px, min(5cqw, 9cqh), 26px); }
 .ccard .bar { margin-top: 1.2vh; height: clamp(5px, 4cqh, 12px); }
 .now-badge, .ticker-label, .slide-title, .chip.hot, .banner .box, .flag { text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); }
+.ccard .names { display: flex; flex-direction: column; gap: 0.3vh; font-size: clamp(13px, min(7cqw, 11cqh), 36px); font-weight: 700; line-height: 1.35; overflow: hidden; }
+.ccard .names .meta { font-weight: 400; }

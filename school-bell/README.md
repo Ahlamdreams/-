@@ -41,3 +41,23 @@
 - **روابط Google Sheets:** شارك الملف "لأي شخص لديه الرابط". يتم التحديث تلقائياً كل عدة دقائق، وتبقى آخر نسخة ظاهرة إن انقطع الإنترنت.
 - **اترك الجهاز يعمل:** عطّل وضع السكون من إعدادات الطاقة في ويندوز حتى لا يتوقف الجرس.
 - المكتبات المضمنة في `lib/`: ‏SheetJS (قراءة Excel) و PDF.js (عرض PDF) — كلاهما برخصة Apache 2.0.
+
+## الروابط
+يقبل البرنامج أي رابط في المناوبة والاحتياط والغياب وجدول المعلمين، ويحاول قراءته تلقائياً:
+Google Sheets، Google Docs، ملف في Google Drive، ملف PDF أو Excel أو CSV، رابط Apps Script يُرجع JSON، أو صفحة ويب فيها جدول.
+زر **🔍 فحص الرابط** يوضح ما قرأه البرنامج قبل اعتماده.
+المواقع التي تمنع قراءة بياناتها (مثل Canva غالباً) فعّل لها **"عرض الرابط كمشهد في الشاشة"** فتظهر كما هي.
+
+### رابط Apps Script (الاحتياط أو الغياب من شيت)
+افتح الشيت ← الإضافات ← Apps Script، والصق هذا الكود، ثم: نشر ← نشر جديد ← تطبيق ويب ← "الوصول: أي شخص"، وانسخ الرابط إلى البرنامج:
+
+```javascript
+function doGet(e) {
+  var name = e.parameter.sheet;                       // اختياري: ?sheet=الاحتياط
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = name ? ss.getSheetByName(name) : ss.getSheets()[0];
+  var values = sh.getDataRange().getDisplayValues();  // الصف الأول = العناوين
+  return ContentService.createTextOutput(JSON.stringify(values))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+```

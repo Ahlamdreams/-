@@ -214,9 +214,10 @@ function defaultConfig() {
     slides: [
       { id: uid(), type: 'text', enabled: true, title: '', text: 'أهلاً وسهلاً بكم في مدرستنا\nالعلم نور', duration: 12 },
     ],
-    autoSlides: { welcome: true, now: true, schedule: true, duty: true, subs: true, duration: 15, nowDuration: 20, perPage: 0 },
+    autoSlides: { welcome: true, now: true, schedule: true, duty: true, subs: true, absent: true, duration: 15, nowDuration: 20, perPage: 0 },
     ticker: { enabled: true, label: 'أخبار المدرسة', texts: ['أهلاً بكم في مدرستنا', 'النظافة من الإيمان', 'الالتزام بالوقت أساس النجاح'], speed: 90, includeDuty: true, includeSubs: true },
     display: { layout: 'hero', tickerPos: 'bottom', transition: 'random', showStatus: true, showDuty: true, showSubs: true },
+    absent: { source: 'manual', url: '', sheet: '', refreshMin: 10, lastFetch: '', lastError: '', rows: [], showScene: false, showNames: true, datedOnly: false },
     timetable: { source: 'manual', url: '', sheet: '', refreshMin: 60, lastFetch: '', lastError: '', rows: [], classes: [] },
     duty: { source: 'manual', url: '', sheet: '', refreshMin: 15, lastFetch: '', lastError: '', rows: [] },
     subs: { source: 'manual', url: '', sheet: '', refreshMin: 10, lastFetch: '', lastError: '', rows: [] },
@@ -715,6 +716,7 @@ function tickerHTML() {
     const s = subsFor(d);
     if (s.length) items.push('حصص الاحتياط اليوم: ' + s.map(r => `${r.period || ''} ${r.cls || ''}: ${r.sub || ''}`.trim()).join(' ◆ '));
   }
+  if (st.work && CFG.ticker.includeAbsent) { const a = absentFor(d); if (a.length) items.push('الغياب اليوم: ' + digits(a.length) + (CFG.absent.showNames ? ' — ' + a.map(r => r.name + (r.cls ? ' (' + r.cls + ')' : '')).join('، ') : '')); }
   if (CFG.phrases.enabled && CFG.phrases.ticker) items.push(...CFG.phrases.dhikr.filter(Boolean).slice(0, 4), ...CFG.phrases.motivation.filter(Boolean).slice(0, 3));
   return items.map(esc).join('<span class="sep">◆</span>');
 }
@@ -787,11 +789,34 @@ function embedURL(url) {
   let m;
   if ((m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/))) return { kind: 'iframe', src: `https://www.youtube.com/embed/${m[1]}?autoplay=1&mute=1&loop=1&playlist=${m[1]}&controls=0` };
   if ((m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/))) return { kind: 'iframe', src: `https://drive.google.com/file/d/${m[1]}/preview` };
+  if ((m = url.match(/canva\.com\/design\/([\w-]+)(?:\/([\w-]+))?/)) && !/embed/.test(url)) return { kind: 'iframe', src: `https://www.canva.com/design/${m[1]}/${m[2] ? m[2] + '/' : ''}view?embed` };
   if (/\.(mp4|webm|ogv)(\?|$)/i.test(url)) return { kind: 'video', src: url };
   if (/\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(url)) return { kind: 'image', src: url };
   return { kind: 'iframe', src: url };
 }
 
+/* جدولة ظهور الوسائط: وقت محدد / أيام / تواريخ / أثناء فترة معينة */
+function slideActive(s, d = now()) {
+  if (!s.enabled) return false;
+  const day = ymd(d), sec = secOfDay(d);
+  if (s.dFrom && day < s.dFrom) return false;
+  if (s.dTo && day > s.dTo) return false;
+  if (s.days && s.days.length && !s.days.includes(d.getDay())) return false;
+  if (s.when === 'window') {
+    const a = toSec(s.from), b = toSec(s.to);
+    if (a != null && sec < a) return false;
+    if (b != null && sec >= b) return false;
+  } else if (s.when === 'period') {
+    const st = currentState(d), p = st.cur;
+    if (!p) return false;
+    if (s.ptype === 'lessons') return isLesson(p);
+    if (s.ptype === 'breaks') return !isLesson(p);
+    return p.type === s.ptype;
+  }
+  return true;
+}
+const SCENE_FN = { now: 'nowScene', subs: 'subsScene', duty: 'dutyScene', absent: 'absentScene', schedule: 'scheduleScene', welcome: 'welcomeScene' };
+const SCENE_NAMES = { now: '📚 الحصة الآن', subs: '🔁 الاحتياط', duty: '🛡️ المناوبة', absent: '📋 الغياب', schedule: '⏰ التوقيت', welcome: '🏫 الترحيب' };
 const TRANS = ['tr-fade', 'tr-up', 'tr-zoom', 'tr-side', 'tr-flip'];
 const Slides = {
   list: [], i: -1, page: 0, more: false, timer: null, building: false, video: null, skips: 0,
@@ -799,20 +824,26 @@ const Slides = {
     if (this.building) { this.again = true; return; }
     this.building = true;
     const media = [];
+    const takeovers = [];
     for (const s of CFG.slides) {
       if (!s.enabled) continue;
+      const dest = s.mode === 'takeover' ? takeovers : media;
       if (s.type === 'pdf') {
         let pages = null;
         try { pages = await pdfPages(s); } catch (e) { console.warn(e); }
-        if (pages && pages.length) pages.forEach((src, pi) => media.push({ ...s, type: 'image', src, title: (s.title || '') + (pages.length > 1 ? ` (${pi + 1}/${pages.length})` : '') }));
-        else if (s.url) media.push({ ...s, type: 'url' });
-      } else media.push(s);
+        if (pages && pages.length) pages.forEach((src, pi) => dest.push({ ...s, _key: s.id + ':' + pi, type: 'image', src, title: (s.title || '') + (pages.length > 1 ? ` (${pi + 1}/${pages.length})` : '') }));
+        else if (s.url) dest.push({ ...s, _key: s.id, type: 'url' });
+      } else dest.push({ ...s, _key: s.id });
     }
+    this.takeovers = takeovers;
     const A = CFG.autoSlides, auto = [];
     if (A.welcome) auto.push({ type: 'auto-welcome', duration: 10 });
     if (A.schedule) auto.push({ type: 'auto-schedule', duration: A.duration });
     if (A.duty) auto.push({ type: 'auto-duty', duration: A.duration });
     if (A.subs) auto.push({ type: 'auto-subs', duration: A.duration });
+    if (A.absent) auto.push({ type: 'auto-absent', duration: A.duration });
+    for (const [w, t] of [['duty', 'المناوبة'], ['subs', 'الاحتياط'], ['absent', 'الغياب'], ['timetable', 'جدول الحصص']])
+      if (CFG[w].showScene && CFG[w].url) media.push({ type: 'url', url: CFG[w].url, title: t, duration: 30 });
     // تبادل: مشهد معلومات ثم وسائط
     let out = [];
     for (let k = 0; k < Math.max(auto.length, media.length); k++) { if (auto[k]) out.push(auto[k]); if (media[k]) out.push(media[k]); }
@@ -830,6 +861,7 @@ const Slides = {
       out = res;
     }
     this.list = out;
+    if (this.takeover) this.takeover = takeovers.find(t => t._key === this.takeover._key) || null;
     this.building = false;
     if (this.again) { this.again = false; return this.rebuild(); }
     this.i = -1; this.page = 0; this.more = false;
@@ -837,7 +869,7 @@ const Slides = {
   },
   jump(type) {
     const k = this.list.findIndex(s => s.type === type);
-    if (k < 0) return;
+    if (k < 0 || this.takeover) return;
     this.i = k - 1; this.page = 0; this.more = false; this.next();
   },
   skip() {
@@ -847,13 +879,55 @@ const Slides = {
   showEmpty() {
     this.mount(h('div', { class: 'slide welcome' }, ...this.welcomeKids()), 0);
   },
+  /* ---------- وضع الاستحواذ: فيديو/صورة تملأ الشاشة في وقتها مع مقاطعات للمعلومات ---------- */
+  activeTakeovers() { const d = now(); return (this.takeovers || []).filter(t => slideActive(t, d)); },
+  watch() {
+    if (this.building) return;
+    const tk = this.activeTakeovers();
+    if (tk.length && !this.takeover) this.next(true);
+    else if (this.takeover && !this.interrupting && !tk.some(t => t._key === this.takeover._key)) { this.takeover = null; this.next(true); }
+  },
+  runTakeover(tk) {
+    let s = this.takeover && tk.find(t => t._key === this.takeover._key);
+    if (!s || (!s._resume && tk.length > 1 && this.takeoverDone)) s = tk[(tk.indexOf(s) + 1) % tk.length] || tk[0];
+    this.takeoverDone = false;
+    const resume = s._resume; s._resume = false;
+    this.takeover = s; this.interrupting = false;
+    this.render(s, resume ? s._pos : 0).then(dur => {
+      const every = +s.intEvery || 0;
+      if (every > 0 && (s.intScenes || []).length) this.timer = setTimeout(() => this.interrupt(s), every * 1000);
+      else if (dur > 0) this.timer = setTimeout(() => { this.takeoverDone = true; this.next(); }, dur * 1000);
+    });
+  },
+  interrupt(s) {
+    clearTimeout(this.timer);
+    if (this.video) s._pos = this.video.currentTime;
+    s._resume = true; this.interrupting = true;
+    const queue = [...(s.intScenes || [])];
+    const step = () => {
+      while (queue.length) {
+        const k = queue.shift(), fn = SCENE_FN[k];
+        this.page = 0; this.pages = 1;
+        const el = fn === 'welcomeScene' ? h('div', { class: 'slide welcome' }, ...this.welcomeKids()) : this[fn]();
+        if (el) { const dd = +s.intDur || 12; this.mount(el, dd); this.video = null; this.timer = setTimeout(step, dd * 1000); return; }
+      }
+      this.interrupting = false;
+      if (this.activeTakeovers().some(t => t._key === s._key)) this.runTakeover(this.activeTakeovers());
+      else { this.takeover = null; this.next(true); }
+    };
+    step();
+  },
   next(advance) {
     clearTimeout(this.timer);
+    const tk = this.activeTakeovers();
+    if (tk.length) { if (!this.interrupting) this.runTakeover(tk); return; }
+    if (this.takeover) { this.takeover = null; advance = true; }
     if (!this.list.length) { this.showEmpty(); return; }
     if (this.more && !advance) this.page++;
     else { this.page = 0; this.i = (this.i + 1) % this.list.length; }
     this.more = false;
     const s = this.list[this.i];
+    if (s._key && !slideActive(s)) { this.skip(); return; }
     this.render(s).then(dur => {
       if (dur !== null) this.skips = 0;
       if (dur > 0) this.timer = setTimeout(() => this.next(), dur * 1000);
@@ -874,7 +948,7 @@ const Slides = {
     if (this.list.length > 1) stage.append(h('div', { class: 'slide-dots' }, this.list.map((_, k) => h('i', { class: k === this.i ? 'on' : '' }))));
     if (dur > 0) stage.append(h('div', { class: 'scene-timer', style: `animation-duration:${dur}s` }));
   },
-  async render(s) {
+  async render(s, startAt = 0) {
     let el, dur = +s.duration || 12;
     this.video = null;
     const title = s.title ? h('div', { class: 'slide-title' }, s.title) : null;
@@ -892,8 +966,13 @@ const Slides = {
       if (!src) { this.skip(); return null; }
       const v = h('video', { src, autoplay: true, playsinline: true });
       v.muted = s.muted !== false; v.volume = CFG.general.volume;
-      v.loop = !!(s.duration > 0);
-      if (!(s.duration > 0)) { v.onended = () => this.next(true); v.onerror = () => setTimeout(() => this.next(true), 3000); dur = 0; }
+      const tk = s.mode === 'takeover';
+      v.loop = !!(s.duration > 0) || (tk && (this.activeTakeovers().length <= 1));
+      if (startAt > 0) v.addEventListener('loadedmetadata', () => { try { v.currentTime = Math.min(startAt, (v.duration || startAt + 1) - 0.5); } catch { } }, { once: true });
+      if (!(s.duration > 0)) {
+        v.onended = () => { s._pos = 0; if (tk) { this.takeoverDone = true; } this.next(true); };
+        v.onerror = () => setTimeout(() => this.next(true), 3000); dur = 0;
+      }
       v.play().catch(() => { v.muted = true; v.play().catch(() => { }); });
       this.video = v;
       el = h('div', { class: 'slide media' }, v, title);
@@ -914,6 +993,7 @@ const Slides = {
     else if (s.type === 'auto-schedule') el = this.scheduleScene();
     else if (s.type === 'auto-duty') el = this.dutyScene();
     else if (s.type === 'auto-subs') el = this.subsScene();
+    else if (s.type === 'auto-absent') el = this.absentScene();
     if (!el) { this.skip(); return null; }
     // المشاهد ذات الصفحات: وزّع المدة على الصفحات
     if (this.pages > 1) dur = Math.max(8, Math.round(dur / Math.min(this.pages, 2)));
@@ -1027,6 +1107,20 @@ const Slides = {
     });
     return h('div', { class: 'slide scene' }, this.head('🔁', 'حصص الاحتياط اليوم', [{ t: digits(rows.length) + ' حصة', hot: true }]), g);
   },
+  absentScene() {
+    const d = now(); if (!isWorkDay(d)) return null;
+    const rows = absentFor(d); if (!rows.length) return null;
+    const by = new Map();
+    rows.forEach(r => { const k = r.cls || '—'; (by.get(k) || by.set(k, []).get(k)).push(r); });
+    const groups = [...by.entries()];
+    const word = CFG.general.gender === 'm' ? 'الطلاب الغائبون' : CFG.general.gender === 'f' ? 'الطالبات الغائبات' : 'الغياب';
+    const show = CFG.absent.showNames;
+    const g = this.grid(groups, ([cls, list]) => h('div', { class: 'ccard' },
+      h('span', { class: 'cls' }, cls),
+      show ? h('div', { class: 'names' }, list.map(r => h('div', {}, r.name, r.reason ? h('span', { class: 'meta' }, ' — ' + r.reason) : null)))
+        : h('div', { class: 'big' }, digits(list.length) + (list.length > 2 && list.length < 11 ? ' غياب' : ' غياب'))));
+    return h('div', { class: 'slide scene' }, this.head('📋', word + ' اليوم', [{ t: digits(rows.length) + ' ' + (CFG.general.gender === 'm' ? 'طالب' : CFG.general.gender === 'f' ? 'طالبة' : 'غياب'), hot: true }, digits(groups.length) + ' صف']), g);
+  },
   duck(on) {
     if (!this.video) return;
     if (on) { this._wasMuted = this.video.muted; this.video.muted = true; }
@@ -1092,10 +1186,10 @@ function parseDuty(aoa) {
       const dc = new Set(dayCols.map(x => x[0]));
       let sCol = hdr.findIndex((c, j) => !dc.has(j) && j !== wCol && j !== lCol && /حص|فتر|وقت|موعد/.test(c));
       if (sCol < 0) sCol = hdr.findIndex((c, j) => !dc.has(j) && j !== wCol && j !== lCol);
-      let wk = 0;
+      let wk = 0, lastSlot = '';
       for (const row of aoa.slice(r + 1)) {
         if (wCol >= 0 && cell(row, wCol)) wk = weekNum(cell(row, wCol));
-        const slot = cell(row, sCol);
+        const slot = cell(row, sCol) || lastSlot; lastSlot = slot;
         if (/اسبوع/.test(norm(slot))) { wk = weekNum(slot); continue; }
         if (dayIdx(slot) >= 0) continue;
         for (const [j, d] of dayCols) {
@@ -1158,7 +1252,10 @@ function splitCell(t) {
   const parts = t.split(/\n|\s[-–—|]\s|\s*[\/،,]\s*(?=(?:ا|أ)\.|المعلم)/).map(x => x.trim()).filter(Boolean);
   if (parts.length < 2) return isSubject(t) && !isTeacher(t) ? { subject: t, teacher: '' } : { subject: '', teacher: t };
   let i = parts.findIndex(isTeacher);
-  if (i >= 0) return { teacher: parts[i], subject: parts.filter((_, k) => k !== i).join(' ') };
+  if (i >= 0) {
+    let j = i + 1; while (j < parts.length && !isSubject(parts[j]) && !isTeacher(parts[j])) j++;
+    return { teacher: parts.slice(i, j).join(' '), subject: parts.filter((_, k) => k < i || k >= j).join(' ') };
+  }
   i = parts.findIndex(isSubject);
   if (i >= 0) return { subject: parts[i], teacher: parts.filter((_, k) => k !== i).join(' ') };
   return { subject: parts[0], teacher: parts.slice(1).join(' ') };
@@ -1219,28 +1316,338 @@ function parseTimetable(sheets, only) {
   return out;
 }
 
+/* ---------------------------------------------------------------------
+   قراءة جدول الحصص من ملف PDF (نصي، وليس صورة ممسوحة)
+   يتعرف على: صفحة لكل صف أو لكل معلم (الأيام صفوف والحصص أعمدة)،
+   أو جدول عام (الصفوف/المعلمون صفوف والحصص أعمدة، مع الأيام فوقها أو صفحة لكل يوم).
+   --------------------------------------------------------------------- */
+const PERIOD_WORDS = ['صفريه', 'اولي', 'ثانيه', 'ثالثه', 'رابعه', 'خامسه', 'سادسه', 'سابعه', 'ثامنه', 'تاسعه'];
+function isPeriodLabel(t) {
+  const n = norm(t).replace(/^الحصه\s*/, '').replace(/^ح\s*/, '').replace(/^ال/, '');
+  return /^\d{1,2}$/.test(n) || PERIOD_WORDS.includes(n) || PERIOD_WORDS.includes('ال' + n);
+}
+const isClassLike = t => /\d+\s*[\/\-\\]\s*\d+|\d+\s*[أ-ي]$|^(صف|الصف|فصل)\s/.test(toLatin(norm(t)));
+const KNOWN_AR = ['الاحد', 'الاثنين', 'الثلاثاء', 'الاربعاء', 'الخميس', 'الحصه', 'الصف', 'الاولي', 'الثانيه', 'الثالثه', 'المعلم', 'جدول', 'اليوم'];
+async function pdfTextPages(blob) {
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()), isEvalSupported: false }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const tc = await (await pdf.getPage(i)).getTextContent();
+    pages.push(tc.items.filter(it => it.str && it.str.trim()).map(it => {
+      const hgt = Math.abs(it.transform[3]) || Math.abs(it.transform[0]) || 10;
+      return { s: it.str.normalize('NFKC'), xL: it.transform[4], xR: it.transform[4] + it.width, y: it.transform[5], h: hgt };
+    }));
+  }
+  // بعض ملفات PDF تخزن العربي بترتيب معكوس
+  const all = pages.flat().map(t => norm(t.s));
+  const hits = arr => arr.reduce((n, s) => n + KNOWN_AR.filter(w => s.includes(w)).length, 0);
+  const rev = s => [...s].reverse().join('');
+  if (hits(all.map(rev)) > hits(all) * 1.5) pages.forEach(p => p.forEach(t => { t.s = rev(t.s); }));
+  return pages;
+}
+/* دمج أجزاء الكلمات المتجاورة على نفس السطر */
+function mergeLine(tokens) {
+  const lines = [];
+  for (const t of tokens.slice().sort((a, b) => b.y - a.y)) {
+    const L = lines.find(l => Math.abs(l.y - t.y) < Math.min(l.h, t.h) * 0.45);
+    if (L) L.items.push(t); else lines.push({ y: t.y, h: t.h, items: [t] });
+  }
+  const out = [];
+  for (const L of lines) {
+    const it = L.items.sort((a, b) => b.xR - a.xR);
+    let cur = null;
+    for (const t of it) {
+      if (cur && cur.xL - t.xR < Math.max(cur.h, t.h) * 0.55) { cur.s = cur.s + (cur.xL - t.xR > cur.h * 0.15 ? ' ' : '') + t.s; cur.xL = Math.min(cur.xL, t.xL); }
+      else { cur = { ...t }; out.push(cur); }
+    }
+  }
+  out.forEach(t => { t.s = t.s.replace(/\s+/g, ' ').trim(); t.x = (t.xL + t.xR) / 2; });
+  return out.filter(t => t.s);
+}
+function parseTimetablePDFPage(raw, pageNo) {
+  const toks = mergeLine(raw);
+  if (!toks.length) return { rows: [], reason: 'empty' };
+  // 1) سطر رؤوس الحصص
+  const lines = {};
+  toks.forEach(t => { const k = Math.round(t.y / (t.h * 0.5)); (lines[k] = lines[k] || []).push(t); });
+  let head = null;
+  for (const L of Object.values(lines)) {
+    const ps = L.filter(t => isPeriodLabel(t.s));
+    if (ps.length >= 3 && (!head || ps.length > head.length || (ps.length === head.length && ps[0].y > head[0].y))) head = ps;
+  }
+  if (!head) return { rows: [], reason: 'nohead' };
+  const hy = head.reduce((a, t) => a + t.y, 0) / head.length, hh = head[0].h;
+  const anchors = head.map(t => ({ x: t.x, raw: t.s })).sort((a, b) => b.x - a.x);
+  const gaps = anchors.slice(1).map((a, i) => anchors[i].x - a.x).sort((a, b) => a - b);
+  const colW = gaps[Math.floor(gaps.length / 2)] || 40;
+  const xMax = anchors[0].x + colW * 0.55, xMin = anchors[anchors.length - 1].x - colW * 0.55;
+  // 2) أيام فوق رؤوس الحصص (جدول عام لكل الأسبوع)
+  const dayToks = toks.filter(t => t.y > hy + hh * 0.3 && t.y < hy + hh * 4 && dayIdx(t.s) >= 0 && t.s.length < 15);
+  if (dayToks.length >= 2) anchors.forEach(a => { a.day = dayIdx(dayToks.reduce((b, t) => Math.abs(t.x - a.x) < Math.abs(b.x - a.x) ? t : b).s); });
+  // 3) عنوان الصفحة (فوق الجدول)
+  const titleToks = toks.filter(t => t.y > hy + hh * 0.3 && !dayToks.includes(t)).sort((a, b) => b.y - a.y || b.x - a.x);
+  const title = titleToks.map(t => t.s).join(' ');
+  // 4) عناوين الصفوف (خارج أعمدة الحصص)
+  const body = toks.filter(t => t.y < hy - hh * 0.4);
+  const side = body.filter(t => t.x > xMax || t.x < xMin);
+  const sideR = side.filter(t => t.x > xMax), sideL = side.filter(t => t.x < xMin);
+  let labels = (sideR.length >= sideL.length ? sideR : sideL);
+  // اختر العمود الأقرب للجدول فقط (قد توجد أعمدة إضافية مثل رقم تسلسلي)
+  labels = labels.filter(t => !/^\d{1,3}$/.test(t.s));
+  const rowsL = [];
+  for (const t of labels.sort((a, b) => b.y - a.y)) {
+    const r = rowsL.find(r => Math.abs(r.y - t.y) < t.h * 0.6);
+    if (r) r.s = sideR.includes(t) ? r.s + ' ' + t.s : t.s + ' ' + r.s; else rowsL.push({ y: t.y, s: t.s, h: t.h });
+  }
+  if (!rowsL.length) return { rows: [], reason: 'nolabels' };
+  // 5) توزيع محتوى الخلايا على (صف، عمود)
+  const cells = new Map();
+  for (const t of body) {
+    if (t.x > xMax || t.x < xMin) continue;
+    const a = anchors.reduce((b, c) => Math.abs(c.x - t.x) < Math.abs(b.x - t.x) ? c : b);
+    if (Math.abs(a.x - t.x) > colW * 0.65) continue;
+    let ri = 0, best = Infinity;
+    rowsL.forEach((r, i) => { const d = Math.abs(r.y - t.y); if (d < best) { best = d; ri = i; } });
+    const k = ri + '|' + anchors.indexOf(a);
+    (cells.get(k) || cells.set(k, []).get(k)).push(t);
+  }
+  // 6) معنى الصفوف: أيام أم صفوف دراسية أم معلمون
+  const dayRows = rowsL.filter(r => dayIdx(r.s) >= 0).length >= rowsL.length * 0.6;
+  const titleDay = dayIdx(title);
+  let entity = '', entityIsClass = false;
+  if (dayRows) {
+    const m = toLatin(title).match(/\d+\s*[\/\-\\]\s*\d+/);
+    if (m) { entity = m[0].replace(/\s+/g, ''); entityIsClass = true; }
+    else {
+      const tm = title.match(/(?:المعلم[ةه]?|الأستاذ[ةه]?|الاستاذ[ةه]?|أ\.)\s*[:：]?\s*([^\d:：]{3,40})/);
+      entity = (tm ? tm[1] : title.replace(/جدول|حصص|المعلم[ةه]?|مدرس[ةه].*|العام.*|الفصل الدراسي.*/g, '')).trim().split(/\s{2,}/)[0];
+      if (/صف|فصل/.test(title)) entityIsClass = true;
+    }
+  }
+  const labelsAreClasses = !dayRows && rowsL.filter(r => isClassLike(r.s)).length >= rowsL.length * 0.5;
+  const out = [];
+  for (const [k, ts] of cells) {
+    const [ri, ci] = k.split('|').map(Number);
+    const text = ts.sort((a, b) => b.y - a.y).map(t => t.s).join('\n');
+    const label = rowsL[ri].s, a = anchors[ci];
+    const day = dayRows ? dayIdx(label) : (a.day ?? (titleDay >= 0 ? titleDay : -1));
+    const row = { week: 0, day, period: a.raw, cls: '', subject: '', teacher: '' };
+    const classOwner = dayRows ? entityIsClass : labelsAreClasses;
+    const owner = dayRows ? entity : label;
+    if (classOwner) Object.assign(row, { cls: owner }, splitCell(text));
+    else {
+      const m = toLatin(text).match(/\d+\s*[\/\-\\]\s*\d+|\d+\s*[أ-ي](?=\s|$)/);
+      row.teacher = owner;
+      row.cls = m ? m[0].replace(/\s+/g, '') : text.split('\n')[0];
+      row.subject = m ? toLatin(text).replace(m[0], '').replace(/[-–—،,\n]/g, ' ').replace(/\s+/g, ' ').trim() : text.split('\n').slice(1).join(' ');
+    }
+    if (row.cls || row.teacher) out.push(row);
+  }
+  return { rows: out, mode: dayRows ? (entityIsClass ? 'class-page' : 'teacher-page') : (labelsAreClasses ? 'classes' : 'teachers'), entity };
+}
+async function parseTimetablePDF(blob) {
+  const pages = await pdfTextPages(blob);
+  if (!pages.some(p => p.length)) throw new Error('هذا الـ PDF عبارة عن صورة ممسوحة ضوئياً ولا يحتوي نصاً يمكن قراءته. يمكنك عرضه كشريحة في الشاشة، أو تصديره من برنامج الجداول كـ PDF نصي أو Excel.');
+  const rows = [], info = [];
+  pages.forEach((p, i) => { const r = parseTimetablePDFPage(p, i + 1); rows.push(...r.rows); info.push(r); });
+  if (!rows.length) throw new Error('لم أستطع التعرف على شكل الجدول في الـ PDF. تأكد أن رؤوس الأعمدة فيها أرقام الحصص (1، 2، 3 أو الأولى، الثانية...). أرسل الملف للدعم لإضافة شكله.');
+  return { rows, info };
+}
+
+/* ---------------------------------------------------------------------
+   قارئ الروابط والملفات الذكي: Google Sheets/Docs/Drive، Excel، CSV، PDF،
+   JSON (مثل Google Apps Script)، صفحات ويب فيها جداول، وأي صفحة نصية.
+   --------------------------------------------------------------------- */
+function fixLinkURL(url) {
+  url = String(url || '').trim();
+  let m;
+  if ((m = url.match(/docs\.google\.com\/spreadsheets\/d\/([\w-]+)/)) && !/output=|format=|tqx=/.test(url)) {
+    if (/\/d\/e\//.test(url)) return url.replace(/\/pubhtml.*$/, '/pub?output=csv');
+    const gid = (url.match(/[#&?]gid=(\d+)/) || [])[1];
+    return `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv${gid ? '&gid=' + gid : ''}`;
+  }
+  if ((m = url.match(/docs\.google\.com\/document\/d\/([\w-]+)/)) && !/export/.test(url)) return `https://docs.google.com/document/d/${m[1]}/export?format=html`;
+  if ((m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/))) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+  return url;
+}
+function tableToAoa(t) {
+  const grid = [];
+  [...t.rows].forEach((tr, r) => {
+    grid[r] = grid[r] || [];
+    let c = 0;
+    for (const td of tr.cells) {
+      while (grid[r][c] !== undefined) c++;
+      const txt = (td.innerText ?? td.textContent ?? '').replace(/[ \t]+/g, ' ').trim();
+      const rs = Math.max(1, td.rowSpan || 1), cs = Math.max(1, td.colSpan || 1);
+      for (let i = 0; i < rs; i++) for (let j = 0; j < cs; j++) { grid[r + i] = grid[r + i] || []; grid[r + i][c + j] = txt; }
+      c += cs;
+    }
+  });
+  return grid.map(r => Array.from(r, x => x ?? ''));
+}
+function textToAoa(text) {
+  return String(text).split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => l.split(/\t|\s{2,}|\s*\|\s*|\s+[:：]\s+/).map(x => x.trim()));
+}
+function docToSheets(doc, allowText = true) {
+  const sheets = [...doc.querySelectorAll('table')].map(t => ({ name: t.caption?.textContent || '', aoa: tableToAoa(t) })).filter(s => s.aoa.length > 1);
+  if (!sheets.length && allowText) {
+    const text = doc.body ? (doc.body.innerText || doc.body.textContent || '') : '';
+    if (text.trim()) sheets.push({ name: '', aoa: textToAoa(text), text: true });
+  }
+  return sheets;
+}
+function htmlToSheets(html) {
+  // صفحات Google Apps Script (HtmlService) تضع المحتوى داخل نص مشفّر
+  const m = html.match(/"userHtml":"((?:[^"\\]|\\.)*)"/);
+  if (m) { try { html = JSON.parse('"' + m[1].replace(/\\x([0-9a-f]{2})/gi, '\\u00$1') + '"'); } catch { } }
+  return docToSheets(new DOMParser().parseFromString(html, 'text/html'));
+}
+function jsonToAoa(j) {
+  if (Array.isArray(j)) {
+    if (!j.length) return [];
+    if (Array.isArray(j[0])) return j.map(r => r.map(c => c ?? ''));
+    if (typeof j[0] === 'object') {
+      const keys = [...new Set(j.flatMap(o => Object.keys(o || {})))];
+      return [keys, ...j.map(o => keys.map(k => o?.[k] ?? ''))];
+    }
+    return j.map(x => [String(x)]);
+  }
+  if (j && typeof j === 'object') {
+    for (const k of ['values', 'data', 'rows', 'items', 'records', 'result', 'table']) if (j[k]) return jsonToAoa(j[k]);
+    const arr = Object.values(j).find(Array.isArray); if (arr) return jsonToAoa(arr);
+    return Object.entries(j).map(([k, v]) => [k, typeof v === 'object' ? JSON.stringify(v) : v]);
+  }
+  return [];
+}
+/* PDF عام (مناوبة/احتياط/غياب): أعمدة حسب سطر العناوين */
+async function pdfToSheets(blob) {
+  const pages = await pdfTextPages(blob);
+  if (!pages.some(p => p.length)) throw new Error('هذا الـ PDF صورة ممسوحة ولا يحتوي نصاً يمكن قراءته.');
+  const HEAD = /يوم|حص|صف|فصل|شعب|معلم|مناوب|غائب|غياب|احتياط|بديل|مكان|موقع|تاريخ|فتر|اسم|طالب|سبب|ملاحظ|اسبوع/;
+  return pages.map((raw, pi) => {
+    const toks = mergeLine(raw);
+    const lines = [];
+    toks.sort((a, b) => b.y - a.y).forEach(t => { const L = lines.find(l => Math.abs(l.y - t.y) < t.h * 0.5); if (L) L.t.push(t); else lines.push({ y: t.y, t: [t] }); });
+    let hi = lines.findIndex(l => l.t.filter(t => HEAD.test(norm(t.s)) || dayIdx(t.s) >= 0).length >= 2);
+    if (hi < 0) hi = lines.reduce((b, l, i) => l.t.length > lines[b].t.length ? i : b, 0);
+    const anchors = lines[hi].t.slice().sort((a, b) => b.x - a.x);
+    const aoa = [anchors.map(a => a.s)];
+    for (const L of lines.slice(hi + 1)) {
+      const row = anchors.map(() => '');
+      for (const t of L.t) {
+        let k = 0; anchors.forEach((a, i) => { if (Math.abs(a.x - t.x) < Math.abs(anchors[k].x - t.x)) k = i; });
+        row[k] = row[k] ? row[k] + ' ' + t.s : t.s;
+      }
+      aoa.push(row);
+    }
+    return { name: 'صفحة ' + (pi + 1), aoa };
+  });
+}
+/* قراءة الصفحات التي تُبنى بالجافاسكربت (مثل Canva) داخل إطار مخفي */
+function readLinkIframe(url) {
+  return new Promise((res, rej) => {
+    const f = h('iframe', { src: url, style: 'position:fixed;left:-10000px;top:0;width:1400px;height:1000px;border:0' });
+    let done = false;
+    const finish = fn => { if (done) return; done = true; setTimeout(() => f.remove(), 50); fn(); };
+    const grab = () => {
+      try {
+        const walk = (w, acc) => { acc.push(...docToSheets(w.document, false)); for (let i = 0; i < w.frames.length; i++) { try { walk(w.frames[i], acc); } catch { } } return acc; };
+        const tables = walk(f.contentWindow, []);
+        if (tables.length) return finish(() => res(tables));
+        const texts = []; const tw = w => { texts.push(w.document.body?.innerText || ''); for (let i = 0; i < w.frames.length; i++) { try { tw(w.frames[i]); } catch { } } };
+        tw(f.contentWindow);
+        const text = texts.join('\n').trim();
+        if (!text) throw new Error('فارغ');
+        finish(() => res([{ name: '', aoa: textToAoa(text), text: true }]));
+      } catch (e) { finish(() => rej(new Error('blocked'))); }
+    };
+    f.onload = () => setTimeout(grab, 6000);
+    setTimeout(() => finish(() => rej(new Error('timeout'))), 30000);
+    document.body.append(f);
+  });
+}
+async function smartFromBlob(blob, name = '') {
+  const head = new Uint8Array(await blob.slice(0, 8).arrayBuffer());
+  const n = String(name).toLowerCase();
+  if (String.fromCharCode(...head.slice(0, 4)) === '%PDF' || n.endsWith('.pdf')) return { type: 'pdf', blob };
+  if ((head[0] === 0x50 && head[1] === 0x4B) || (head[0] === 0xD0 && head[1] === 0xCF)) return { type: 'sheets', sheets: await sheetsFromBlob(blob) };
+  const text = new TextDecoder('utf-8').decode(await blob.arrayBuffer()).replace(/^﻿/, '');
+  const t = text.trim();
+  if (/^[\[{]/.test(t)) { try { return { type: 'sheets', sheets: [{ name: '', aoa: jsonToAoa(JSON.parse(t)) }] }; } catch { } }
+  if (/^</.test(t) || /<html|<table|<body/i.test(t.slice(0, 3000))) return { type: 'html', sheets: htmlToSheets(text) };
+  return { type: 'sheets', sheets: [{ name: '', aoa: parseCSV(text) }] };
+}
+async function smartRead(url) {
+  let res = null, err = null;
+  try {
+    const r = await fetch(fixLinkURL(url), { cache: 'no-store', redirect: 'follow' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    res = await smartFromBlob(await r.blob(), url.split('?')[0]);
+  } catch (e) { err = e; }
+  // صفحة تُبنى بالجافاسكربت أو موقع يمنع القراءة المباشرة → جرّب الإطار المخفي
+  if (!res || (res.type === 'html' && !res.sheets.some(s => !s.text))) {
+    try { return { type: 'sheets', sheets: await readLinkIframe(url), via: 'iframe' }; }
+    catch { if (res && res.sheets.length) return res; }
+    throw new Error('تعذر قراءة محتوى الرابط' + (err ? ' (' + err.message + ')' : '') + '. بعض المواقع (مثل Canva) تمنع قراءة بياناتها — فعّل خيار "عرض الرابط كمشهد في الشاشة"، أو استخدم رابط Google Sheets أو Apps Script يُرجع البيانات.');
+  }
+  return res;
+}
+/* تحويل ما قُرئ إلى سجلات حسب نوع البيانات */
+async function rowsFromSmart(which, res, sheetName) {
+  if (which === 'timetable') return res.type === 'pdf' ? (await parseTimetablePDF(res.blob)).rows : parseTimetable(res.sheets, sheetName);
+  let sheets = res.type === 'pdf' ? await pdfToSheets(res.blob) : res.sheets;
+  if (sheetName) { const f = sheets.filter(s => norm(s.name).includes(norm(sheetName))); if (f.length) sheets = f; }
+  const fn = PARSERS[which];
+  let best = [], lastErr = null;
+  for (const s of sheets) { try { const r = fn(s.aoa); if (r.length > best.length) best = r; } catch (e) { lastErr = e; } }
+  if (!best.length) throw lastErr || new Error('لم يُعثر على بيانات مناسبة في المصدر.');
+  return best;
+}
+
+/* ---------- الطلاب الغائبون ---------- */
+function parseAbsent(aoa) {
+  aoa = aoa.filter(r => r.some(c => String(c).trim()));
+  const hr = findHeader(aoa, [/اسم|طالب/, /صف|فصل|شعب/, /تاريخ/, /سبب|ملاحظ|حاله/, /يوم/]);
+  if (hr < 0) throw new Error('لم أتعرف على أعمدة جدول الغياب. يجب أن يحتوي على: اسم الطالب، الصف، والتاريخ (اختياري)، والسبب (اختياري).');
+  const hd = aoa[hr].map(norm), col = (re, not) => hd.findIndex(c => re.test(c) && !(not && not.test(c)));
+  const c = { name: col(/اسم|طالب/, /صف|فصل/), cls: col(/صف|فصل|شعب/), date: col(/تاريخ/), day: col(/يوم/, /تاريخ/), reason: col(/سبب|ملاحظ|حاله/), status: col(/حضور|غياب|الحاله/) };
+  let dt = '', dy = -1, cl = '';
+  const out = [];
+  for (const row of aoa.slice(hr + 1)) {
+    if (cell(row, c.date)) dt = parseDate(cell(row, c.date));
+    if (cell(row, c.day)) dy = dayIdx(cell(row, c.day));
+    if (cell(row, c.cls)) cl = cell(row, c.cls);
+    const name = cell(row, c.name); if (!name) continue;
+    if (c.status >= 0 && cell(row, c.status) && /حاضر|present/.test(norm(cell(row, c.status)))) continue;
+    out.push({ date: dt, day: dt ? -1 : dy, name, cls: cl, reason: cell(row, c.reason) });
+  }
+  return out;
+}
+function absentFor(d) {
+  const day = ymd(d), dow = d.getDay();
+  const cmp = clsSorter();
+  return CFG.absent.rows.filter(r => r.date ? r.date === day : (r.day === -1 ? !CFG.absent.datedOnly : r.day === dow)).sort((a, b) => cmp(a.cls, b.cls) || a.name.localeCompare(b.name, 'ar'));
+}
+const PARSERS = { duty: a => parseDuty(a), subs: a => parseSubs(a), absent: a => parseAbsent(a) };
+
 async function refreshSource(which, manual) {
   const src = CFG[which];
   if (src.source !== 'link' || !src.url) return;
   try {
-    const r = await fetch(sheetFetchURL(src.url), { cache: 'no-store' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const blob = await r.blob();
-    if (which === 'timetable') src.rows = parseTimetable(await sheetsFromBlob(blob), src.sheet);
-    else { const aoa = await aoaFromBlob(blob, src.sheet); src.rows = which === 'duty' ? parseDuty(aoa) : parseSubs(aoa); }
+    src.rows = await rowsFromSmart(which, await smartRead(src.url), src.sheet);
     src.lastFetch = new Date().toLocaleString('ar'); src.lastError = '';
     if (manual) toast(`تم التحديث: ${src.rows.length} سجل`);
   } catch (e) {
-    src.lastError = (e.message || String(e)) + (/fetch|NetworkError|Failed/i.test(e.message) ? ' — تحقق من الإنترنت ومن أن الرابط عام (منشور على الويب).' : '');
+    src.lastError = e.message || String(e);
     if (manual) toast('فشل التحديث: ' + src.lastError, true);
   }
   CFG._rev = (CFG._rev || 0) + 1;
   save();
 }
-function refreshAllSources() { refreshSource('duty'); refreshSource('subs'); refreshSource('timetable'); }
-const lastRefresh = { duty: 0, subs: 0, timetable: 0 };
+function refreshAllSources() { ['duty', 'subs', 'timetable', 'absent'].forEach(w => refreshSource(w)); }
+const lastRefresh = { duty: 0, subs: 0, timetable: 0, absent: 0 };
 function maybeRefresh() {
-  for (const w of ['duty', 'subs', 'timetable']) {
+  for (const w of ['duty', 'subs', 'timetable', 'absent']) {
     const s = CFG[w];
     if (s.source === 'link' && s.url && Date.now() - lastRefresh[w] > Math.max(1, +s.refreshMin || 10) * 60000) {
       lastRefresh[w] = Date.now(); refreshSource(w);
@@ -1326,6 +1733,38 @@ function audioOptions() {
 }
 const testBtn = (fn, label = '▶') => h('button', { class: 'btn sm', title: 'تجربة', onclick: e => { e.preventDefault(); Audio_.ensure(); fn(); } }, label);
 
+function scheduleLabel(s) {
+  const parts = [];
+  if (s.mode === 'takeover') parts.push('📺 ملء الشاشة');
+  if (s.when === 'window') parts.push(`${s.from || '..'} — ${s.to || '..'}`);
+  else if (s.when === 'period') parts.push('أثناء ' + (s.ptype === 'lessons' ? 'الحصص' : s.ptype === 'breaks' ? 'الفسح والطابور' : (TYPE[s.ptype]?.n || '')));
+  if (s.days?.length) parts.push(s.days.map(d => DAYS[d]).join('، '));
+  if (s.dFrom || s.dTo) parts.push((s.dFrom || '..') + ' ← ' + (s.dTo || '..'));
+  return (parts.length ? parts.join(' | ') : 'دائماً') + (slideActive(s) ? ' • ظاهر الآن' : '');
+}
+function scheduleEditor(s) {
+  s.when = s.when || 'always'; s.mode = s.mode || 'rotate'; s.days = s.days || []; s.intScenes = s.intScenes || ['now', 'subs'];
+  const box = h('div', { style: 'flex-basis:100%;border-top:1px dashed #334155;margin-top:6px;padding-top:10px' });
+  box.append(
+    h('div', { class: 'row' },
+      field('متى يظهر', bindSelect(s, 'when', [['always', 'دائماً'], ['window', 'من وقت إلى وقت'], ['period', 'أثناء فترة معينة']], rerender)),
+      s.when === 'window' ? [field('من', bindInput(s, 'from', { type: 'time' })), field('إلى', bindInput(s, 'to', { type: 'time' }))] : null,
+      s.when === 'period' ? field('الفترة', bindSelect(s, 'ptype', [['breaks', 'كل الفسح والطابور'], ['lessons', 'كل الحصص'], ...TYPES.filter(t => t.k !== 'custom').map(t => [t.k, t.n])])) : null,
+      field('من تاريخ (اختياري)', bindInput(s, 'dFrom', { type: 'date' })),
+      field('إلى تاريخ (اختياري)', bindInput(s, 'dTo', { type: 'date' }))),
+    h('div', { class: 'row' }, h('span', { class: 'hint', style: 'margin:0' }, 'الأيام (بدون تحديد = كل الأيام):'),
+      DAYS.map((d, k) => h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: s.days.includes(k), onchange: e => { s.days = e.target.checked ? [...s.days, k] : s.days.filter(x => x !== k); save(); } }), d))),
+    h('div', { class: 'row' },
+      field('طريقة الظهور', bindSelect(s, 'mode', [['rotate', 'ضمن المشاهد المتبدلة'], ['takeover', '📺 ملء الشاشة طوال الوقت المحدد']], rerender))),
+    s.mode === 'takeover' ? h('div', {},
+      h('p', { class: 'hint' }, 'في وقته يملأ الشاشة ويتكرر. ويمكن أن يتوقف كل فترة لعرض معلومات (الحصة الآن، الاحتياط...) ثم يكمل الفيديو من حيث توقف.'),
+      h('div', { class: 'row' },
+        field('إيقاف لعرض المعلومات كل (ث، 0 = لا)', bindInput(s, 'intEvery', { type: 'number', min: 0, style: 'width:100px' })),
+        field('مدة كل مشهد معلومات (ث)', bindInput(s, 'intDur', { type: 'number', min: 3, style: 'width:100px' }))),
+      h('div', { class: 'row' }, h('span', { class: 'hint', style: 'margin:0' }, 'المعلومات التي تظهر أثناء التوقف:'),
+        Object.entries(SCENE_NAMES).map(([k, n]) => h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: s.intScenes.includes(k), onchange: e => { s.intScenes = e.target.checked ? [...s.intScenes, k] : s.intScenes.filter(x => x !== k); save(); } }), n)))) : null);
+  return box;
+}
 const THEMES = [
   { k: 'oman2040', n: 'رؤية عُمان 2040 — داكن', c: ['#0a0f2e', '#1a1146', '#B64D9C', '#8585BB', '#159EC4'] },
   { k: 'oman2040-light', n: 'رؤية عُمان 2040 — فاتح', c: ['#f4f3fb', '#e6f4fa', '#a8418d', '#6f6fae', '#128bb0'] },
@@ -1519,7 +1958,7 @@ const TABS = {
     }
     const recState = h('span');
     sec.append(panel('مكتبة الأصوات',
-      h('p', { class: 'hint' }, 'الأجراس المدمجة تعمل بدون ملفات. يمكنك رفع أصوات أخرى (MP3/WAV/OGG): جرس خاص، آية، دعاء، نشيد، إعلان مسجّل بصوتك... ثم اختيارها في الجداول أو التنبيهات.'),
+      h('p', { class: 'hint' }, '🎬 لرفع فيديو أو صور وتحديد وقت ظهورها: تبويب "المشاهد والشريط". — الأجراس المدمجة تعمل بدون ملفات. يمكنك رفع أصوات أخرى (MP3/WAV/OGG): جرس خاص، آية، دعاء، نشيد، إعلان مسجّل بصوتك... ثم اختيارها في الجداول أو التنبيهات.'),
       lib,
       h('div', { class: 'row', style: 'margin-top:12px' },
         h('button', { class: 'btn pri', onclick: async () => {
@@ -1587,14 +2026,17 @@ const TABS = {
         field(s.type === 'video' ? 'المدة (ث، 0 = حتى نهاية الفيديو)' : (s.type === 'pdf' ? 'مدة كل صفحة (ث)' : 'المدة (ث)'), bindInput(s, 'duration', { type: 'number', min: 0, style: 'width:90px' })),
         (s.type === 'pdf' || s.type === 'image') ? field('طريقة العرض', bindSelect(s, 'fit', [['contain', 'ملاءمة الشاشة'], ['scroll', 'بعرض الشاشة مع تمرير تلقائي']])) : null,
         s.type === 'video' ? h('label', { class: 'chk' }, bindInput(s, 'muted', { type: 'checkbox' }), '🔇 بدون صوت') : null,
+        h('span', { class: 'badge' + (slideActive(s) ? ' ok' : '') }, scheduleLabel(s)),
         h('div', { class: 'mini' },
+          h('button', { class: 'btn sm' + (s._open ? ' pri' : ''), title: 'متى يظهر', onclick: () => { s._open = !s._open; rerender(); } }, '⏱ الجدولة'),
           h('button', { class: 'btn sm', onclick: () => { if (i) { [CFG.slides[i - 1], CFG.slides[i]] = [CFG.slides[i], CFG.slides[i - 1]]; save(); rerender(); } } }, '↑'),
           h('button', { class: 'btn sm', onclick: () => { if (i < CFG.slides.length - 1) { [CFG.slides[i + 1], CFG.slides[i]] = [CFG.slides[i], CFG.slides[i + 1]]; save(); rerender(); } } }, '↓'),
-          h('button', { class: 'btn dan sm', onclick: async () => { if (!confirm('حذف هذه الشريحة؟')) return; if (s.fileId) await removeFile(s.fileId); CFG.slides.splice(i, 1); save(); rerender(); } }, '✕'))));
+          h('button', { class: 'btn dan sm', onclick: async () => { if (!confirm('حذف هذه الشريحة؟')) return; if (s.fileId) await removeFile(s.fileId); CFG.slides.splice(i, 1); save(); rerender(); } }, '✕')),
+        s._open ? scheduleEditor(s) : null));
     });
     const addUrl = h('input', { type: 'url', placeholder: 'https://... رابط PDF أو صورة أو فيديو أو يوتيوب أو صفحة', style: 'flex:1;min-width:280px;direction:ltr' });
     sec.append(panel('الشرائح المتحركة في الشاشة الرئيسية',
-      h('p', { class: 'hint' }, 'ارفع جدول الحصص (PDF — تظهر كل صفحة كشريحة)، أو صوراً، أو فيديو (مكتوم الصوت افتراضياً حتى لا يصل الصوت للفصول)، أو ضع رابطاً. الفيديو يُكتم تلقائياً أثناء الجرس.'),
+      h('p', { class: 'hint' }, 'ارفع فيديو أو صور أو PDF أو ضع رابطاً. زر ⏱ الجدولة يحدد متى يظهر كل عنصر ومتى يختفي: دائماً، أو من وقت إلى وقت، أو أثناء فترة (مثل الفسحة)، وفي أيام وتواريخ معينة. ويمكن جعل الفيديو يملأ الشاشة في وقته ويتوقف كل فترة لعرض الحصة الآن أو الاحتياط ثم يكمل من حيث توقف. الفيديو مكتوم افتراضياً، ويُكتم تلقائياً أثناء الجرس.'),
       list,
       h('div', { class: 'row', style: 'margin-top:12px' },
         h('button', { class: 'btn pri', onclick: async () => {
@@ -1621,7 +2063,7 @@ const TABS = {
       h('p', { class: 'hint' }, 'مشهد "الحصة الآن" يعرض كل صف ومعلمه في الحصة الحالية (من تبويب جدول المعلمين) مع إبراز حصص الاحتياط: المعلم الغائب ← المعلم البديل. وفي الفسحة يعرض المناوبين. يتكرر كل 3 مشاهد، ويظهر فوراً عند بداية كل حصة.'),
       h('div', { class: 'row' },
         chk(A, 'welcome', '🏫 ترحيب (الشعار واسم المدرسة)'), chk(A, 'now', '📚 الحصة الآن'), chk(A, 'schedule', '⏰ توقيت اليوم'),
-        chk(A, 'duty', '🛡️ المناوبة'), chk(A, 'subs', '🔁 الاحتياط')),
+        chk(A, 'duty', '🛡️ المناوبة'), chk(A, 'subs', '🔁 الاحتياط'), chk(A, 'absent', '📋 الغياب')),
       h('div', { class: 'row' },
         field('مدة مشهد "الآن" (ث)', bindInput(A, 'nowDuration', { type: 'number', style: 'width:90px' })),
         field('مدة المشاهد الأخرى (ث)', bindInput(A, 'duration', { type: 'number', style: 'width:90px' })),
@@ -1631,7 +2073,7 @@ const TABS = {
     const ta = h('textarea', { onchange: e => { T.texts = e.target.value.split('\n').map(s => s.trim()).filter(Boolean); save(); } }, T.texts.join('\n'));
     sec.append(panel('الشريط الإخباري المتحرك (أسفل الشاشة)',
       h('div', { class: 'row' }, chk(T, 'enabled', 'إظهار الشريط'), field('العنوان', bindInput(T, 'label')), field('السرعة', bindInput(T, 'speed', { type: 'range', min: 30, max: 250 })),
-        chk(T, 'includeDuty', 'إضافة المناوبة الحالية'), chk(T, 'includeSubs', 'إضافة حصص الاحتياط')),
+        chk(T, 'includeDuty', 'إضافة المناوبة الحالية'), chk(T, 'includeSubs', 'إضافة حصص الاحتياط'), chk(T, 'includeAbsent', 'إضافة الغياب')),
       h('p', { class: 'hint' }, 'كل سطر = خبر:'), ta));
 
   },
@@ -1701,6 +2143,7 @@ const TABS = {
   },
 
   duty(sec) { sourceTab(sec, 'duty'); },
+  absent(sec) { sourceTab(sec, 'absent'); },
   subs(sec) { sourceTab(sec, 'subs'); },
 
   /* ---------------- النسخ الاحتياطي ---------------- */
@@ -1721,48 +2164,76 @@ const TABS = {
   },
 };
 
-/* تبويب مصدر بيانات (المناوبة / الاحتياط) */
-function sourceTab(sec, which) {
-  const S = CFG[which], isDuty = which === 'duty';
-  const title = isDuty ? 'المناوبة' : 'حصص الاحتياط';
-  sec.append(panel('مصدر بيانات ' + title,
-    h('p', { class: 'hint' }, isDuty
-      ? 'يقرأ البرنامج جدول المناوبة ويعرض تلقائياً من المناوب الآن (حسب اليوم والحصة/الفسحة والأسبوع). الصيغ المقبولة: (1) قائمة بأعمدة: الأسبوع (اختياري)، اليوم، الفترة/الحصة، المعلم المناوب، المكان. أو (2) جدول الأيام فيه أعمدة (الأحد، الاثنين...) والفترات صفوف. اكتب "طوال اليوم" في الفترة للمناوبة العامة.'
-      : 'يقرأ البرنامج جدول الاحتياط ويعرض حصص اليوم. الأعمدة المقبولة: التاريخ (أو اليوم)، الحصة، الصف، المعلم الغائب، المعلم البديل/الاحتياط. تظهر فقط صفوف تاريخ اليوم.'),
+/* إعدادات المصدر المشتركة (رابط أي نوع / ملف / يدوي) */
+const SRC_INFO = {
+  duty: { title: 'المناوبة', hint: 'يعرض البرنامج تلقائياً من المناوب الآن (حسب اليوم والحصة/الفسحة والأسبوع). الأعمدة المتوقعة: الأسبوع (اختياري)، اليوم، الفترة/الحصة، المعلم المناوب، المكان — أو جدول الأيام فيه أعمدة (الأحد، الاثنين...) والفترات صفوف.' },
+  subs: { title: 'حصص الاحتياط', hint: 'يعرض حصص اليوم ويربطها بالصفوف في مشهد "الحصة الآن". الأعمدة المتوقعة: التاريخ (أو اليوم)، الحصة، الصف، المعلم الغائب، المعلم البديل/الاحتياط.' },
+  absent: { title: 'الطلاب الغائبون', hint: 'يعرض غياب اليوم في مشهد خاص مرتباً حسب الصف. الأعمدة المتوقعة: اسم الطالب، الصف، التاريخ (أو اليوم)، السبب (اختياري). يمكن ربطه بشيت يُحدَّث يومياً، وتظهر فقط صفوف تاريخ اليوم.' },
+};
+function linkPanel(S, which) {
+  const result = h('div');
+  return h('div', {},
     h('div', { class: 'row' },
-      field('المصدر', bindSelect(S, 'source', [['manual', 'إدخال يدوي / استيراد ملف'], ['link', 'رابط (Google Sheets أو ملف CSV/Excel)']], rerender))),
-    S.source === 'link' ? h('div', {},
-      h('div', { class: 'row' },
-        field('الرابط', bindInput(S, 'url', { type: 'url', style: 'width:520px;direction:ltr', placeholder: 'https://docs.google.com/spreadsheets/d/...' })),
-        field('اسم الورقة (اختياري)', bindInput(S, 'sheet', { style: 'width:140px' })),
-        field('التحديث كل (دقيقة)', bindInput(S, 'refreshMin', { type: 'number', min: 1, style: 'width:90px' })),
-        h('button', { class: 'btn pri', onclick: async () => { await refreshSource(which, true); rerender(); } }, '⟳ تحديث الآن')),
-      h('p', { class: 'hint' }, 'Google Sheets: شارك الملف "لأي شخص لديه الرابط" ثم الصق الرابط كما هو. البيانات تُحفظ محلياً بعد كل تحديث، فتبقى ظاهرة حتى لو انقطع الإنترنت.'),
-      h('div', { class: 'row' },
-        S.lastFetch ? h('span', { class: 'badge ok' }, 'آخر تحديث: ' + S.lastFetch) : null,
-        S.lastError ? h('span', { class: 'badge err' }, 'خطأ: ' + S.lastError) : null)) : null,
+      field('الرابط — أي رابط', bindInput(S, 'url', { type: 'url', style: 'width:560px;max-width:100%;direction:ltr', placeholder: 'Google Sheets / Apps Script / Canva / PDF / Excel / صفحة ويب...' })),
+      field('اسم الورقة (اختياري)', bindInput(S, 'sheet', { style: 'width:130px' })),
+      field('التحديث كل (دقيقة)', bindInput(S, 'refreshMin', { type: 'number', min: 1, style: 'width:80px' }))),
     h('div', { class: 'row' },
-      h('button', { class: 'btn', onclick: async () => {
-        const f = await pickFile('.xlsx,.xls,.csv,text/csv'); if (!f) return;
+      h('button', { class: 'btn pri', onclick: async () => { await refreshSource(which, true); rerender(); } }, '⟳ قراءة البيانات الآن'),
+      h('button', { class: 'btn', onclick: async e => {
+        result.innerHTML = ''; result.append(h('p', { class: 'hint' }, '⏳ جارٍ فحص الرابط...'));
         try {
-          const aoa = await aoaFromBlob(f, S.sheet);
-          const rows = isDuty ? parseDuty(aoa) : parseSubs(aoa);
-          if (!rows.length) throw new Error('لم يُعثر على بيانات');
-          S.rows = rows; save(); toast('تم استيراد ' + rows.length + ' سجل'); rerender();
-        } catch (e) { toast(e.message, true); }
-      } }, '📥 استيراد من ملف Excel / CSV'),
+          const res = await smartRead(S.url);
+          const kind = { pdf: 'ملف PDF', html: 'صفحة ويب', sheets: res.via === 'iframe' ? 'صفحة ويب (بعد تحميلها)' : 'جدول بيانات' }[res.type];
+          let rows = [], perr = '';
+          try { rows = await rowsFromSmart(which, res, S.sheet); } catch (x) { perr = x.message; }
+          const first = res.type === 'pdf' ? (await pdfToSheets(res.blob))[0] : res.sheets[0];
+          result.innerHTML = '';
+          result.append(h('p', { class: 'hint' }, `✅ تمت قراءة الرابط: ${kind}. ` + (rows.length ? `تم التعرف على ${rows.length} سجل.` : '⚠️ لكن لم أتعرف على أعمدة البيانات: ' + perr)),
+            first ? h('div', { class: 'preview-box' }, h('table', {}, first.aoa.slice(0, 12).map(r => h('tr', {}, r.slice(0, 8).map(c => h('td', {}, c)))))) : null);
+        } catch (x) { result.innerHTML = ''; result.append(h('p', { class: 'hint', style: 'color:#fca5a5' }, '❌ ' + x.message)); }
+      } }, '🔍 فحص الرابط'),
+      h('label', { class: 'chk' }, bindInput(S, 'showScene', { type: 'checkbox' }), '🖥️ عرض الرابط نفسه كمشهد في الشاشة')),
+    h('p', { class: 'hint' }, 'يقبل: Google Sheets (شارك "لأي شخص لديه الرابط")، Google Docs، ملف في Google Drive، رابط Apps Script (الأفضل أن يُرجع JSON أو CSV)، ملف PDF أو Excel أو CSV، أو أي صفحة ويب فيها جدول. صفحات Canva لا تسمح عادةً بقراءة بياناتها، ففعّل "عرض الرابط كمشهد" ليظهر كما هو في الشاشة. البيانات تُحفظ بعد كل قراءة فتبقى ظاهرة إن انقطع الإنترنت.'),
+    h('div', { class: 'row' },
+      S.lastFetch ? h('span', { class: 'badge ok' }, 'آخر تحديث: ' + S.lastFetch) : null,
+      S.lastError ? h('span', { class: 'badge err' }, 'خطأ: ' + S.lastError) : null),
+    result);
+}
+async function importFileTo(which, S) {
+  const f = await pickFile('.pdf,.xlsx,.xls,.csv,.json,.html,.htm,.txt'); if (!f) return;
+  try {
+    toast('جارٍ قراءة الملف...');
+    const rows = await rowsFromSmart(which, await smartFromBlob(f, f.name), S.sheet);
+    if (!rows.length) throw new Error('لم يُعثر على بيانات');
+    S.rows = rows; save(); toast('تم استيراد ' + rows.length + ' سجل'); rerender();
+  } catch (e) { toast(e.message, true); }
+}
+function sourceTab(sec, which) {
+  const S = CFG[which], I = SRC_INFO[which];
+  const isDuty = which === 'duty', isAbs = which === 'absent';
+  sec.append(panel('مصدر بيانات ' + I.title,
+    h('p', { class: 'hint' }, I.hint),
+    h('div', { class: 'row' },
+      field('المصدر', bindSelect(S, 'source', [['manual', 'إدخال يدوي / استيراد ملف'], ['link', 'رابط (أي نوع)']], rerender))),
+    S.source === 'link' ? linkPanel(S, which) : null,
+    h('div', { class: 'row' },
+      h('button', { class: 'btn', onclick: () => importFileTo(which, S) }, '📥 استيراد ملف (PDF / Excel / CSV)'),
       h('button', { class: 'btn', onclick: () => downloadTemplate(which) }, '⬇ تحميل نموذج فارغ'),
       S.rows.length ? h('button', { class: 'btn dan', onclick: () => { if (confirm('مسح كل السجلات؟')) { S.rows = []; save(); rerender(); } } }, 'مسح الكل') : null)));
+  if (isAbs) sec.append(panel('خيارات العرض',
+    h('div', { class: 'row' },
+      chk(S, 'showNames', 'إظهار أسماء الطلاب (إلغاؤه يعرض عدد الغائبين لكل صف فقط)'),
+      chk(S, 'datedOnly', 'تجاهل الصفوف التي ليس لها تاريخ'),
+      chk(CFG.autoSlides, 'absent', 'مشهد الغياب في الشاشة الرئيسية'))));
 
   // معاينة اليوم
   const d = now();
   const todayRows = isDuty
     ? S.rows.filter(r => (r.date ? r.date === ymd(d) : (r.day === -1 || r.day === d.getDay())) && (!r.week || r.week === cycleWeek(d)))
-    : subsFor(d);
-  sec.append(panel(`ما سيظهر اليوم (${DAYS[d.getDay()]}${isDuty && CFG.general.cycleWeeks > 1 ? ' — الأسبوع ' + cycleWeek(d) : ''})`,
+    : isAbs ? absentFor(d) : subsFor(d);
+  sec.append(panel(`ما سيظهر اليوم (${DAYS[d.getDay()]}${isDuty && CFG.general.cycleWeeks > 1 ? ' — الأسبوع ' + cycleWeek(d) : ''}) — ${todayRows.length}`,
     todayRows.length ? h('div', { class: 'preview-box' }, h('table', {},
-      isDuty ? todayRows.map(r => h('tr', {}, h('td', {}, r.slot || 'طوال اليوم'), h('td', {}, r.teacher), h('td', {}, r.location)))
-        : todayRows.map(r => h('tr', {}, h('td', {}, r.period), h('td', {}, r.cls), h('td', {}, r.sub), h('td', {}, r.absent)))))
+      todayRows.map(r => h('tr', {}, (isDuty ? [r.slot || 'طوال اليوم', r.teacher, r.location] : isAbs ? [r.cls, r.name, r.reason] : [r.period, r.cls, r.sub, r.absent]).map(x => h('td', {}, x || ''))))))
       : h('p', { class: 'hint' }, 'لا يوجد شيء لليوم.')));
 
   // محرر يدوي
@@ -1778,18 +2249,25 @@ function sourceTab(sec, which) {
       h('td', {}, bindInput(r, 'date', { type: 'date' })),
       h('td', {}, bindInput(r, 'slot', { placeholder: 'الفسحة / الحصة الأولى / طوال اليوم' })),
       h('td', {}, bindInput(r, 'teacher')), h('td', {}, bindInput(r, 'location')), h('td', {}, del)));
+    else if (isAbs) tb.append(h('tr', {},
+      h('td', {}, bindInput(r, 'date', { type: 'date' })), h('td', {}, numSel('day', dayOpts)),
+      h('td', {}, bindInput(r, 'cls', { placeholder: '5/1' })), h('td', {}, bindInput(r, 'name')), h('td', {}, bindInput(r, 'reason')), h('td', {}, del)));
     else tb.append(h('tr', {},
       h('td', {}, bindInput(r, 'date', { type: 'date' })), h('td', {}, numSel('day', dayOpts)),
       h('td', {}, bindInput(r, 'period', { placeholder: 'الأولى / 1' })), h('td', {}, bindInput(r, 'cls')),
       h('td', {}, bindInput(r, 'absent')), h('td', {}, bindInput(r, 'sub')), h('td', {}, bindInput(r, 'note')), h('td', {}, del)));
   });
-  const heads = isDuty ? ['الأسبوع', 'اليوم', 'تاريخ محدد (اختياري)', 'الفترة / الحصة', 'المعلم المناوب', 'المكان', ''] : ['التاريخ', 'أو اليوم', 'الحصة', 'الصف', 'المعلم الغائب', 'المعلم البديل', 'ملاحظة', ''];
+  const heads = isDuty ? ['الأسبوع', 'اليوم', 'تاريخ محدد (اختياري)', 'الفترة / الحصة', 'المعلم المناوب', 'المكان', '']
+    : isAbs ? ['التاريخ', 'أو اليوم', 'الصف', 'اسم الطالب', 'السبب / ملاحظة', '']
+      : ['التاريخ', 'أو اليوم', 'الحصة', 'الصف', 'المعلم الغائب', 'المعلم البديل', 'ملاحظة', ''];
   sec.append(panel(`السجلات (${S.rows.length})` + (S.source === 'link' ? ' — ستُستبدل عند التحديث من الرابط' : ''),
     h('div', { class: 'tbl-wrap' }, h('table', { class: 'edit' }, h('thead', {}, h('tr', {}, heads.map(t => h('th', {}, t)))), tb)),
     S.rows.length > shown.length ? h('p', { class: 'hint' }, `يُعرض أول ${shown.length} سجل فقط للتعديل.`) : null,
     h('div', { class: 'row', style: 'margin-top:10px' },
       h('button', { class: 'btn pri', onclick: () => {
-        S.rows.push(isDuty ? { week: 0, day: now().getDay(), date: '', slot: 'الفسحة', teacher: '', location: '' } : { date: ymd(now()), day: -1, period: '', cls: '', absent: '', sub: '', note: '' });
+        S.rows.push(isDuty ? { week: 0, day: now().getDay(), date: '', slot: 'الفسحة', teacher: '', location: '' }
+          : isAbs ? { date: ymd(now()), day: -1, cls: '', name: '', reason: '' }
+            : { date: ymd(now()), day: -1, period: '', cls: '', absent: '', sub: '', note: '' });
         save(); rerender();
       } }, '+ إضافة سجل'))));
 }
@@ -1797,27 +2275,29 @@ let ttDay = null;
 function timetableTab(sec) {
   const T = CFG.timetable;
   sec.append(panel('جدول المعلمين (من يدرّس كل صف في كل حصة)',
-    h('p', { class: 'hint' }, 'هذا الجدول يجعل الشاشة تعرض في كل حصة: الصف ← المادة ← المعلم، ومعه الاحتياط (الغائب ← البديل). يمكن استيراده من Excel: الصفوف في الأسطر والحصص (الأولى، الثانية...) في الأعمدة، وكل ورقة باسم يوم (الأحد، الاثنين...)، والخلية مثل "رياضيات - أ. فاطمة". أو جدول المعلمين (المعلم في السطر والصف في الخلية). أو أدخله يدوياً بالأسفل.'),
+    h('p', { class: 'hint' }, 'هذا الجدول يجعل الشاشة تعرض في كل حصة: الصف ← المادة ← المعلم، ومعه الاحتياط (الغائب ← البديل). 📄 يمكن رفعه كملف PDF (المصدَّر من برنامج الجداول — صفحة لكل صف أو لكل معلم أو جدول عام)، ثم مراجعته في الجدول بالأسفل. أو من Excel: الصفوف في الأسطر والحصص (الأولى، الثانية...) في الأعمدة، وكل ورقة باسم يوم (الأحد، الاثنين...)، والخلية مثل "رياضيات - أ. فاطمة". أو جدول المعلمين (المعلم في السطر والصف في الخلية). أو أدخله يدوياً بالأسفل.'),
     h('div', { class: 'row' },
-      field('المصدر', bindSelect(T, 'source', [['manual', 'إدخال يدوي / استيراد ملف'], ['link', 'رابط (Google Sheets / Excel)']], rerender))),
-    T.source === 'link' ? h('div', {},
-      h('div', { class: 'row' },
-        field('الرابط', bindInput(T, 'url', { type: 'url', style: 'width:520px;direction:ltr' })),
-        field('اسم ورقة محددة (اختياري)', bindInput(T, 'sheet', { style: 'width:140px' })),
-        field('التحديث كل (دقيقة)', bindInput(T, 'refreshMin', { type: 'number', min: 5, style: 'width:90px' })),
-        h('button', { class: 'btn pri', onclick: async () => { await refreshSource('timetable', true); rerender(); } }, '⟳ تحديث الآن')),
-      h('p', { class: 'hint' }, 'ملاحظة: رابط Google Sheets يقرأ ورقة واحدة فقط (الظاهرة في الرابط). لملف بعدة أوراق استخدم الاستيراد من ملف أو ضع عمود "اليوم".'),
-      h('div', { class: 'row' }, T.lastFetch ? h('span', { class: 'badge ok' }, 'آخر تحديث: ' + T.lastFetch) : null, T.lastError ? h('span', { class: 'badge err' }, 'خطأ: ' + T.lastError) : null)) : null,
+      field('المصدر', bindSelect(T, 'source', [['manual', 'إدخال يدوي / استيراد ملف'], ['link', 'رابط (أي نوع)']], rerender))),
+    T.source === 'link' ? linkPanel(T, 'timetable') : null,
     h('div', { class: 'row' },
       h('button', { class: 'btn', onclick: async () => {
-        const f = await pickFile('.xlsx,.xls,.csv'); if (!f) return;
+        const f = await pickFile('.pdf,.xlsx,.xls,.csv'); if (!f) return;
+        const isPdf = kindOf(f) === 'pdf';
         try {
-          const rows = parseTimetable(await sheetsFromBlob(f), T.sheet);
+          toast('جارٍ قراءة الملف...');
+          const rows = isPdf ? (await parseTimetablePDF(f)).rows : parseTimetable(await sheetsFromBlob(f), T.sheet);
+          const nCls = new Set(rows.map(r => normCls(r.cls))).size, nT = new Set(rows.map(r => r.teacher).filter(Boolean)).size;
+          if (!confirm(`تمت قراءة ${rows.length} حصة: ${nCls} صف و ${nT} معلم.\nهل تريد اعتماد هذا الجدول؟ (سيستبدل الجدول الحالي — يمكنك مراجعته وتعديله بالأسفل)`)) return;
           T.rows = rows;
-          if (!T.classes.length) T.classes = [...new Set(rows.map(r => r.cls))].sort(clsSorter());
+          T.classes = [...new Set(rows.map(r => r.cls).filter(Boolean))].sort(clsSorter());
           save(); toast('تم استيراد ' + rows.length + ' حصة'); rerender();
         } catch (e) { toast(e.message, true); }
-      } }, '📥 استيراد من Excel / CSV'),
+        if (isPdf && confirm('هل تريد أيضاً عرض ملف الـ PDF نفسه كشريحة في الشاشة الرئيسية؟')) {
+          const id = await addFile(f, 'pdf');
+          CFG.slides.push({ id: uid(), type: 'pdf', fileId: id, enabled: true, title: 'جدول الحصص', duration: 20, muted: true, fit: 'contain' });
+          save(); Slides.rebuild();
+        }
+      } }, '📥 استيراد جدول (PDF / Excel / CSV)'),
       h('button', { class: 'btn', onclick: () => downloadTemplate('timetable') }, '⬇ تحميل نموذج'),
       T.rows.length ? h('button', { class: 'btn dan', onclick: () => { if (confirm('مسح جدول المعلمين كاملاً؟')) { T.rows = []; save(); rerender(); } } }, 'مسح الكل') : null,
       h('span', { class: 'badge' }, digits(T.rows.length) + ' حصة مسجلة'))));
@@ -1861,6 +2341,11 @@ function timetableTab(sec) {
 }
 
 function downloadTemplate(which) {
+  if (which === 'absent') {
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['التاريخ', 'الصف', 'اسم الطالب', 'السبب'], [ymd(now()), '5/1', 'فاطمة سالم', 'مرض'], [ymd(now()), '6/2', 'مريم علي', '']]), 'الغياب');
+    XLSX.writeFile(wb, 'نموذج-الغياب.xlsx'); return;
+  }
   if (which === 'timetable') {
     const wb = XLSX.utils.book_new();
     for (const d of CFG.general.workDays) {
@@ -1954,7 +2439,7 @@ async function init() {
   } catch { $('#startOverlay').hidden = false; }
   $('#startBtn').onclick = start;
 
-  setInterval(() => { renderClock(); renderSide(); checkEvents(); Phrases.tick(); }, 1000);
+  setInterval(() => { renderClock(); renderSide(); checkEvents(); Phrases.tick(); Slides.watch(); }, 1000);
   Phrases.renderCard();
   setInterval(maybeRefresh, 30000); maybeRefresh();
 

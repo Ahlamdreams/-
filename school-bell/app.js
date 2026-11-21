@@ -215,7 +215,7 @@ function defaultConfig() {
     slides: [
       { id: uid(), type: 'text', enabled: true, title: '', text: 'أهلاً وسهلاً بكم في مدرستنا\nالعلم نور', duration: 12 },
     ],
-    autoSlides: { welcome: true, now: true, schedule: true, duty: true, subs: true, absent: true, duration: 15, nowDuration: 20, perPage: 0 },
+    autoSlides: { welcome: true, now: true, classday: true, schedule: true, duty: true, subs: true, absent: true, duration: 15, nowDuration: 20, perPage: 0 },
     ticker: { enabled: true, label: 'أخبار المدرسة', texts: ['أهلاً بكم في مدرستنا', 'النظافة من الإيمان', 'الالتزام بالوقت أساس النجاح'], speed: 90, includeDuty: true, includeSubs: true },
     display: { layout: 'hero', tickerPos: 'bottom', transition: 'random', showStatus: true, showDuty: true, showSubs: true, nowStyle: 'table', subsStyle: 'grouped', dutyAllWeeks: true, dutyStrip: true, dutyStripSec: 7 },
     absent: { source: 'manual', url: '', sheet: '', refreshMin: 10, lastFetch: '', lastError: '', rows: [], showScene: false, showNames: true, datedOnly: false },
@@ -939,8 +939,8 @@ function slideActive(s, d = now()) {
   }
   return true;
 }
-const SCENE_FN = { now: 'nowScene', subs: 'subsScene', duty: 'dutyScene', absent: 'absentScene', schedule: 'scheduleScene', welcome: 'welcomeScene' };
-const SCENE_NAMES = { now: '📚 الحصة الآن', subs: '🔁 الاحتياط', duty: '🛡️ المناوبة', absent: '📋 الغياب', schedule: '⏰ التوقيت', welcome: '🏫 الترحيب' };
+const SCENE_FN = { classday: 'classDayScene', now: 'nowScene', subs: 'subsScene', duty: 'dutyScene', absent: 'absentScene', schedule: 'scheduleScene', welcome: 'welcomeScene' };
+const SCENE_NAMES = { classday: '🗓️ جدول اليوم', now: '📚 الحصة الآن', subs: '🔁 الاحتياط', duty: '🛡️ المناوبة', absent: '📋 الغياب', schedule: '⏰ التوقيت', welcome: '🏫 الترحيب' };
 const TRANS = ['tr-fade', 'tr-up', 'tr-zoom', 'tr-side', 'tr-flip'];
 const Slides = {
   list: [], i: -1, page: 0, more: false, timer: null, building: false, video: null, skips: 0,
@@ -962,6 +962,7 @@ const Slides = {
     this.takeovers = takeovers;
     const A = CFG.autoSlides, auto = [];
     if (A.welcome) auto.push({ type: 'auto-welcome', duration: 10 });
+    if (A.classday) auto.push({ type: 'auto-classday', duration: Math.max(20, A.duration) });
     if (A.schedule) auto.push({ type: 'auto-schedule', duration: A.duration });
     if (A.duty) auto.push({ type: 'auto-duty', duration: A.duration });
     if (A.subs) auto.push({ type: 'auto-subs', duration: A.duration });
@@ -1057,7 +1058,7 @@ const Slides = {
     if (fn && fn !== 'welcomeScene') { const pg = this.page, mo = this.more; this.page = 0; const ok = this[fn](); this.page = pg; this.more = mo; if (!ok) return false; }
     if (this.more && !advance && this.pinKind === kind) this.page++; else this.page = 0;
     this.more = false; this.pinKind = kind;
-    const map = { now: 'auto-now', duty: 'auto-duty', subs: 'auto-subs', absent: 'auto-absent', schedule: 'auto-schedule', welcome: 'auto-welcome', phrase: 'auto-phrase' };
+    const map = { classday: 'auto-classday', now: 'auto-now', duty: 'auto-duty', subs: 'auto-subs', absent: 'auto-absent', schedule: 'auto-schedule', welcome: 'auto-welcome', phrase: 'auto-phrase' };
     const s = { type: map[kind], duration: kind === 'now' ? (CFG.autoSlides.nowDuration || 20) : (kind === 'phrase' ? 10 : CFG.autoSlides.duration) };
     this.render(s).then(dur => {
       if (dur === null) return;
@@ -1145,6 +1146,7 @@ const Slides = {
     else if (s.type === 'auto-duty') el = this.dutyScene();
     else if (s.type === 'auto-subs') el = this.subsScene();
     else if (s.type === 'auto-absent') el = this.absentScene();
+    else if (s.type === 'auto-classday') el = this.classDayScene();
     if (!el) { this.skip(); return null; }
     // المشاهد ذات الصفحات: وزّع المدة على الصفحات
     if (this.pages > 1) dur = Math.max(8, Math.round(dur / Math.min(this.pages, 2)));
@@ -1316,6 +1318,34 @@ const Slides = {
       return c;
     });
     return h('div', { class: 'slide scene' }, this.head('🔁', 'حصص الاحتياط اليوم', [{ t: digits(rows.length) + ' حصة', hot: true }]), g);
+  },
+  /* جدول اليوم: الصفوف × الحصص، مع إبراز الحصة الحالية والاحتياط */
+  classDayScene() {
+    const d = now(), st = currentState(d); if (!st.work) return null;
+    const lessons = st.periods.filter(isLesson); if (!lessons.length || !CFG.timetable.rows.length) return null;
+    const dow = d.getDay(), wk = cycleWeek(d);
+    const todayRows = CFG.timetable.rows.filter(r => (r.day === -1 || r.day === dow) && (!r.week || r.week === wk));
+    if (!todayRows.length) return null;
+    const classes = (CFG.timetable.classes.length ? CFG.timetable.classes : [...new Set(todayRows.map(r => r.cls))]).slice().sort(clsSorter());
+    const subs = subsFor(d);
+    const stage = $('#stage'), H = (stage.clientHeight || 600) - Math.max(110, stage.clientHeight * 0.2);
+    const per = Math.max(4, Math.floor(H / 46));
+    this.pages = Math.max(1, Math.ceil(classes.length / per)); if (this.page >= this.pages) this.page = 0;
+    this.more = this.page < this.pages - 1;
+    const slice = classes.slice(this.page * per, this.page * per + per);
+    const curIdx = lessons.indexOf(st.cur);
+    const cellFor = (cls, p) => {
+      const keys = periodKeys(p), n = normCls(cls);
+      const r = todayRows.find(x => normCls(x.cls) === n && keys.has(slotKey(x.period)));
+      const sb = subs.find(x => normCls(x.cls) === n && keys.has(slotKey(x.period)));
+      if (sb) return h('td', { class: 'dg-sub' }, h('b', {}, '↩ ' + (sb.sub || '')), h('s', {}, sb.absent || r?.teacher || ''));
+      if (!r) return h('td', { class: 'dg-empty' }, '—');
+      return h('td', {}, h('b', {}, r.teacher || r.subject), r.teacher && r.subject ? h('small', {}, r.subject) : null);
+    };
+    const table = h('table', { class: 'daygrid stagger' },
+      h('tr', {}, h('th', { class: 'dg-cls' }, 'الصف'), lessons.map((p, i) => h('th', { class: i === curIdx ? 'dg-cur' : (curIdx >= 0 && i < curIdx ? 'dg-past' : '') }, periodName(p).replace('الحصة ', '')))),
+      slice.map((cls, k) => h('tr', { style: `--i:${k}` }, h('td', { class: 'dg-cls' }, cls), lessons.map((p, i) => { const c = cellFor(cls, p); if (i === curIdx) c.classList.add('dg-cur'); else if (curIdx >= 0 && i < curIdx) c.classList.add('dg-past'); return c; }))));
+    return h('div', { class: 'slide scene' }, this.head('🗓️', 'جدول حصص اليوم', [DAYS[dow], st.cur && isLesson(st.cur) ? { t: 'الآن: ' + periodName(st.cur), hot: true } : null]), h('div', { class: 'dg-wrap' }, table));
   },
   absentScene() {
     const d = now(); if (!isWorkDay(d)) return null;
@@ -2201,7 +2231,7 @@ function audioOptions() {
 const testBtn = (fn, label = '▶') => h('button', { class: 'btn sm', title: 'تجربة', onclick: e => { e.preventDefault(); Audio_.ensure(); fn(); } }, label);
 
 /* محتوى الشاشة أثناء كل فترة */
-const CONTENT_OPTS = [['', 'تلقائي'], ['rotate', 'المشاهد المتبدلة'], ['now', '📚 الحصة الآن (الصفوف والمعلمين)'], ['duty', '🛡️ المناوبة'], ['subs', '🔁 الاحتياط'], ['absent', '📋 الغياب'], ['schedule', '⏰ التوقيت'], ['welcome', '🏫 الترحيب'], ['phrase', '🤲 أذكار وتحفيز'], ['media', '🎬 الصور والفيديو فقط']];
+const CONTENT_OPTS = [['', 'تلقائي'], ['rotate', 'المشاهد المتبدلة'], ['now', '📚 الحصة الآن (الصفوف والمعلمين)'], ['classday', '🗓️ جدول حصص اليوم'], ['duty', '🛡️ المناوبة'], ['subs', '🔁 الاحتياط'], ['absent', '📋 الغياب'], ['schedule', '⏰ التوقيت'], ['welcome', '🏫 الترحيب'], ['phrase', '🤲 أذكار وتحفيز'], ['media', '🎬 الصور والفيديو فقط']];
 
 /* منتقي وقت سهل بدون كتابة */
 function timeBtn(obj, key, title) {
@@ -2580,7 +2610,7 @@ const TABS = {
     sec.append(panel('المشاهد التلقائية (تتبدل مع الصور والفيديو في وسط الشاشة)',
       h('p', { class: 'hint' }, 'مشهد "الحصة الآن" يعرض كل صف ومعلمه في الحصة الحالية (من تبويب جدول المعلمين) مع إبراز حصص الاحتياط: المعلم الغائب ← المعلم البديل. وفي الفسحة يعرض المناوبين. يتكرر كل 3 مشاهد، ويظهر فوراً عند بداية كل حصة.'),
       h('div', { class: 'row' },
-        chk(A, 'welcome', '🏫 ترحيب (الشعار واسم المدرسة)'), chk(A, 'now', '📚 الحصة الآن'), chk(A, 'schedule', '⏰ توقيت اليوم'),
+        chk(A, 'welcome', '🏫 ترحيب (الشعار واسم المدرسة)'), chk(A, 'now', '📚 الحصة الآن'), chk(A, 'classday', '🗓️ جدول حصص اليوم لكل الصفوف'), chk(A, 'schedule', '⏰ توقيت اليوم'),
         chk(A, 'duty', '🛡️ المناوبة'), chk(A, 'subs', '🔁 الاحتياط'), chk(A, 'absent', '📋 الغياب')),
       h('div', { class: 'row' },
         field('مدة مشهد "الآن" (ث)', bindInput(A, 'nowDuration', { type: 'number', style: 'width:90px' })),

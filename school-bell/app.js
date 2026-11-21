@@ -871,6 +871,11 @@ function clsSorter() {
   return (a, b) => (o(a) - o(b)) || String(a).localeCompare(String(b), 'ar', { numeric: true });
 }
 const absentWord = () => ({ f: 'غائبة', m: 'غائب' }[CFG.general.gender] || 'غائب/ة');
+/* كلمات حسب نوع المدرسة: معلمات / معلمون */
+const G = k => ({
+  teacher: { f: 'المعلمة', m: 'المعلم' }, absent: { f: 'المعلمة الغائبة', m: 'المعلم الغائب' }, sub: { f: 'المعلمة البديلة', m: 'المعلم البديل' },
+  absentShort: { f: 'الغائبة', m: 'الغائب' }, subShort: { f: 'البديلة', m: 'البديل' },
+}[k][CFG.general.gender] || { teacher: 'المعلم/ة', absent: 'الغائب/ة', sub: 'البديل/ة', absentShort: 'الغائب/ة', subShort: 'البديل/ة' }[k]);
 function classCards(d, p) {
   const keys = periodKeys(p);
   const subs = subsFor(d).filter(r => keys.has(slotKey(r.period)));
@@ -1244,7 +1249,7 @@ const Slides = {
       const cards = classCards(d, p);
       if (!cards.length) return this.heroNow(p, st);
       const g = CFG.display.nowStyle === 'table'
-        ? this.tableView(cards, ['المعلم', 'الصف'], c => h('tr', { class: c.sub ? 'sub' : '' },
+        ? this.tableView(cards, [G('teacher'), 'الصف'], c => h('tr', { class: c.sub ? 'sub' : '' },
           h('td', { class: 'tn' }, c.sub ? [h('div', { class: 'sub-name' }, '↩ ' + (c.sub.sub || '—')), h('div', { class: 'absent' }, h('span', { class: 'abs-tag' }, absentWord()), ' ', h('s', { class: 'abs-name' }, c.sub.absent || c.teacher))] : [c.teacher || '—', c.subject ? h('span', { class: 'ts' }, ' — ' + c.subject) : null]),
           h('td', { class: 'tc' }, c.cls || '—')))
         : this.grid(cards, c => this.classCard(c, p));
@@ -1302,7 +1307,7 @@ const Slides = {
       // مجمّع حسب المعلم الغائب
       const by = new Map(); rows.forEach(r => { const k = r.absent || '—'; (by.get(k) || by.set(k, []).get(k)).push(r); });
       const flat = []; for (const [abs, list] of by) list.forEach((r, i) => flat.push({ r, abs, first: i === 0, span: list.length }));
-      g = this.tableView(flat, ['المعلم الغائب', 'المعلم البديل', 'الصف', 'الحصة'], x => h('tr', { class: keys.has(slotKey(x.r.period)) ? 'cur' : '' },
+      g = this.tableView(flat, [G('absent'), G('sub'), 'الصف', 'الحصة'], x => h('tr', { class: keys.has(slotKey(x.r.period)) ? 'cur' : '' },
         h('td', { class: 'tabs' + (x.first ? '' : ' cont') }, x.first ? [h('span', { class: 'abs-tag' }, absentWord()), ' ', h('b', {}, x.abs)] : ''),
         h('td', { class: 'sub-name' }, x.r.sub || '—'), h('td', { class: 'tc' }, x.r.cls || ''), h('td', {}, x.r.period || '')));
     } else g = this.grid(rows, r => {

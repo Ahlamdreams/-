@@ -215,7 +215,7 @@ function defaultConfig() {
     slides: [
       { id: uid(), type: 'text', enabled: true, title: '', text: 'أهلاً وسهلاً بكم في مدرستنا\nالعلم نور', duration: 12 },
     ],
-    autoSlides: { welcome: true, now: true, classday: true, schedule: true, duty: true, subs: true, absent: true, duration: 15, nowDuration: 20, perPage: 0,
+    autoSlides: { welcome: true, now: true, classday: true, schedule: false, duty: true, subs: true, absent: true, duration: 15, nowDuration: 20, perPage: 0,
       durs: { now: 30, classday: 30, welcome: 12, schedule: 15, duty: 20, subs: 20, absent: 20, phrase: 10 }, trDur: 1.6, lock: '' },
     ticker: { enabled: true, label: 'أخبار المدرسة', texts: ['أهلاً بكم في مدرستنا', 'النظافة من الإيمان', 'الالتزام بالوقت أساس النجاح'], speed: 90, includeDuty: true, includeSubs: true },
     display: { layout: 'hero', tickerPos: 'bottom', transition: 'fade', showStatus: true, showDuty: true, showSubs: true, nowStyle: 'grades', subsStyle: 'grouped', dutyAllWeeks: true, dutyStrip: true, dutyStripSec: 7 },
@@ -282,6 +282,8 @@ function loadConfig() {
   for (const sd of Object.values(CFG.shiftData)) (sd.duty?.rows || []).forEach(r => {
     if (r.location === 'الأقسام المناوبة اليوم') { r.location = 'مناوبة اليوم'; r.teacher = String(r.teacher || '').replace(/^قسم\s+/, ''); }
   });
+  // إلغاء مشهد "توقيت اليوم" (بطلب المدرسة) — لمرة واحدة
+  if (!CFG.display.v3) { CFG.display.v3 = 1; CFG.autoSlides.schedule = false; }
   // ترقية لمرة واحدة: جدول كل الصفوف + حركة هادئة
   if (!CFG.display.v2) { CFG.display.v2 = 1; CFG.display.nowStyle = 'grades'; CFG.display.transition = 'fade'; if (!CFG.autoSlides.trDur || +CFG.autoSlides.trDur < 1.6) CFG.autoSlides.trDur = 1.6; }
 }

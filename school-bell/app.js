@@ -215,9 +215,10 @@ function defaultConfig() {
     slides: [
       { id: uid(), type: 'text', enabled: true, title: '', text: 'أهلاً وسهلاً بكم في مدرستنا\nالعلم نور', duration: 12 },
     ],
-    autoSlides: { welcome: true, now: true, classday: true, schedule: true, duty: true, subs: true, absent: true, duration: 15, nowDuration: 20, perPage: 0 },
+    autoSlides: { welcome: true, now: true, classday: true, schedule: true, duty: true, subs: true, absent: true, duration: 15, nowDuration: 20, perPage: 0,
+      durs: { now: 30, classday: 30, welcome: 12, schedule: 15, duty: 20, subs: 20, absent: 20, phrase: 10 }, trDur: 1.6, lock: '' },
     ticker: { enabled: true, label: 'أخبار المدرسة', texts: ['أهلاً بكم في مدرستنا', 'النظافة من الإيمان', 'الالتزام بالوقت أساس النجاح'], speed: 90, includeDuty: true, includeSubs: true },
-    display: { layout: 'hero', tickerPos: 'bottom', transition: 'random', showStatus: true, showDuty: true, showSubs: true, nowStyle: 'table', subsStyle: 'grouped', dutyAllWeeks: true, dutyStrip: true, dutyStripSec: 7 },
+    display: { layout: 'hero', tickerPos: 'bottom', transition: 'fade', showStatus: true, showDuty: true, showSubs: true, nowStyle: 'grades', subsStyle: 'grouped', dutyAllWeeks: true, dutyStrip: true, dutyStripSec: 7 },
     absent: { source: 'manual', url: '', sheet: '', refreshMin: 10, lastFetch: '', lastError: '', rows: [], showScene: false, showNames: true, datedOnly: false },
     timetable: { source: 'manual', url: '', sheet: '', refreshMin: 60, lastFetch: '', lastError: '', rows: [], classes: [] },
     duty: { source: 'manual', url: '', sheet: '', refreshMin: 15, lastFetch: '', lastError: '', rows: [] },
@@ -277,6 +278,8 @@ function loadConfig() {
     enumerable: false, configurable: true,
   }));
   if (!CFG.shiftData[CUR_SHIFT]) CUR_SHIFT = 's1';
+  // ترقية لمرة واحدة: جدول كل الصفوف + حركة هادئة
+  if (!CFG.display.v2) { CFG.display.v2 = 1; CFG.display.nowStyle = 'grades'; CFG.display.transition = 'fade'; if (!CFG.autoSlides.trDur || +CFG.autoSlides.trDur < 1.6) CFG.autoSlides.trDur = 1.6; }
 }
 const shiftIds = () => CFG.shifts.enabled ? CFG.shifts.list.map(s => s.id).filter(id => CFG.shiftData[id]) : ['s1'];
 const shiftName = id => CFG.shifts.list.find(s => s.id === id)?.name || '';
@@ -962,6 +965,8 @@ function nextSchoolStart(d = now()) {
   return null;
 }
 const OFF_TYPES = new Set(['auto-off', 'auto-phrase', 'auto-welcome', 'text']);
+/* مدة كل مشهد من الإعدادات */
+const durOf = k => Math.max(3, +(CFG.autoSlides.durs || {})[k] || (k === 'now' ? CFG.autoSlides.nowDuration : CFG.autoSlides.duration) || 15);
 const SCENE_FN = { classday: 'classDayScene', now: 'nowScene', subs: 'subsScene', duty: 'dutyScene', absent: 'absentScene', schedule: 'scheduleScene', welcome: 'welcomeScene' };
 const SCENE_NAMES = { classday: '🗓️ جدول اليوم', now: '📚 الحصة الآن', subs: '🔁 الاحتياط', duty: '🛡️ المناوبة', absent: '📋 الغياب', schedule: '⏰ التوقيت', welcome: '🏫 الترحيب' };
 const TRANS = ['tr-fade', 'tr-up', 'tr-zoom', 'tr-side', 'tr-flip'];
@@ -984,12 +989,7 @@ const Slides = {
     }
     this.takeovers = takeovers;
     const A = CFG.autoSlides, auto = [];
-    if (A.welcome) auto.push({ type: 'auto-welcome', duration: 10 });
-    if (A.classday) auto.push({ type: 'auto-classday', duration: Math.max(20, A.duration) });
-    if (A.schedule) auto.push({ type: 'auto-schedule', duration: A.duration });
-    if (A.duty) auto.push({ type: 'auto-duty', duration: A.duration });
-    if (A.subs) auto.push({ type: 'auto-subs', duration: A.duration });
-    if (A.absent) auto.push({ type: 'auto-absent', duration: A.duration });
+    for (const k of ['welcome', 'classday', 'schedule', 'duty', 'subs', 'absent']) if (A[k]) auto.push({ type: 'auto-' + k, duration: durOf(k) });
     for (const [w, t] of [['duty', 'المناوبة'], ['subs', 'الاحتياط'], ['absent', 'الغياب'], ['timetable', 'جدول الحصص']])
       if (CFG[w].showScene && CFG[w].url) media.push({ type: 'url', url: CFG[w].url, title: t, duration: 30 });
     // تبادل: مشهد معلومات ثم وسائط
@@ -998,14 +998,14 @@ const Slides = {
     // مشهد "الآن" هو الأهم: يتكرر كل 3 مشاهد
     if (A.now) {
       const res = [];
-      out.forEach((s, k) => { if (k % 3 === 0) res.push({ type: 'auto-now', duration: A.nowDuration || 20 }); res.push(s); });
-      if (!out.length) res.push({ type: 'auto-now', duration: A.nowDuration || 20 });
+      out.forEach((s, k) => { if (k % 3 === 0) res.push({ type: 'auto-now', duration: durOf('now') }); res.push(s); });
+      if (!out.length) res.push({ type: 'auto-now', duration: durOf('now') });
       out = res;
     }
     if (CFG.phrases.enabled && CFG.phrases.slide) {
       const res = [];
-      out.forEach((s, k) => { res.push(s); if (k % 3 === 2) res.push({ type: 'auto-phrase', duration: 10 }); });
-      if (out.length < 3) res.push({ type: 'auto-phrase', duration: 10 });
+      out.forEach((s, k) => { res.push(s); if (k % 3 === 2) res.push({ type: 'auto-phrase', duration: durOf('phrase') }); });
+      if (out.length < 3) res.push({ type: 'auto-phrase', duration: durOf('phrase') });
       out = res;
     }
     this.list = out;
@@ -1084,7 +1084,7 @@ const Slides = {
     if (this.more && !advance && this.pinKind === kind) this.page++; else this.page = 0;
     this.more = false; this.pinKind = kind;
     const map = { classday: 'auto-classday', now: 'auto-now', duty: 'auto-duty', subs: 'auto-subs', absent: 'auto-absent', schedule: 'auto-schedule', welcome: 'auto-welcome', phrase: 'auto-phrase' };
-    const s = { type: map[kind], duration: kind === 'now' ? (CFG.autoSlides.nowDuration || 20) : (kind === 'phrase' ? 10 : CFG.autoSlides.duration) };
+    const s = { type: map[kind], duration: durOf(kind) };
     this.render(s).then(dur => {
       if (dur === null) return;
       this.timer = setTimeout(() => this.next(), Math.max(5, dur || 15) * 1000);
@@ -1093,6 +1093,13 @@ const Slides = {
   },
   next(advance) {
     clearTimeout(this.timer);
+    // 📌 الشاشة مثبتة على مشهد: نعيد رسمه كل فترة ليبقى محدّثاً (والجرس يعمل كالمعتاد)
+    if (this.frozen && this.frozenSlide && !advance) { this.render(this.frozenSlide).then(() => { this.timer = setTimeout(() => this.next(), 30000); }); return; }
+    const lock = CFG.autoSlides.lock;
+    if (lock && !(CFG.display.offMode !== false && offState().off)) {
+      if (this.more && !advance && this.pinKind === lock) this.page++; else if (this.pinKind !== lock) this.page = 0;
+      if (lock !== 'media' && this.runPin(lock, advance)) return;
+    }
     const tk = this.activeTakeovers();
     if (tk.length) { if (!this.interrupting) this.runTakeover(tk); return; }
     if (this.takeover) { this.takeover = null; advance = true; }
@@ -1120,24 +1127,38 @@ const Slides = {
       if (dur > 0) this.timer = setTimeout(() => this.next(), dur * 1000);
     });
   },
+  toggleFreeze() {
+    this.frozen = !this.frozen;
+    const cur = [...$('#stage').children].filter(x => x.classList.contains('slide')).pop();
+    this.frozenSlide = this.frozen ? this.lastSlide : null;
+    clearTimeout(this.timer);
+    $('#cPin').classList.toggle('off', this.frozen);
+    $('#pinFlag').hidden = !this.frozen;
+    toast(this.frozen ? '📌 تم تثبيت الشاشة على هذا المشهد — اضغط 📌 مرة أخرى للإلغاء' : 'تم إلغاء التثبيت');
+    if (this.frozen) this.timer = setTimeout(() => this.next(), 30000); else this.next(true);
+  },
   /* تركيب المشهد مع حركة الدخول والخروج */
   mount(el, dur) {
     const stage = $('#stage');
     const t = CFG.display.transition;
     el.classList.add(t === 'random' || !t ? TRANS[Math.floor(Math.random() * TRANS.length)] : 'tr-' + t);
+    const td = Math.max(0.2, +CFG.autoSlides.trDur || 1.6);
+    el.style.animationDuration = td + 's';
+    document.documentElement.style.setProperty('--tr', td + 's');
     for (const old of [...stage.children]) {
       if (old.classList.contains('slide-dots') || old.classList.contains('scene-timer')) { old.remove(); continue; }
-      old.classList.add('tr-out');
+      old.classList.add('tr-out'); old.style.animationDuration = Math.max(0.2, (+CFG.autoSlides.trDur || 1.6) * 0.7) + 's';
       old.querySelectorAll('video').forEach(v => v.pause());
-      setTimeout(() => old.remove(), 700);
+      setTimeout(() => old.remove(), Math.max(200, (+CFG.autoSlides.trDur || 1.6) * 700));
     }
     stage.append(el);
     if (this.isOff) { /* لا عدّاد في وضع لا يوجد دوام */ }
     else if (this.list.length > 14) stage.append(h('div', { class: 'slide-dots count' }, digits(`${this.i + 1} / ${this.list.length}`)));
     else if (this.list.length > 1 && !this.isOff) stage.append(h('div', { class: 'slide-dots' }, this.list.map((_, k) => h('i', { class: k === this.i ? 'on' : '' }))));
-    if (dur > 0) stage.append(h('div', { class: 'scene-timer', style: `animation-duration:${dur}s` }));
+    if (dur > 0 && !this.frozen) stage.append(h('div', { class: 'scene-timer', style: `animation-duration:${dur}s` }));
   },
   async render(s, startAt = 0) {
+    this.lastSlide = s;
     let el, dur = +s.duration || 12;
     this.video = null;
     const title = s.title ? h('div', { class: 'slide-title' }, s.title) : null;
@@ -1237,6 +1258,27 @@ const Slides = {
       h('div', { class: 'tch sub-name' }, '↩ ' + (c.sub.sub || '—')));
     return h('div', { class: 'ccard' }, h('span', { class: 'cls' }, c.cls || '—'), c.subject ? h('div', { class: 'subj' }, c.subject) : null, h('div', { class: 'tch' }, c.teacher || '—'));
   },
+  /* كل الصفوف في شاشة واحدة: جدول لكل صف دراسي (الخامس، السادس…) بأعمدة: الصف | المعلمة | المادة */
+  gradeTable(cards) {
+    const GR = ['', 'الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', 'السادس', 'السابع', 'الثامن', 'التاسع', 'العاشر', 'الحادي عشر', 'الثاني عشر'];
+    const by = new Map();
+    cards.forEach(c => { const m = normCls(c.cls).match(/^(\d{1,2})\//); const k = m ? +m[1] : 0; (by.get(k) || by.set(k, []).get(k)).push(c); });
+    let groups = [...by.entries()].sort((a, b) => a[0] - b[0]).map(([k, list]) => ({ title: k ? 'الصف ' + (GR[k] || k) : 'صفوف أخرى', list }));
+    if (groups.length === 1 && groups[0].list.length > 9) { const L = groups[0].list, half = Math.ceil(L.length / 2); groups = [{ title: groups[0].title, list: L.slice(0, half) }, { title: '', list: L.slice(half) }]; }
+    this.pages = 1; this.page = 0; this.more = false;
+    const stage = $('#stage'), H = (stage.clientHeight || 600) - Math.max(110, stage.clientHeight * 0.2);
+    const rows = Math.max(...groups.map(g => g.list.length)) + 1;
+    const fs = Math.max(12, Math.min(44, Math.floor(H / rows * 0.5)));
+    return h('div', { class: 'gtables', style: `grid-template-columns:repeat(${groups.length},1fr);font-size:${fs}px` },
+      groups.map((g, gi) => h('table', { class: 'gtable', style: `--i:${gi}` },
+        h('tr', {}, h('th', { class: 'gc' }, g.title || 'الصف'), h('th', {}, G('teacher')), h('th', {}, 'المادة')),
+        g.list.map((c, k) => h('tr', { class: c.sub ? 'sub' : '', style: `--i:${k}` },
+          h('td', { class: 'gc' }, c.cls || '—'),
+          h('td', { class: 'gt' }, c.sub
+            ? [h('span', { class: 'sub-name' }, '↩ ' + shortName(c.sub.sub || '—')), ' ', h('small', { class: 'absent' }, h('span', { class: 'abs-tag' }, absentWord()), ' ', h('s', { class: 'abs-name' }, shortName(c.sub.absent || c.teacher)))]
+            : shortName(c.teacher) || '—'),
+          h('td', { class: 'gs' }, c.subject || (c.sub && c.sub.note) || ''))))));
+  },
   /* عرض جدولي مضغوط: أعمدة (المعلم | الصف) مثل لوحات المدارس */
   tableView(items, cols, rowFn) {
     const stage = $('#stage');
@@ -1288,8 +1330,8 @@ const Slides = {
     if (isLesson(p)) {
       const cards = classCards(d, p);
       if (!cards.length) return this.heroNow(p, st);
-      const g = CFG.display.nowStyle === 'table'
-        ? this.tableView(cards, [G('teacher'), 'الصف'], c => h('tr', { class: c.sub ? 'sub' : '' },
+      const g = CFG.display.nowStyle === 'grades' ? this.gradeTable(cards)
+        : CFG.display.nowStyle === 'table' ? this.tableView(cards, [G('teacher'), 'الصف'], c => h('tr', { class: c.sub ? 'sub' : '' },
           h('td', { class: 'tn' }, c.sub ? [h('div', { class: 'sub-name' }, '↩ ' + shortName(c.sub.sub || '—')), h('div', { class: 'absent' }, h('span', { class: 'abs-tag' }, absentWord()), ' ', h('s', { class: 'abs-name' }, shortName(c.sub.absent || c.teacher)))] : [shortName(c.teacher) || '—', c.subject ? h('span', { class: 'ts' }, ' — ' + c.subject) : null]),
           h('td', { class: 'tc' }, c.cls || '—')))
         : this.grid(cards, c => this.classCard(c, p));
@@ -2742,9 +2784,19 @@ const TABS = {
         chk(A, 'welcome', '🏫 ترحيب (الشعار واسم المدرسة)'), chk(A, 'now', '📚 الحصة الآن'), chk(A, 'classday', '🗓️ جدول حصص اليوم لكل الصفوف'), chk(A, 'schedule', '⏰ توقيت اليوم'),
         chk(A, 'duty', '🛡️ المناوبة'), chk(A, 'subs', '🔁 الاحتياط'), chk(A, 'absent', '📋 الغياب')),
       h('div', { class: 'row' },
-        field('مدة مشهد "الآن" (ث)', bindInput(A, 'nowDuration', { type: 'number', style: 'width:90px' })),
-        field('مدة المشاهد الأخرى (ث)', bindInput(A, 'duration', { type: 'number', style: 'width:90px' })),
         field('عدد البطاقات في الصفحة (0 = تلقائي)', bindInput(A, 'perPage', { type: 'number', min: 0, style: 'width:90px' })))));
+    A.durs = A.durs || {};
+    const DN = [['now', '📚 الحصة الآن'], ['classday', '🗓️ جدول اليوم'], ['welcome', '🏫 الترحيب'], ['schedule', '⏰ التوقيت'], ['duty', '🛡️ المناوبة'], ['subs', '🔁 الاحتياط'], ['absent', '📋 الغياب'], ['phrase', '🤲 الأذكار']];
+    sec.append(panel('⏱️ مدة العرض وسرعة الحركة',
+      h('p', { class: 'hint' }, 'كم ثانية يبقى كل مشهد على الشاشة قبل الانتقال للتالي. (مدة الصور والفيديو والـ PDF تُضبط لكل عنصر في القائمة أعلاه.)'),
+      h('div', { class: 'row' }, DN.map(([k, n]) => field(n + ' (ث)', bindInput(A.durs, k, { type: 'number', min: 3, style: 'width:90px', value: durOf(k) })))),
+      h('div', { class: 'row' },
+        field('سرعة الانتقال بين المشاهد', bindSelect(A, 'trDur', [['0.6', 'سريعة'], ['1.6', 'عادية هادئة'], ['2.5', 'بطيئة'], ['4', 'بطيئة جداً']])),
+        field('نوع الحركة', bindSelect(CFG.display, 'transition', [['fade', 'تلاشي ناعم (الأهدأ)'], ['random', 'متنوعة'], ['up', 'صعود'], ['zoom', 'تكبير'], ['side', 'انزلاق'], ['flip', 'دوران']])),
+        chk(CFG.general, 'animBg', 'خلفية متحركة'))));
+    sec.append(panel('📌 تثبيت الشاشة على مشهد واحد',
+      h('p', { class: 'hint' }, 'لإيقاف التبديل وعرض شيء واحد فقط باستمرار (يتحدث تلقائياً مع تغيّر الحصة). أو اضغطي زر 📌 في الشاشة الرئيسية (أو حرف P) لتثبيت المشهد المعروض حالياً مؤقتاً.'),
+      h('div', { class: 'row' }, field('تثبيت على', bindSelect(A, 'lock', [['', 'لا — تبديل تلقائي بين المشاهد'], ['now', '📚 الحصة الآن (كل الصفوف)'], ['classday', '🗓️ جدول حصص اليوم'], ['duty', '🛡️ المناوبة'], ['subs', '🔁 الاحتياط'], ['absent', '📋 الغياب'], ['schedule', '⏰ التوقيت'], ['welcome', '🏫 الترحيب']])))));
 
     const T = CFG.ticker;
     const ta = h('textarea', { onchange: e => { T.texts = e.target.value.split('\n').map(s => s.trim()).filter(Boolean); save(); } }, T.texts.join('\n'));
@@ -2778,7 +2830,7 @@ const TABS = {
       h('div', { class: 'row' },
         chk(g, 'animBg', 'خلفية متحركة'),
         chk(D, 'showStatus', 'شريط "الحصة الآن" أعلى الشاشة'),
-        field('عرض الحصة الآن', bindSelect(D, 'nowStyle', [['table', 'جدول (المعلم | الصف)'], ['cards', 'بطاقات كبيرة']])),
+        field('عرض الحصة الآن', bindSelect(D, 'nowStyle', [['grades', 'كل الصفوف في جدول واحد (الصف | المعلمة | المادة)'], ['table', 'أعمدة مضغوطة (المعلم | الصف)'], ['cards', 'بطاقات كبيرة']])),
         field('عرض الاحتياط', bindSelect(D, 'subsStyle', [['grouped', 'مجمّع حسب المعلم الغائب'], ['cards', 'بطاقات']])),
         field('المعلمون في المدرسة', bindSelect(g, 'gender', [['f', 'معلمات (المعلمة غائبة)'], ['m', 'معلمون (المعلم غائب)'], ['mixed', 'مختلط']]))),
       D.layout === 'side' ? h('div', { class: 'row' }, chk(D, 'showDuty', 'بطاقة المناوبة'), chk(D, 'showSubs', 'بطاقة الاحتياط'), chk(CFG.phrases, 'showCard', 'بطاقة الأذكار')) : null));
@@ -3145,7 +3197,8 @@ async function init() {
   $('#cBell').onclick = () => { Audio_.ensure(); manualBell(); };
   $('#cMute').onclick = toggleBell;
   $('#cStop').onclick = () => Audio_.stop();
-  $('#cNext').onclick = () => Slides.next(true);
+  $('#cNext').onclick = () => { if (Slides.frozen) Slides.toggleFreeze(); else Slides.next(true); };
+  $('#cPin').onclick = () => Slides.toggleFreeze();
   $('#cQuick').onclick = toggleQuickMenu;
   $('#closeSettings').onclick = closeSettings;
   $$('#tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
@@ -3164,6 +3217,7 @@ async function init() {
     else if (k === 'escape') Audio_.stop();
     else if (k === 'arrowright' || k === 'arrowleft') Slides.next(true);
     else if (k === 'a' || k === 'ش') toggleQuickMenu();
+    else if (k === 'p' || k === 'ح') Slides.toggleFreeze();
     else if (/^[1-9]$/.test(toLatin(e.key)) && CFG.quick[+toLatin(e.key) - 1]) quickAnnounce(CFG.quick[+toLatin(e.key) - 1]);
   });
   window.addEventListener('storage', e => { if (e.key === LS_KEY) { loadConfig(); onConfigChanged(); Slides.rebuild(); } });

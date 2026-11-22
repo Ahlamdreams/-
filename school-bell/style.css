@@ -520,3 +520,18 @@ body[data-theme$="light"] .daygrid td.dg-sub b, body[data-theme="light"] .daygri
 .off-next b { font-size: clamp(18px, 2.4vw, 52px); font-weight: 900; }
 .off-count { color: var(--accent); font-weight: 800; font-size: clamp(14px, 1.5vw, 32px); }
 .off-ph { margin-top: 1vh; font-size: clamp(16px, 1.9vw, 40px); font-weight: 700; color: var(--text); opacity: 0.85; }
+
+/* ===== الحصة الآن: كل الصفوف في جدول واحد ===== */
+.gtables { display: grid; gap: 1.2vw; flex: 1; min-height: 0; align-items: start; }
+.gtable { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card); border: 1px solid var(--card-b); border-radius: 16px; overflow: hidden; animation: cardIn 0.8s both; animation-delay: calc(var(--i) * 150ms); }
+.gtable th { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--muted); font-weight: 800; font-size: 0.7em; padding: 0.45em 0.8em; text-align: right; }
+.gtable th.gc { color: var(--accent); font-size: 0.8em; }
+.gtable td { padding: 0.32em 0.8em; border-top: 1px solid var(--card-b); font-weight: 800; vertical-align: middle; line-height: 1.25; }
+.gtable tr:nth-child(even) td { background: color-mix(in srgb, var(--text) 4%, transparent); }
+.gtable td.gc { color: var(--accent2); font-weight: 900; white-space: nowrap; width: 1%; font-size: 1.05em; }
+.gtable td.gs { color: var(--muted); font-weight: 600; font-size: 0.72em; }
+.gtable td.gt small { font-size: 0.6em; font-weight: 600; white-space: nowrap; }
+.gtable tr.sub td { background: color-mix(in srgb, #dc2626 14%, transparent) !important; }
+.pin-flag { background: var(--accent); bottom: auto; top: 14px; right: 50%; transform: translateX(50%); }
+.tr-fade, .tr-up, .tr-zoom, .tr-side, .tr-flip { animation-timing-function: cubic-bezier(.25, .7, .3, 1); }
+.stagger > *, .daygrid tr { animation-duration: var(--tr, 1.6s) !important; }

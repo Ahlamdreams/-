@@ -207,7 +207,7 @@ function defaultConfig() {
     },
     profiles: [base],
     override: '', // معرّف جدول يُفرض على كل الأيام (مثلاً جدول رمضان/الاختبارات)
-    voice: { omani: true, tts: true, voiceName: '', rate: 0.9, repeat: 1, startTpl: 'بدأت الآن {name}', endTpl: 'انتهت الآن {name}', joinTpl: '، و', gapMs: 400 },
+    voice: { omani: true, voiceSet: 'layan', tts: true, voiceName: '', rate: 0.9, repeat: 1, startTpl: 'بدأت الآن {name}', endTpl: 'انتهت الآن {name}', joinTpl: '، و', gapMs: 400 },
     reminders: [
       { id: uid(), enabled: true, name: 'ذكر منتصف الحصة', mode: 'mid', minutes: 5, time: '', applies: 'lessons', sound: 'none', text: 'أستغفر الله\nسبحان الله\nلا حول ولا قوة إلا بالله\nاللهم صلِّ وسلم على نبينا محمد', audio: '', vol: 0.25, show: 'soft' },
       { id: uid(), enabled: false, name: 'قبل نهاية الحصة', mode: 'beforeEnd', minutes: 5, time: '', applies: 'lessons', sound: 'soft', text: 'تبقى خمس دقائق على نهاية الحصة', audio: '' },
@@ -426,7 +426,9 @@ let CLIP_MAP = null;
 function clipFor(text) {
   if (!CFG.voice.omani || !window.VOICE_CLIPS) return null;
   if (!CLIP_MAP) { CLIP_MAP = {}; for (const [k, v] of Object.entries(VOICE_CLIPS)) CLIP_MAP[clipKey(k)] = v; }
-  return CLIP_MAP[clipKey(text)] || null;
+  const f = CLIP_MAP[clipKey(text)]; if (!f) return null;
+  const set = (window.VOICE_SETS || {})[CFG.voice.voiceSet] || Object.values(window.VOICE_SETS || {})[0];
+  return set ? set.dir + '/' + f + '.mp3' : null;
 }
 /* نص مدمج ("انتهت الآن الأولى، وبدأت الآن الثانية") ← قائمة تسجيلات، أو null إن نقص أحدها */
 function clipsFor(text) {
@@ -2718,11 +2720,15 @@ const TABS = {
     const v = CFG.voice;
     const ar = Audio_.arabicVoices();
     const all = Audio_.voices();
-    const vc = Object.entries(window.VOICE_CLIPS || {});
-    sec.append(panel('🇴🇲 الصوت العُماني الجاهز (ريم)',
-      h('p', { class: 'hint' }, 'تسجيلات بصوت أنثوي بلهجة عُمانية لإعلانات بداية ونهاية الحصص والطابور والفسحة والانصراف والأذكار. عند تفعيلها تُستخدم بدل النطق الآلي كلما وُجد تسجيل مطابق للنص، وما لا يوجد له تسجيل يُنطق آلياً.'),
-      h('div', { class: 'row' }, chk(v, 'omani', 'استخدام الصوت العُماني الجاهز')),
-      h('div', { class: 'row', style: 'gap:6px' }, vc.map(([t, u]) => h('button', { class: 'btn sm', onclick: () => { Audio_.ensure(); Audio_.stopFlag = false; playURL(u); } }, '▶ ' + t)))));
+    const vc = Object.keys(window.VOICE_CLIPS || {});
+    const sets = Object.entries(window.VOICE_SETS || {});
+    sec.append(panel('🎙️ الأصوات الجاهزة (تسجيلات احترافية)',
+      h('p', { class: 'hint' }, 'تسجيلات جاهزة لإعلانات بداية ونهاية الحصص والطابور والفسحة والانصراف والأذكار. عند تفعيلها تُستخدم بدل النطق الآلي كلما وُجد تسجيل مطابق للنص، وما لا يوجد له تسجيل يُنطق آلياً.'),
+      h('div', { class: 'row' }, chk(v, 'omani', 'استخدام الأصوات الجاهزة'),
+        field('الصوت', bindSelect(v, 'voiceSet', sets.map(([k, x]) => [k, x.name]), rerender)),
+        sets.map(([k, x]) => h('button', { class: 'btn sm' + (v.voiceSet === k ? ' pri' : ''), onclick: () => { Audio_.ensure(); Audio_.stopFlag = false; playURL(x.dir + '/start_p1.mp3'); } }, '▶ ' + x.name.split(' — ')[0]))),
+      h('p', { class: 'hint', style: 'margin-top:8px' }, 'استماع لكل العبارات بالصوت المختار:'),
+      h('div', { class: 'row', style: 'gap:6px' }, vc.map(t => h('button', { class: 'btn sm', onclick: () => { Audio_.ensure(); Audio_.stopFlag = false; const u = clipFor(t); if (u) playURL(u); } }, '▶ ' + t)))));
     sec.append(panel('الإعلان الصوتي (نطق آلي)',
       h('p', { class: 'hint' }, ar.length ? `✅ يوجد ${ar.length} صوت عربي على هذا الجهاز.` :
         '⚠️ لم يُعثر على صوت عربي مثبت في الجهاز. في ويندوز: الإعدادات ← الوقت واللغة ← اللغة ← إضافة "العربية" مع ميزة "تحويل النص إلى كلام"، ثم أعد تشغيل البرنامج. أو استخدم تسجيلات صوتية بدل النطق الآلي (من الأسفل).'),

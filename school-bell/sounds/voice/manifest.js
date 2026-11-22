@@ -1,29 +1,43 @@
-/* تسجيلات بصوت عُماني (ريم) — ElevenLabs */
+/* تسجيلات جاهزة (ElevenLabs): النص ← اسم الملف، لكل صوت مجلد */
+window.VOICE_SETS = {
+ "layan": {
+  "name": "ليان — أنثى، رسمي هادئ",
+  "dir": "sounds/voice-layan"
+ },
+ "mustafa": {
+  "name": "مصطفى — ذكر، عُماني رسمي",
+  "dir": "sounds/voice-mustafa"
+ },
+ "reem": {
+  "name": "ريم — أنثى، عُماني ودود",
+  "dir": "sounds/voice"
+ }
+};
 window.VOICE_CLIPS = {
- "بدأت الآن الحصة الأولى": "sounds/voice/start_p1.mp3",
- "انتهت الآن الحصة الأولى": "sounds/voice/end_p1.mp3",
- "بدأت الآن الحصة الثانية": "sounds/voice/start_p2.mp3",
- "انتهت الآن الحصة الثانية": "sounds/voice/end_p2.mp3",
- "بدأت الآن الحصة الثالثة": "sounds/voice/start_p3.mp3",
- "انتهت الآن الحصة الثالثة": "sounds/voice/end_p3.mp3",
- "بدأت الآن الحصة الرابعة": "sounds/voice/start_p4.mp3",
- "انتهت الآن الحصة الرابعة": "sounds/voice/end_p4.mp3",
- "بدأت الآن الحصة الخامسة": "sounds/voice/start_p5.mp3",
- "انتهت الآن الحصة الخامسة": "sounds/voice/end_p5.mp3",
- "بدأت الآن الحصة السادسة": "sounds/voice/start_p6.mp3",
- "انتهت الآن الحصة السادسة": "sounds/voice/end_p6.mp3",
- "بدأت الآن الحصة السابعة": "sounds/voice/start_p7.mp3",
- "انتهت الآن الحصة السابعة": "sounds/voice/end_p7.mp3",
- "بدأت الآن الحصة الثامنة": "sounds/voice/start_p8.mp3",
- "انتهت الآن الحصة الثامنة": "sounds/voice/end_p8.mp3",
- "بدأت الآن الفسحة": "sounds/voice/start_break.mp3",
- "انتهت الآن الفسحة": "sounds/voice/end_break.mp3",
- "بدأ الآن الطابور الصباحي": "sounds/voice/start_assembly.mp3",
- "انتهى الطابور الصباحي، يرجى التوجه إلى الفصول": "sounds/voice/end_assembly.mp3",
- "حان الآن وقت الانصراف، نتمنى لكم يوماً سعيداً": "sounds/voice/dismiss.mp3",
- "أستغفر الله": "sounds/voice/dhikr_istighfar.mp3",
- "سبحان الله": "sounds/voice/dhikr_subhan.mp3",
- "لا حول ولا قوة إلا بالله": "sounds/voice/dhikr_hawqala.mp3",
- "اللهم صلِّ وسلم على نبينا محمد": "sounds/voice/dhikr_salawat.mp3",
- "حان الآن وقت صلاة الظهر": "sounds/voice/prayer_dhuhr.mp3"
+ "بدأت الآن الحصة الأولى": "start_p1",
+ "انتهت الآن الحصة الأولى": "end_p1",
+ "بدأت الآن الحصة الثانية": "start_p2",
+ "انتهت الآن الحصة الثانية": "end_p2",
+ "بدأت الآن الحصة الثالثة": "start_p3",
+ "انتهت الآن الحصة الثالثة": "end_p3",
+ "بدأت الآن الحصة الرابعة": "start_p4",
+ "انتهت الآن الحصة الرابعة": "end_p4",
+ "بدأت الآن الحصة الخامسة": "start_p5",
+ "انتهت الآن الحصة الخامسة": "end_p5",
+ "بدأت الآن الحصة السادسة": "start_p6",
+ "انتهت الآن الحصة السادسة": "end_p6",
+ "بدأت الآن الحصة السابعة": "start_p7",
+ "انتهت الآن الحصة السابعة": "end_p7",
+ "بدأت الآن الحصة الثامنة": "start_p8",
+ "انتهت الآن الحصة الثامنة": "end_p8",
+ "بدأت الآن الفسحة": "start_break",
+ "انتهت الآن الفسحة": "end_break",
+ "بدأ الآن الطابور الصباحي": "start_assembly",
+ "انتهى الطابور الصباحي، يرجى التوجه إلى الفصول": "end_assembly",
+ "حان الآن وقت الانصراف، نتمنى لكم يوماً سعيداً": "dismiss",
+ "أستغفر الله": "dhikr_istighfar",
+ "سبحان الله": "dhikr_subhan",
+ "لا حول ولا قوة إلا بالله": "dhikr_hawqala",
+ "اللهم صلِّ وسلم على نبينا محمد": "dhikr_salawat",
+ "حان الآن وقت صلاة الظهر": "prayer_dhuhr"
 };

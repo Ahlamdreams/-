@@ -209,7 +209,7 @@ function defaultConfig() {
     override: '', // معرّف جدول يُفرض على كل الأيام (مثلاً جدول رمضان/الاختبارات)
     voice: { tts: true, voiceName: '', rate: 0.9, repeat: 1, startTpl: 'بدأت الآن {name}', endTpl: 'انتهت الآن {name}', joinTpl: '، و', gapMs: 400 },
     reminders: [
-      { id: uid(), enabled: true, name: 'منتصف الحصة', mode: 'mid', minutes: 5, time: '', applies: 'lessons', sound: 'chime', text: 'اللهم صلِّ وسلم على نبينا محمد', audio: '' },
+      { id: uid(), enabled: true, name: 'ذكر منتصف الحصة', mode: 'mid', minutes: 5, time: '', applies: 'lessons', sound: 'soft', text: 'أستغفر الله\nسبحان الله\nلا حول ولا قوة إلا بالله\nاللهم صلِّ وسلم على نبينا محمد', audio: '', vol: 0.25, show: 'soft' },
       { id: uid(), enabled: false, name: 'قبل نهاية الحصة', mode: 'beforeEnd', minutes: 5, time: '', applies: 'lessons', sound: 'soft', text: 'تبقى خمس دقائق على نهاية الحصة', audio: '' },
     ],
     slides: [
@@ -282,6 +282,13 @@ function loadConfig() {
   for (const sd of Object.values(CFG.shiftData)) (sd.duty?.rows || []).forEach(r => {
     if (r.location === 'الأقسام المناوبة اليوم') { r.location = 'مناوبة اليوم'; r.teacher = String(r.teacher || '').replace(/^قسم\s+/, ''); }
   });
+  // ذكر منتصف الحصة: أذكار متنوعة بصوت خافت وبطاقة هادئة — لمرة واحدة
+  if (!CFG.display.v4) {
+    CFG.display.v4 = 1;
+    const r = CFG.reminders.find(x => x.mode === 'mid');
+    const d = { name: 'ذكر منتصف الحصة', text: 'أستغفر الله\nسبحان الله\nلا حول ولا قوة إلا بالله\nاللهم صلِّ وسلم على نبينا محمد', vol: 0.25, show: 'soft', sound: 'soft', applies: 'lessons', enabled: true };
+    if (r) Object.assign(r, d); else CFG.reminders.unshift({ id: uid(), mode: 'mid', minutes: 5, time: '', audio: '', ...d });
+  }
   // إلغاء مشهد "توقيت اليوم" (بطلب المدرسة) — لمرة واحدة
   if (!CFG.display.v3) { CFG.display.v3 = 1; CFG.autoSlides.schedule = false; }
   // ترقية لمرة واحدة: جدول كل الصفوف + حركة هادئة
@@ -421,9 +428,13 @@ const Queue = {
       const it = this.items.shift();
       Audio_.stopFlag = false;
       if (it.banner) showBanner(it.banner, it.bannerIcon);
+      if (it.soft) showSoftNote(it.soft);
       if (!it.quiet) Slides.duck(true);
       try {
+        // صوت خافت: نخفض مستوى الجرس/النغمة لهذا التنبيه فقط
+        if (it.vol != null && Audio_.ctx) { Audio_.ensure(); Audio_.master.gain.value = CFG.general.volume * it.vol; }
         await Audio_.playSound(it.sound);
+        if (it.vol != null && Audio_.master) Audio_.master.gain.value = CFG.general.volume;
         for (let r = 0; r < (it.quiet ? 1 : Math.max(1, +CFG.voice.repeat || 1)); r++) {
           for (const p of it.parts || []) {
             if (Audio_.stopFlag) break;
@@ -439,6 +450,15 @@ const Queue = {
     this.busy = false;
   },
 };
+/* بطاقة صغيرة هادئة أسفل الشاشة (للأذكار) */
+let softT;
+function showSoftNote(msg) {
+  let el = $('#softNote');
+  if (!el) { el = h('div', { id: 'softNote', class: 'soft-note' }); $('#display').append(el); }
+  el.innerHTML = ''; el.append(h('span', { class: 'sn-ic' }, '🤲'), h('b', {}, msg));
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(softT); softT = setTimeout(() => el.classList.remove('show'), 12000);
+}
 let bannerT;
 function showBanner(msg, icon = '🔔') {
   clearTimeout(bannerT);
@@ -527,14 +547,20 @@ function shiftEvents(d, withFixed) {
       if (r.mode === 'mid') t = Math.round((s + e) / 2 / 60) * 60;
       else if (r.mode === 'afterStart') t = s + r.minutes * 60;
       else if (r.mode === 'beforeEnd') t = e - r.minutes * 60;
-      if (t != null && t > s && t < e) ev.push({ key: p.id + ':r:' + r.id, t, kind: 'rem', sound: r.sound, text: r.text, audio: r.audio, banner: r.text || r.name, icon: '📢', order: 2 });
+      if (t != null && t > s && t < e) ev.push(remEvent(r, p.id + ':r:' + r.id, t));
     }
   }
   if (withFixed) ev.push(...fixedReminders());
   return ev;
 }
 function fixedReminders() {
-  return CFG.reminders.filter(r => r.enabled && r.mode === 'fixed' && r.time).map(r => ({ key: 'fix:' + r.id, t: toSec(r.time), kind: 'rem', sound: r.sound, text: r.text, audio: r.audio, banner: r.text || r.name, icon: '📢', order: 2 }));
+  return CFG.reminders.filter(r => r.enabled && r.mode === 'fixed' && r.time).map(r => remEvent(r, 'fix:' + r.id, toSec(r.time)));
+}
+/* تنبيه: إن كان النص عدة أسطر يُختار سطر عشوائي (مثل الأذكار) */
+const remLines = r => String(r.text || '').split('\n').map(x => x.trim()).filter(Boolean);
+function remEvent(r, key, t) {
+  const L = remLines(r), text = L.length ? L[Math.floor(Math.random() * L.length)] : '';
+  return { key, t, kind: 'rem', sound: r.sound, text, audio: r.audio, banner: text || r.name, icon: '🤲', order: 2, vol: r.vol ?? 1, show: r.show || 'banner' };
 }
 
 const FIRED_KEY = 'schoolBell.fired';
@@ -566,7 +592,9 @@ function checkEvents() {
     if (withText.length > 1 && withText.every(e => !e.audio)) parts.push({ text: withText.map(e => e.text).join(CFG.voice.joinTpl || '، ') });
     else withText.forEach(e => parts.push({ text: e.text, audio: e.audio }));
     const banner = (start || g.list[g.list.length - 1]).banner;
-    Queue.push({ sound, parts, banner, bannerIcon: g.list[0].icon || '🔔' });
+    const e0 = g.list[0];
+    if (g.kind === 'rem') { Queue.push({ sound, parts: parts.map(p => ({ ...p, volume: Math.min(1, CFG.general.volume * (e0.vol ?? 1)) })), vol: e0.vol ?? 1, quiet: (e0.vol ?? 1) < 0.7, soft: e0.show === 'soft' ? banner : '', banner: e0.show === 'banner' ? banner : '', bannerIcon: '📢' }); continue; }
+    Queue.push({ sound, parts, banner, bannerIcon: e0.icon || '🔔' });
   }
 }
 function manualBell() {
@@ -2701,6 +2729,7 @@ const TABS = {
     const modes = [['mid', 'منتصف الفترة'], ['afterStart', 'بعد بداية الفترة بـ'], ['beforeEnd', 'قبل نهاية الفترة بـ'], ['fixed', 'في وقت محدد يومياً']];
     const applies = [['lessons', 'كل الحصص'], ['all', 'كل الفترات'], ...TYPES.filter(t => t.k !== 'custom').map(t => [t.k, t.n])];
     CFG.reminders.forEach((r, i) => {
+      if (!r.show) r.show = 'banner'; if (r.vol == null) r.vol = 1;
       list.append(h('div', { class: 'item' + (r.enabled ? '' : ' disabled') },
         h('label', { class: 'chk' }, bindInput(r, 'enabled', { type: 'checkbox' }, rerender)),
         field('الاسم', bindInput(r, 'name', { style: 'width:150px' })),
@@ -2709,9 +2738,11 @@ const TABS = {
           (r.mode !== 'mid' ? field('دقائق', bindInput(r, 'minutes', { type: 'number', min: 1, style: 'width:70px' })) : null),
         r.mode !== 'fixed' ? field('يطبق على', bindSelect(r, 'applies', applies)) : null,
         field('الصوت', bindSelect(r, 'sound', soundOptions(), null, { style: 'width:150px' })),
-        field('النص المنطوق / المعروض', bindInput(r, 'text', { style: 'width:240px' })),
+        field('النص (كل سطر عبارة — يُختار واحد عشوائياً كل مرة)', h('textarea', { style: 'width:260px;min-height:70px', onchange: e => { r.text = e.target.value; save(); } }, r.text || '')),
+        field('مستوى الصوت 🔉', bindInput(r, 'vol', { type: 'range', min: 0.05, max: 1, step: 0.05, value: r.vol ?? 1 })),
+        field('الظهور على الشاشة', bindSelect(r, 'show', [['soft', 'بطاقة صغيرة هادئة أسفل الشاشة'], ['banner', 'رسالة كبيرة (مثل الجرس)'], ['none', 'بدون ظهور (صوت فقط)']])),
         field('أو تسجيل', bindSelect(r, 'audio', audioOptions(), null, { style: 'width:150px' })),
-        testBtn(() => Queue.push({ sound: r.sound, parts: [{ text: r.text, audio: r.audio }], banner: r.text || r.name, bannerIcon: '📢' })),
+        testBtn(() => { const e = remEvent(r, 'test', 0); Queue.push({ sound: r.sound, parts: [{ text: e.text, audio: r.audio, volume: Math.min(1, CFG.general.volume * (r.vol ?? 1)) }], vol: r.vol ?? 1, quiet: (r.vol ?? 1) < 0.7, soft: (r.show || 'banner') === 'soft' ? e.banner : '', banner: (r.show || 'banner') === 'banner' ? e.banner : '', bannerIcon: '📢' }); }),
         h('button', { class: 'btn dan sm', onclick: () => { CFG.reminders.splice(i, 1); save(); rerender(); } }, 'حذف')));
     });
     sec.append(panel('تنبيهات إضافية أثناء اليوم',

@@ -550,3 +550,15 @@ body[data-theme$="light"] .daygrid td.dg-sub b, body[data-theme="light"] .daygri
 #display.focus-table .scene-head h2 { font-size: clamp(18px, 2.2vw, 48px); }
 #display.focus-table .scene-head .ic { font-size: clamp(20px, 2.2vw, 46px); }
 #display.focus-table .slide-dots { bottom: 0.6vh; }
+
+/* ===== بطاقة الذكر الهادئة ===== */
+.soft-note {
+  position: fixed; left: 50%; bottom: calc(clamp(42px, 6.8vh, 92px) + 2vh); transform: translate(-50%, 20px); z-index: 45;
+  display: flex; align-items: center; gap: 0.8em; padding: 0.6em 1.6em; border-radius: 99px;
+  background: color-mix(in srgb, var(--bg) 80%, transparent); border: 1px solid var(--card-b); backdrop-filter: blur(14px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35); font-size: clamp(16px, 1.9vw, 42px);
+  opacity: 0; pointer-events: none; transition: opacity 1.4s ease, transform 1.4s ease;
+}
+.soft-note.show { opacity: 1; transform: translate(-50%, 0); }
+.soft-note b { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 900; }
+.soft-note .sn-ic { font-size: 1.1em; }

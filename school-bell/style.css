@@ -535,3 +535,18 @@ body[data-theme$="light"] .daygrid td.dg-sub b, body[data-theme="light"] .daygri
 .pin-flag { background: var(--accent); bottom: auto; top: 14px; right: 50%; transform: translateX(50%); }
 .tr-fade, .tr-up, .tr-zoom, .tr-side, .tr-flip { animation-timing-function: cubic-bezier(.25, .7, .3, 1); }
 .stagger > *, .daygrid tr { animation-duration: var(--tr, 1.6s) !important; }
+.gtables.fit { overflow: hidden; align-self: stretch; height: 100%; }
+.scene { padding-bottom: 5.5vh; }
+.gtable th.gc { white-space: nowrap; }
+
+/* ===== وضع تكبير جدول الصفوف ===== */
+#display.focus-table .statusbar, #display.focus-table .duty-strip { display: none !important; }
+#display.focus-table .topbar { padding-top: 0.4vh; padding-bottom: 0.4vh; }
+#display.focus-table .clock .time { font-size: clamp(24px, 3.2vw, 70px); }
+#display.focus-table .brand img { height: 5.5vh; }
+#display.focus-table .brand .name { font-size: clamp(14px, 1.7vw, 36px); }
+#display.focus-table .content { padding-top: 0.8vh; padding-bottom: 0.8vh; }
+#display.focus-table .scene { padding: 1.2vh 1.2vw 4.2vh; gap: 1vh; }
+#display.focus-table .scene-head h2 { font-size: clamp(18px, 2.2vw, 48px); }
+#display.focus-table .scene-head .ic { font-size: clamp(20px, 2.2vw, 46px); }
+#display.focus-table .slide-dots { bottom: 0.6vh; }

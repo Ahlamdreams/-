@@ -278,6 +278,10 @@ function loadConfig() {
     enumerable: false, configurable: true,
   }));
   if (!CFG.shiftData[CUR_SHIFT]) CUR_SHIFT = 's1';
+  // تصحيح: "الأقسام المناوبة اليوم / قسم X" ← "مناوبة اليوم / X"
+  for (const sd of Object.values(CFG.shiftData)) (sd.duty?.rows || []).forEach(r => {
+    if (r.location === 'الأقسام المناوبة اليوم') { r.location = 'مناوبة اليوم'; r.teacher = String(r.teacher || '').replace(/^قسم\s+/, ''); }
+  });
   // ترقية لمرة واحدة: جدول كل الصفوف + حركة هادئة
   if (!CFG.display.v2) { CFG.display.v2 = 1; CFG.display.nowStyle = 'grades'; CFG.display.transition = 'fade'; if (!CFG.autoSlides.trDur || +CFG.autoSlides.trDur < 1.6) CFG.autoSlides.trDur = 1.6; }
 }
@@ -1152,6 +1156,13 @@ const Slides = {
       setTimeout(() => old.remove(), Math.max(200, (+CFG.autoSlides.trDur || 1.6) * 700));
     }
     stage.append(el);
+    // جدول الصفوف: مساحة كاملة (إخفاء شريط الحصة وشريط المناوبة وتصغير الأعلى)
+    $('#display').classList.toggle('focus-table', !!el.querySelector('.gtables') && CFG.display.focusTable !== false);
+    // تصغير الخط حتى يظهر كل الجدول داخل الشاشة (حسب حجم شاشة الجهاز الفعلي)
+    el.querySelectorAll('.fit').forEach(f => {
+      const go = () => { let n = 0, fs = parseFloat(f.style.fontSize) || 24; while (f.scrollHeight > f.clientHeight + 1 && fs > 10 && n++ < 40) { fs -= 1; f.style.fontSize = fs + 'px'; } };
+      requestAnimationFrame(go); setTimeout(go, 400);
+    });
     if (this.isOff) { /* لا عدّاد في وضع لا يوجد دوام */ }
     else if (this.list.length > 14) stage.append(h('div', { class: 'slide-dots count' }, digits(`${this.i + 1} / ${this.list.length}`)));
     else if (this.list.length > 1 && !this.isOff) stage.append(h('div', { class: 'slide-dots' }, this.list.map((_, k) => h('i', { class: k === this.i ? 'on' : '' }))));
@@ -1262,6 +1273,8 @@ const Slides = {
   gradeTable(cards) {
     const GR = ['', 'الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', 'السادس', 'السابع', 'الثامن', 'التاسع', 'العاشر', 'الحادي عشر', 'الثاني عشر'];
     const by = new Map();
+    const num = c => { const m = normCls(c.cls).match(/^(\d{1,2})\/(\d{1,2})/); return m ? +m[1] * 100 + +m[2] : 9999; };
+    cards = cards.slice().sort((a, b) => num(a) - num(b));
     cards.forEach(c => { const m = normCls(c.cls).match(/^(\d{1,2})\//); const k = m ? +m[1] : 0; (by.get(k) || by.set(k, []).get(k)).push(c); });
     let groups = [...by.entries()].sort((a, b) => a[0] - b[0]).map(([k, list]) => ({ title: k ? 'الصف ' + (GR[k] || k) : 'صفوف أخرى', list }));
     if (groups.length === 1 && groups[0].list.length > 9) { const L = groups[0].list, half = Math.ceil(L.length / 2); groups = [{ title: groups[0].title, list: L.slice(0, half) }, { title: '', list: L.slice(half) }]; }
@@ -1269,7 +1282,7 @@ const Slides = {
     const stage = $('#stage'), H = (stage.clientHeight || 600) - Math.max(110, stage.clientHeight * 0.2);
     const rows = Math.max(...groups.map(g => g.list.length)) + 1;
     const fs = Math.max(12, Math.min(44, Math.floor(H / rows * 0.5)));
-    return h('div', { class: 'gtables', style: `grid-template-columns:repeat(${groups.length},1fr);font-size:${fs}px` },
+    return h('div', { class: 'gtables fit', style: `grid-template-columns:repeat(${groups.length},1fr);font-size:${fs}px` },
       groups.map((g, gi) => h('table', { class: 'gtable', style: `--i:${gi}` },
         h('tr', {}, h('th', { class: 'gc' }, g.title || 'الصف'), h('th', {}, G('teacher')), h('th', {}, 'المادة')),
         g.list.map((c, k) => h('tr', { class: c.sub ? 'sub' : '', style: `--i:${k}` },
@@ -2830,6 +2843,7 @@ const TABS = {
       h('div', { class: 'row' },
         chk(g, 'animBg', 'خلفية متحركة'),
         chk(D, 'showStatus', 'شريط "الحصة الآن" أعلى الشاشة'),
+        h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: D.focusTable !== false, onchange: e => { D.focusTable = e.target.checked; save(); } }), 'تكبير جدول الحصة الآن (إخفاء الأشرطة أثناء عرضه)'),
         field('عرض الحصة الآن', bindSelect(D, 'nowStyle', [['grades', 'كل الصفوف في جدول واحد (الصف | المعلمة | المادة)'], ['table', 'أعمدة مضغوطة (المعلم | الصف)'], ['cards', 'بطاقات كبيرة']])),
         field('عرض الاحتياط', bindSelect(D, 'subsStyle', [['grouped', 'مجمّع حسب المعلم الغائب'], ['cards', 'بطاقات']])),
         field('المعلمون في المدرسة', bindSelect(g, 'gender', [['f', 'معلمات (المعلمة غائبة)'], ['m', 'معلمون (المعلم غائب)'], ['mixed', 'مختلط']]))),

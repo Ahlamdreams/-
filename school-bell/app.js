@@ -3,6 +3,7 @@
    الإعدادات تُحفظ في localStorage والملفات (PDF/صوت/فيديو/صور) في IndexedDB.
    ===================================================================== */
 'use strict';
+const APP_VERSION = '2026.11.22-b';
 
 /* ------------------------------ أدوات ------------------------------ */
 const $ = (s, r = document) => r.querySelector(s);
@@ -891,22 +892,29 @@ const DutyStrip = {
     const el = $('#dutyStrip'), d = now(), st = currentState(d);
     const p = st.work ? (st.cur || st.next) : null;
     let rows = CFG.display.dutyStrip && p ? dutyFor(d, p) : [];
-    const sig = (p ? p.id : '-') + '|' + rows.length + '|' + CFG._rev + '|' + cycleWeek(d);
+    // الاحتياط في الحصة الحالية (إن وُجد)
+    const sp = st.cur || st.next, keys = sp && CFG.display.subsStrip !== false ? periodKeys(sp) : null;
+    const subsNow = keys ? subsFor(d).filter(r => keys.has(slotKey(r.period))) : [];
+    const sig = (p ? p.id : '-') + '|' + rows.length + '|' + subsNow.length + '|' + CFG._rev + '|' + cycleWeek(d);
     if (sig === this.sig) return;
     this.sig = sig;
-    if (!rows.length) { el.hidden = true; this.pages = []; return; }
+    if (!rows.length && !subsNow.length) { el.hidden = true; this.pages = []; return; }
     // صفحات: صفحة لكل أسبوع (الحالي أولاً)، والسجلات العامة في صفحة "كل الأسابيع"
     const cw = +CFG.general.cycleWeeks > 1 ? cycleWeek(d) : 0;
     const byW = new Map(); rows.forEach(r => { const k = r.week || 0; (byW.get(k) || byW.set(k, []).get(k)).push(r); });
     const weeks = [...byW.keys()].sort((a, b) => (a === cw ? -1 : b === cw ? 1 : (a || 99) - (b || 99)));
     const pages = [];
+    // صفحات الاحتياط أولاً: الصف ← البديلة (بدلاً من الغائبة)
+    const sc = subsNow.map(r => [r.cls + (r.period ? ' — الحصة ' + r.period : ''), [shortName(r.sub || '—') + ' بدلاً من ' + shortName(r.absent || '—')]]);
+    for (let k = 0; k < sc.length; k += 3) pages.push({ subs: true, chips: sc.slice(k, k + 3) });
     for (const w of weeks) {
       const locs = new Map(); byW.get(w).forEach(r => { const k = r.location || r.slot || ''; (locs.get(k) || locs.set(k, []).get(k)).push(r.teacher); });
       const chips = [...locs.entries()];
       for (let k = 0; k < chips.length; k += 3) pages.push({ w, cur: w === cw && cw > 0, chips: chips.slice(k, k + 3) });
     }
     this.pages = pages; this.i = -1;
-    $('#dsSlot').textContent = periodName(p) + (st.cur === p ? '' : ' (القادمة)');
+    this.slot = p ? periodName(p) + (st.cur === p ? '' : ' (القادمة)') : '';
+    this.subsSlot = sp ? periodName(sp) : '';
     el.hidden = false;
     this.next();
   },
@@ -915,8 +923,13 @@ const DutyStrip = {
     if (!this.pages.length) return;
     this.i = (this.i + 1) % this.pages.length;
     const pg = this.pages[this.i], box = $('#dsPage');
+    $('#dutyStrip').classList.toggle('subs-mode', !!pg.subs);
+    $('.ds-ic').textContent = pg.subs ? '🔁' : '🛡️';
+    $('.ds-label b').textContent = pg.subs ? 'الاحتياط الآن' : 'المناوبة الآن';
+    $('#dsSlot').textContent = pg.subs ? this.subsSlot : this.slot;
     const page = h('div', { class: 'ds-in' },
-      h('span', { class: 'ds-week' + (pg.cur ? ' cur' : '') }, pg.w ? (pg.cur ? '● ' : '') + 'الأسبوع ' + (ORD[pg.w - 1] || pg.w) : 'كل الأسابيع'),
+      pg.subs ? h('span', { class: 'ds-week cur' }, digits(this.pages.filter(x => x.subs).reduce((n, x) => n + x.chips.length, 0)) + ' احتياط')
+        : h('span', { class: 'ds-week' + (pg.cur ? ' cur' : '') }, pg.w ? (pg.cur ? '● ' : '') + 'الأسبوع ' + (ORD[pg.w - 1] || pg.w) : 'كل الأسابيع'),
       pg.chips.map(([loc, names], k) => h('span', { class: 'ds-chip', style: `--i:${k}` }, loc ? h('em', {}, loc) : null, h('b', {}, names.join(' • ')))));
     box.innerHTML = ''; box.append(page);
     $('#dsDots').innerHTML = '';
@@ -2415,6 +2428,7 @@ async function scheduleFromImage(pr) {
    ===================================================================== */
 let curTab = 'general', curProfile = null;
 function openSettings(tab) {
+  const vh = $('#appVer'); if (vh) vh.textContent = 'الإصدار ' + APP_VERSION + (window.VOICE_SETS ? ' • الأصوات: ' + Object.keys(VOICE_SETS).length : ' • ⚠️ ملف الأصوات غير موجود');
   EDIT_SHIFT = CFG.shiftData[CUR_SHIFT] ? CUR_SHIFT : 's1'; CUR_SHIFT = EDIT_SHIFT;
   $('#settings').hidden = false; document.body.classList.add('mouse');
   showTab(tab || curTab);
@@ -3046,6 +3060,7 @@ function sourceTab(sec, which) {
       S.rows.length ? h('button', { class: 'btn dan', onclick: () => { if (confirm('مسح كل السجلات؟')) { S.rows = []; S.fileRows = []; S.linkRows = []; save(); rerender(); } } }, 'مسح الكل') : null)));
   if (isDuty) sec.append(panel('خيارات العرض',
     h('div', { class: 'row' }, chk(CFG.display, 'dutyStrip', '🛡️ شريط "المناوبة الآن" أسفل الشاشة'),
+      h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: CFG.display.subsStrip !== false, onchange: e => { CFG.display.subsStrip = e.target.checked; save(); } }), '🔁 إظهار "الاحتياط الآن" في نفس الشريط'),
       field('مدة كل صفحة في الشريط (ث)', bindInput(CFG.display, 'dutyStripSec', { type: 'number', min: 3, style: 'width:80px' }))),
     h('div', { class: 'row' }, chk(CFG.display, 'dutyAllWeeks', 'إظهار مناوبات كل الأسابيع لنفس اليوم (مع اسم الأسبوع بجانب كل معلمة) — بدل الأسبوع الحالي فقط'))));
   if (isAbs) sec.append(panel('خيارات العرض',

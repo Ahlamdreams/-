@@ -2428,7 +2428,7 @@ async function scheduleFromImage(pr) {
    ===================================================================== */
 let curTab = 'general', curProfile = null;
 function openSettings(tab) {
-  const vh = $('#appVer'); if (vh) vh.textContent = 'الإصدار ' + APP_VERSION + (window.VOICE_SETS ? ' • الأصوات: ' + Object.keys(VOICE_SETS).length : ' • ⚠️ ملف الأصوات غير موجود');
+  const vh = $('#appVer'); if (vh) vh.textContent = 'مِجْداف • الإصدار ' + APP_VERSION + (window.VOICE_SETS ? ' • الأصوات: ' + Object.keys(VOICE_SETS).length : ' • ⚠️ ملف الأصوات غير موجود');
   EDIT_SHIFT = CFG.shiftData[CUR_SHIFT] ? CUR_SHIFT : 's1'; CUR_SHIFT = EDIT_SHIFT;
   $('#settings').hidden = false; document.body.classList.add('mouse');
   showTab(tab || curTab);

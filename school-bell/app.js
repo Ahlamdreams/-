@@ -3,7 +3,7 @@
    الإعدادات تُحفظ في localStorage والملفات (PDF/صوت/فيديو/صور) في IndexedDB.
    ===================================================================== */
 'use strict';
-const APP_VERSION = '2026.11.22-b';
+const APP_VERSION = '2026.11.23';
 
 /* ------------------------------ أدوات ------------------------------ */
 const $ = (s, r = document) => r.querySelector(s);
@@ -591,7 +591,7 @@ function fixedReminders() {
 const remLines = r => String(r.text || '').split('\n').map(x => x.trim()).filter(Boolean);
 function remEvent(r, key, t) {
   const L = remLines(r), text = L.length ? L[Math.floor(Math.random() * L.length)] : '';
-  return { key, t, kind: 'rem', sound: r.sound, text, audio: r.audio, banner: text || r.name, icon: '🤲', order: 2, vol: r.vol ?? 1, show: r.show || 'banner' };
+  return { key, t, kind: 'rem', sound: r.sound, text: r.speak === false ? '' : text, audio: r.speak === false ? '' : r.audio, banner: text || r.name, icon: '🤲', order: 2, vol: r.vol ?? 1, show: r.show || 'banner' };
 }
 
 const FIRED_KEY = 'schoolBell.fired';
@@ -692,7 +692,7 @@ const Phrases = {
 };
 function quickAnnounce(q) {
   Audio_.ensure();
-  Queue.push({ sound: q.sound, parts: [{ text: q.text, audio: q.audio }], banner: q.text, bannerIcon: '📢' });
+  Queue.push({ sound: q.sound, parts: q.speak === false ? [] : [{ text: q.text, audio: q.audio }], banner: q.text, bannerIcon: '📢' });
   $('#quickMenu').hidden = true;
 }
 function toggleQuickMenu() {
@@ -2129,7 +2129,7 @@ function gsheetJSONP(id, { gid, sheet } = {}) {
       done(res, head.some(Boolean) ? [head, ...rows] : rows);
     };
     sc.onerror = () => done(rej, new Error('تعذر الاتصال بـ Google Sheets — تحقق من الإنترنت ومن مشاركة الملف'));
-    sc.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1` + (gid ? '&gid=' + gid : '') + (sheet ? '&sheet=' + encodeURIComponent(sheet) : '');
+    sc.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1` + (gid ? '&gid=' + gid : '') + (sheet ? '&sheet=' + encodeURIComponent(sheet) : '') + '&_=' + Date.now();
     document.head.append(sc);
   });
 }
@@ -2171,10 +2171,16 @@ async function rowsFromSmart(which, res, sheetName) {
   const ordered = [...usable.filter(s => pref && pref.test(s.name || '')), ...usable.filter(s => !(pref && pref.test(s.name || ''))), ...sheets.filter(s => !usable.includes(s))];
   let best = [], lastErr = null;
   for (const s of ordered) { try { const r = fn(s.aoa); if (r.length > best.length) best = r; if (best.length && pref && pref.test(s.name || '')) break; } catch (e) { lastErr = e; } }
-  // رابط Google Sheets على ورقة أخرى (مثل التعليمات): جرّب الورقة الأساسية بالاسم
-  if (!best.length && res.via === 'gsheet' && which !== 'timetable') {
+  // رابط Google Sheets: قد يشير الرابط إلى ورقة أخرى (تعليمات أو نسخة احتياطية قديمة لا تتحدث)
+  // لذلك نقرأ أيضاً الورقة الأساسية بالاسم ونأخذ الأحدث (آخر تاريخ) ثم الأكثر سجلات
+  if (res.via === 'gsheet' && which !== 'timetable') {
+    const maxDate = rs => rs.reduce((m, r) => r.date && r.date > m ? r.date : m, '');
     for (const name of ({ subs: ['Assignments', 'الاحتياط'], duty: ['المناوبة', 'Duty'], absent: ['الغياب', 'Absent'] }[which] || [])) {
-      try { const r = fn(await gsheetJSONP(res.gs.id, { sheet: name })); if (r.length) { best = r; break; } } catch (e) { lastErr = e; }
+      try {
+        const r = fn(await gsheetJSONP(res.gs.id, { sheet: name }));
+        if (r.length && (maxDate(r) > maxDate(best) || (maxDate(r) === maxDate(best) && r.length > best.length))) best = r;
+        if (r.length) break;
+      } catch (e) { lastErr = e; }
     }
   }
   if (!best.length) throw lastErr || new Error('لم يُعثر على بيانات مناسبة في المصدر.');
@@ -2220,7 +2226,8 @@ async function refreshSource(which, manual) {
     if (which === 'subs') await resolveTeacherIds(src.linkRows, src);
     src.rows = src.linkRows.concat(src.fileRows || []);
     src.lastFetch = new Date().toLocaleString('ar'); src.lastError = '';
-    if (manual) toast(`تم التحديث: ${src.rows.length} سجل`);
+    const last = src.linkRows.reduce((m, r) => r.date && r.date > m ? r.date : m, '');
+    if (manual) toast(`تم التحديث: ${src.rows.length} سجل` + (last ? ' — آخر تاريخ: ' + last : ''));
   } catch (e) {
     src.lastError = e.message || String(e);
     if (manual) toast('فشل التحديث: ' + src.lastError, true);
@@ -2475,6 +2482,37 @@ function soundOptions(withNone = true, withTTSOnly) {
   for (const f of CFG.files.filter(f => f.kind === 'audio')) o.push([f.id, '🎵 ' + f.name]);
   return o;
 }
+/* اختيار صوت واحد لكل حدث: بدون / إعلان فقط / نغمة فقط / نغمة ثم إعلان / ملف مرفوع
+   k = {bell, ann, audio} أسماء الحقول في الكائن (ann غير موجود = نعم) */
+function soundModeOf(o, k) {
+  const bell = o[k.bell] || 'none', ann = o[k.ann] !== false, audio = o[k.audio] || '';
+  if (audio && ann) return 'file:' + audio;
+  if (bell !== 'none' && !Audio_.bells[bell]) return CFG.files.some(f => f.id === bell) ? 'file:' + bell : (ann ? 'ann' : 'none');
+  if (bell === 'none') return ann ? 'ann' : 'none';
+  return (ann ? 'both:' : 'bell:') + bell;
+}
+function setSoundMode(o, k, v) {
+  const i = v.indexOf(':'), m = i < 0 ? v : v.slice(0, i), x = i < 0 ? '' : v.slice(i + 1);
+  o[k.bell] = (m === 'bell' || m === 'both') ? x : 'none';
+  o[k.ann] = m === 'ann' || m === 'both' || m === 'file';
+  o[k.audio] = m === 'file' ? x : '';
+}
+function soundModeSelect(o, k, annLabel, attrs = {}) {
+  const opt = (v, t) => h('option', { value: v }, t);
+  const grp = (label, kids) => { const g = document.createElement('optgroup'); g.label = label; g.append(...kids); return g; };
+  const bells = Object.entries(Audio_.bells), files = CFG.files.filter(f => f.kind === 'audio');
+  const el = h('select', { style: 'width:230px', ...attrs },
+    opt('none', '🔕 بدون صوت'),
+    opt('ann', '🗣️ ' + annLabel + ' فقط'),
+    grp('نغمة ثم ' + annLabel, bells.map(([b, x]) => opt('both:' + b, '🔔 ' + x.n + ' ← 🗣️ ' + annLabel))),
+    grp('نغمة فقط', bells.map(([b, x]) => opt('bell:' + b, '🔔 ' + x.n + ' فقط'))),
+    files.length ? grp('ملف صوتي مرفوع', files.map(f => opt('file:' + f.id, '🎵 ' + f.name))) : null);
+  el.value = soundModeOf(o, k);
+  el.addEventListener('change', () => { setSoundMode(o, k, el.value); save(); });
+  return el;
+}
+const KS = { bell: 'bellStart', ann: 'annStart', audio: 'startAudio' }, KE = { bell: 'bellEnd', ann: 'annEnd', audio: 'endAudio' }, KR = { bell: 'sound', ann: 'speak', audio: 'audio' };
+const playPeriod = (p, end) => { const k = end ? KE : KS, t = end ? endText(p) : startText(p); Queue.push({ sound: p[k.bell], parts: p[k.ann] ? [{ text: t, audio: p[k.audio] }] : [], banner: t }); };
 function audioOptions() {
   return [['', '🗣️ نطق آلي للنص'], ...CFG.files.filter(f => f.kind === 'audio').map(f => [f.id, '🎵 ' + f.name])];
 }
@@ -2667,34 +2705,30 @@ const TABS = {
         h('td', {}, timeBtn(p, 'start', 'وقت البداية — ' + periodName(p))),
         h('td', {}, timeBtn(p, 'end', 'وقت النهاية — ' + periodName(p))),
         h('td', { style: 'color:var(--muted);white-space:nowrap' }, dur > 0 ? Math.round(dur / 60) + ' د' : '⚠️'),
-        h('td', {}, h('div', { class: 'mini' }, bindSelect(p, 'bellStart', soundOptions(), null, { style: 'width:150px' }), testBtn(() => Audio_.playSound(p.bellStart)))),
-        h('td', {}, h('label', { class: 'chk' }, bindInput(p, 'annStart', { type: 'checkbox' }), 'إعلان')),
-        h('td', {}, h('div', { class: 'mini' }, bindSelect(p, 'bellEnd', soundOptions(), null, { style: 'width:150px' }), testBtn(() => Audio_.playSound(p.bellEnd)))),
-        h('td', {}, h('label', { class: 'chk' }, bindInput(p, 'annEnd', { type: 'checkbox' }), 'إعلان')),
+        h('td', {}, h('div', { class: 'mini' }, soundModeSelect(p, KS, 'إعلان'), testBtn(() => playPeriod(p)))),
+        h('td', {}, h('div', { class: 'mini' }, soundModeSelect(p, KE, 'إعلان'), testBtn(() => playPeriod(p, true)))),
         h('td', {}, bindSelect(p, 'content', CONTENT_OPTS, null, { style: 'width:150px' })),
         h('td', {}, h('div', { class: 'mini' },
           h('button', { class: 'btn sm', title: 'نصوص وتسجيلات مخصصة', onclick: () => { p._open = !p._open; rerender(); } }, '✎'),
           h('button', { class: 'btn sm', title: 'أعلى', onclick: () => { if (i) { [periods[i - 1], periods[i]] = [periods[i], periods[i - 1]]; save(); rerender(); } } }, '↑'),
           h('button', { class: 'btn sm', title: 'أسفل', onclick: () => { if (i < periods.length - 1) { [periods[i + 1], periods[i]] = [periods[i], periods[i + 1]]; save(); rerender(); } } }, '↓'),
           h('button', { class: 'btn dan sm', onclick: () => { periods.splice(i, 1); save(); rerender(); } }, '✕')))));
-      if (p._open) tb.append(h('tr', {}, h('td', {}), h('td', { colspan: 11 },
+      if (p._open) tb.append(h('tr', {}, h('td', {}), h('td', { colspan: 9 },
         h('div', { class: 'row' },
           field('نص إعلان البداية', bindInput(p, 'startText', { placeholder: startText({ ...p, startText: '' }), style: 'width:300px' })),
-          field('أو تسجيل صوتي للبداية', bindSelect(p, 'startAudio', audioOptions())),
-          testBtn(() => Queue.push({ sound: p.bellStart, parts: [{ text: startText(p), audio: p.startAudio }], banner: startText(p) }), '▶ تجربة البداية')),
+          testBtn(() => playPeriod(p), '▶ تجربة البداية')),
         h('div', { class: 'row' },
           field('نص إعلان النهاية', bindInput(p, 'endText', { placeholder: endText({ ...p, endText: '' }), style: 'width:300px' })),
-          field('أو تسجيل صوتي للنهاية', bindSelect(p, 'endAudio', audioOptions())),
-          testBtn(() => Queue.push({ sound: p.bellEnd, parts: [{ text: endText(p), audio: p.endAudio }], banner: endText(p) }), '▶ تجربة النهاية')))));
+          testBtn(() => playPeriod(p, true), '▶ تجربة النهاية')))));
     });
     const warn = [];
     const sp = sortedPeriods(pr);
     for (let i = 1; i < sp.length; i++) if (toSec(sp[i].start) < toSec(sp[i - 1].end)) warn.push(`تداخل بين "${periodName(sp[i - 1])}" و"${periodName(sp[i])}"`);
     sec.append(panel('فترات اليوم',
-      h('p', { class: 'hint' }, 'اختر نوع الفترة (طابور، حصة صفرية، الأولى ... الثامنة، فسحة، نشاط، ريادة ...)، والوقت من/إلى، وصوت الجرس في البداية والنهاية، وهل يُقال إعلان صوتي ("بدأت الآن الحصة الأولى"). زر ✎ لكتابة نص خاص أو اختيار تسجيل صوتي بدل النطق الآلي. إذا انتهت حصة وبدأت التالية في نفس الدقيقة يُدمج الإعلانان في جرس واحد.'),
+      h('p', { class: 'hint' }, 'اختر نوع الفترة (طابور، حصة صفرية، الأولى ... الثامنة، فسحة، نشاط، ريادة ...)، والوقت من/إلى، واختيار واحد للصوت في البداية وواحد في النهاية: بدون صوت، أو إعلان صوتي فقط ("بدأت الآن الحصة الأولى")، أو نغمة فقط، أو نغمة ثم إعلان، أو ملف صوتي مرفوع. زر ✎ لكتابة نص إعلان خاص. إذا انتهت حصة وبدأت التالية في نفس الدقيقة يُدمج الإعلانان في جرس واحد.'),
       warn.length ? h('p', { class: 'hint', style: 'color:#fca5a5' }, '⚠️ ' + warn.join(' — ')) : null,
       h('div', { class: 'tbl-wrap' }, h('table', { class: 'edit' },
-        h('thead', {}, h('tr', {}, ['#', 'النوع', 'اسم مخصص', 'من', 'إلى', 'المدة', 'جرس البداية', '', 'جرس النهاية', '', 'ما يظهر في الشاشة', ''].map(t => h('th', {}, t)))), tb)),
+        h('thead', {}, h('tr', {}, ['#', 'النوع', 'اسم مخصص', 'من', 'إلى', 'المدة', 'صوت البداية', 'صوت النهاية', 'ما يظهر في الشاشة', ''].map(t => h('th', {}, t)))), tb)),
       h('div', { class: 'row', style: 'margin-top:12px' },
         h('button', { class: 'btn pri', onclick: () => {
           const last = sortedPeriods(pr).slice(-1)[0];
@@ -2790,12 +2824,11 @@ const TABS = {
         r.mode === 'fixed' ? field('الوقت', bindInput(r, 'time', { type: 'time' })) :
           (r.mode !== 'mid' ? field('دقائق', bindInput(r, 'minutes', { type: 'number', min: 1, style: 'width:70px' })) : null),
         r.mode !== 'fixed' ? field('يطبق على', bindSelect(r, 'applies', applies)) : null,
-        field('الصوت', bindSelect(r, 'sound', soundOptions(), null, { style: 'width:150px' })),
+        field('الصوت', soundModeSelect(r, KR, 'نطق النص')),
         field('النص (كل سطر عبارة — يُختار واحد عشوائياً كل مرة)', h('textarea', { style: 'width:260px;min-height:70px', onchange: e => { r.text = e.target.value; save(); } }, r.text || '')),
         field('مستوى الصوت 🔉', bindInput(r, 'vol', { type: 'range', min: 0.05, max: 1, step: 0.05, value: r.vol ?? 1 })),
         field('الظهور على الشاشة', bindSelect(r, 'show', [['soft', 'بطاقة صغيرة هادئة أسفل الشاشة'], ['banner', 'رسالة كبيرة (مثل الجرس)'], ['none', 'بدون ظهور (صوت فقط)']])),
-        field('أو تسجيل', bindSelect(r, 'audio', audioOptions(), null, { style: 'width:150px' })),
-        testBtn(() => { const e = remEvent(r, 'test', 0); Queue.push({ sound: r.sound, parts: [{ text: e.text, audio: r.audio, volume: Math.min(1, CFG.general.volume * (r.vol ?? 1)) }], vol: r.vol ?? 1, quiet: (r.vol ?? 1) < 0.7, soft: (r.show || 'banner') === 'soft' ? e.banner : '', banner: (r.show || 'banner') === 'banner' ? e.banner : '', bannerIcon: '📢' }); }),
+        testBtn(() => { const e = remEvent(r, 'test', 0); Queue.push({ sound: r.sound, parts: [{ text: e.text, audio: e.audio, volume: Math.min(1, CFG.general.volume * (r.vol ?? 1)) }], vol: r.vol ?? 1, quiet: (r.vol ?? 1) < 0.7, soft: (r.show || 'banner') === 'soft' ? e.banner : '', banner: (r.show || 'banner') === 'banner' ? e.banner : '', bannerIcon: '📢' }); }),
         h('button', { class: 'btn dan sm', onclick: () => { CFG.reminders.splice(i, 1); save(); rerender(); } }, 'حذف')));
     });
     sec.append(panel('تنبيهات إضافية أثناء اليوم',
@@ -2810,8 +2843,7 @@ const TABS = {
     CFG.quick.forEach((q, i) => ql.append(h('div', { class: 'item' },
       h('b', { style: 'width:22px' }, digits(i + 1)),
       field('النص', bindInput(q, 'text', { style: 'width:380px' })),
-      field('الصوت قبله', bindSelect(q, 'sound', soundOptions(), null, { style: 'width:150px' })),
-      field('أو تسجيل', bindSelect(q, 'audio', audioOptions(), null, { style: 'width:150px' })),
+      field('الصوت', soundModeSelect(q, KR, 'نطق النص')),
       testBtn(() => quickAnnounce(q)),
       h('button', { class: 'btn dan sm', onclick: () => { CFG.quick.splice(i, 1); save(); rerender(); } }, 'حذف'))));
     sec.append(panel('إعلانات فورية بضغطة زر',

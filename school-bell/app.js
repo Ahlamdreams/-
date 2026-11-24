@@ -3,7 +3,7 @@
    الإعدادات تُحفظ في localStorage والملفات (PDF/صوت/فيديو/صور) في IndexedDB.
    ===================================================================== */
 'use strict';
-const APP_VERSION = '2026.11.24';
+const APP_VERSION = '2026.11.24-b';
 
 /* ------------------------------ أدوات ------------------------------ */
 const $ = (s, r = document) => r.querySelector(s);
@@ -292,6 +292,8 @@ function loadConfig() {
   }
   // الذكر بدون نغمة قبله — لمرة واحدة
   if (!CFG.display.v5) { CFG.display.v5 = 1; CFG.reminders.filter(x => /ذكر/.test(x.name || '')).forEach(x => x.sound = 'none'); }
+  // وضع مشاركة الشاشة مفعّل افتراضياً (المدرسة تعرض عبر ميراكاست) — لمرة واحدة
+  if (!CFG.display.v6) { CFG.display.v6 = 1; CFG.display.cast = true; }
   // إلغاء مشهد "توقيت اليوم" (بطلب المدرسة) — لمرة واحدة
   if (!CFG.display.v3) { CFG.display.v3 = 1; CFG.autoSlides.schedule = false; }
   // ترقية لمرة واحدة: جدول كل الصفوف + حركة هادئة
@@ -891,8 +893,18 @@ function updateTicker(force) {
   const inner = $('#tickerInner');
   if (!inner.innerHTML || force) applyTicker(html); else tickerPending = html;
 }
+let castT = null;
 function applyTicker(html) {
   const inner = $('#tickerInner');
+  clearInterval(castT);
+  // وضع مشاركة الشاشة: لا تمرير مستمر (يسبب تأخراً وتشويشاً في ميراكاست/AirPlay) — عبارة ثابتة تتبدل كل بضع ثوانٍ
+  if (CFG.display.cast) {
+    const items = (html || '').split('<span class="sep">◆</span>').filter(Boolean);
+    let i = 0; inner.style.animation = 'none';
+    const show = () => { inner.innerHTML = items[i % (items.length || 1)] || '&nbsp;'; i++; };
+    show(); if (items.length > 1) castT = setInterval(show, Math.max(4, +CFG.display.castTickerSec || 8) * 1000);
+    return;
+  }
   inner.innerHTML = html || '&nbsp;';
   inner.style.animation = 'none';
   requestAnimationFrame(() => {
@@ -1235,7 +1247,7 @@ const Slides = {
   mount(el, dur) {
     const stage = $('#stage');
     const t = CFG.display.transition;
-    el.classList.add(t === 'random' || !t ? TRANS[Math.floor(Math.random() * TRANS.length)] : 'tr-' + t);
+    if (!CFG.display.cast) el.classList.add(t === 'random' || !t ? TRANS[Math.floor(Math.random() * TRANS.length)] : 'tr-' + t);
     const td = Math.max(0.2, +CFG.autoSlides.trDur || 1.6);
     el.style.animationDuration = td + 's';
     document.documentElement.style.setProperty('--tr', td + 's');
@@ -1243,7 +1255,7 @@ const Slides = {
       if (old.classList.contains('slide-dots') || old.classList.contains('scene-timer')) { old.remove(); continue; }
       old.classList.add('tr-out'); old.style.animationDuration = Math.max(0.2, (+CFG.autoSlides.trDur || 1.6) * 0.7) + 's';
       old.querySelectorAll('video').forEach(v => v.pause());
-      setTimeout(() => old.remove(), Math.max(200, (+CFG.autoSlides.trDur || 1.6) * 700));
+      if (CFG.display.cast) old.remove(); else setTimeout(() => old.remove(), Math.max(200, (+CFG.autoSlides.trDur || 1.6) * 700));
     }
     stage.append(el);
     // جدول الصفوف: مساحة كاملة (إخفاء شريط الحصة وشريط المناوبة وتصغير الأعلى)
@@ -2282,6 +2294,7 @@ function applyTheme() {
     if (g.custom?.on && g.custom[k]) B.style.setProperty(v, g.custom[k]); else B.style.removeProperty(v);
   });
   B.classList.toggle('no-anim', !g.animBg);
+  B.classList.toggle('cast', !!D.cast);
   $('#schoolName').textContent = g.schoolName; $('#schoolSub').textContent = g.schoolSub;
   if (g.logo) fileURL(g.logo).then(u => { if (u) { $('#logo').src = u; $('#logo').hidden = false; $('#logoPh').hidden = true; } });
   else { $('#logo').hidden = true; $('#logoPh').hidden = false; }
@@ -2977,6 +2990,8 @@ const TABS = {
         field('حركة الانتقال بين المشاهد', bindSelect(D, 'transition', [['random', 'متنوعة عشوائياً'], ['fade', 'تلاشي'], ['up', 'صعود'], ['zoom', 'تكبير'], ['side', 'انزلاق جانبي'], ['flip', 'دوران']]))),
       h('div', { class: 'row' },
         chk(g, 'animBg', 'خلفية متحركة'),
+        chk(D, 'cast', '📡 وضع مشاركة الشاشة (ميراكاست / ميرا سكرين / AirPlay): بدون حركة مستمرة، أوضح وأسرع على التلفاز', () => { applyTheme(); updateTicker(true); Slides.rebuild(); }),
+        field('تبديل عبارات الشريط كل (ثانية)', bindInput(D, 'castTickerSec', { type: 'number', min: 4, style: 'width:70px', value: D.castTickerSec || 8 }, () => updateTicker(true))),
         chk(D, 'showStatus', 'شريط "الحصة الآن" أعلى الشاشة'),
         h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: D.focusTable !== false, onchange: e => { D.focusTable = e.target.checked; save(); } }), 'تكبير جدول الحصة الآن (إخفاء الأشرطة أثناء عرضه)'),
         field('عرض الحصة الآن', bindSelect(D, 'nowStyle', [['grades', 'كل الصفوف في جدول واحد (الصف | المعلمة | المادة)'], ['table', 'أعمدة مضغوطة (المعلم | الصف)'], ['cards', 'بطاقات كبيرة']])),

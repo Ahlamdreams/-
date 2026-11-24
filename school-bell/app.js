@@ -3,7 +3,7 @@
    الإعدادات تُحفظ في localStorage والملفات (PDF/صوت/فيديو/صور) في IndexedDB.
    ===================================================================== */
 'use strict';
-const APP_VERSION = '2026.11.24-b';
+const APP_VERSION = '2026.11.24-c';
 
 /* ------------------------------ أدوات ------------------------------ */
 const $ = (s, r = document) => r.querySelector(s);
@@ -294,6 +294,7 @@ function loadConfig() {
   if (!CFG.display.v5) { CFG.display.v5 = 1; CFG.reminders.filter(x => /ذكر/.test(x.name || '')).forEach(x => x.sound = 'none'); }
   // وضع مشاركة الشاشة مفعّل افتراضياً (المدرسة تعرض عبر ميراكاست) — لمرة واحدة
   if (!CFG.display.v6) { CFG.display.v6 = 1; CFG.display.cast = true; }
+  if (!CFG.display.castTicker) CFG.display.castTicker = 'scroll';
   // إلغاء مشهد "توقيت اليوم" (بطلب المدرسة) — لمرة واحدة
   if (!CFG.display.v3) { CFG.display.v3 = 1; CFG.autoSlides.schedule = false; }
   // ترقية لمرة واحدة: جدول كل الصفوف + حركة هادئة
@@ -898,7 +899,7 @@ function applyTicker(html) {
   const inner = $('#tickerInner');
   clearInterval(castT);
   // وضع مشاركة الشاشة: لا تمرير مستمر (يسبب تأخراً وتشويشاً في ميراكاست/AirPlay) — عبارة ثابتة تتبدل كل بضع ثوانٍ
-  if (CFG.display.cast) {
+  if (CFG.display.cast && CFG.display.castTicker === 'pages') {
     const items = (html || '').split('<span class="sep">◆</span>').filter(Boolean);
     let i = 0; inner.style.animation = 'none';
     const show = () => { inner.innerHTML = items[i % (items.length || 1)] || '&nbsp;'; i++; };
@@ -910,6 +911,7 @@ function applyTicker(html) {
   requestAnimationFrame(() => {
     const w = inner.scrollWidth + inner.parentElement.clientWidth;
     inner.style.animation = `tickerMove ${Math.max(8, w / (+CFG.ticker.speed || 90))}s linear infinite`;
+    inner.style.willChange = 'transform';
   });
 }
 $('#tickerInner').addEventListener('animationiteration', () => { if (tickerPending != null) { applyTicker(tickerPending); tickerPending = null; } });
@@ -2991,7 +2993,8 @@ const TABS = {
       h('div', { class: 'row' },
         chk(g, 'animBg', 'خلفية متحركة'),
         chk(D, 'cast', '📡 وضع مشاركة الشاشة (ميراكاست / ميرا سكرين / AirPlay): بدون حركة مستمرة، أوضح وأسرع على التلفاز', () => { applyTheme(); updateTicker(true); Slides.rebuild(); }),
-        field('تبديل عبارات الشريط كل (ثانية)', bindInput(D, 'castTickerSec', { type: 'number', min: 4, style: 'width:70px', value: D.castTickerSec || 8 }, () => updateTicker(true))),
+        field('شريط الأخبار في وضع المشاركة', bindSelect(D, 'castTicker', [['scroll', 'متحرك (انسيابي)'], ['pages', 'عبارة ثابتة تتبدل (الأوضح للبث الضعيف)']], () => updateTicker(true))),
+        D.castTicker === 'pages' ? field('تبديل العبارة كل (ثانية)', bindInput(D, 'castTickerSec', { type: 'number', min: 4, style: 'width:70px', value: D.castTickerSec || 8 }, () => updateTicker(true))) : null,
         chk(D, 'showStatus', 'شريط "الحصة الآن" أعلى الشاشة'),
         h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: D.focusTable !== false, onchange: e => { D.focusTable = e.target.checked; save(); } }), 'تكبير جدول الحصة الآن (إخفاء الأشرطة أثناء عرضه)'),
         field('عرض الحصة الآن', bindSelect(D, 'nowStyle', [['grades', 'كل الصفوف في جدول واحد (الصف | المعلمة | المادة)'], ['table', 'أعمدة مضغوطة (المعلم | الصف)'], ['cards', 'بطاقات كبيرة']])),

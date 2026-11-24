@@ -65,3 +65,5 @@ function doGet(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 ```
+
+> للمطوّر: عند كل إصدار حدّث APP_VERSION في app.js ورقم ?v= في index.html معاً (حتى يجلب المتصفح الملفات الجديدة بدل القديمة المحفوظة).

@@ -3,7 +3,7 @@
    الإعدادات تُحفظ في localStorage والملفات (PDF/صوت/فيديو/صور) في IndexedDB.
    ===================================================================== */
 'use strict';
-const APP_VERSION = '2026.11.24-d';
+const APP_VERSION = '2026.11.24-e';
 
 /* ------------------------------ أدوات ------------------------------ */
 const $ = (s, r = document) => r.querySelector(s);
@@ -216,7 +216,7 @@ function defaultConfig() {
     slides: [
       { id: uid(), type: 'text', enabled: true, title: '', text: 'أهلاً وسهلاً بكم في مدرستنا\nالعلم نور', duration: 12 },
     ],
-    autoSlides: { welcome: true, now: true, classday: true, schedule: false, duty: true, subs: true, absent: true, duration: 15, nowDuration: 20, perPage: 0,
+    autoSlides: { welcome: true, now: true, classday: true, schedule: false, duty: true, subs: true, absent: true, duration: 120, nowDuration: 120, perPage: 0,
       durs: { now: 30, classday: 30, welcome: 12, schedule: 15, duty: 20, subs: 20, absent: 20, phrase: 10 }, trDur: 1.6, lock: '' },
     ticker: { enabled: true, label: 'أخبار المدرسة', texts: ['أهلاً بكم في مدرستنا', 'النظافة من الإيمان', 'الالتزام بالوقت أساس النجاح'], speed: 90, includeDuty: true, includeSubs: true },
     display: { layout: 'hero', tickerPos: 'bottom', transition: 'fade', showStatus: true, showDuty: true, showSubs: true, nowStyle: 'grades', subsStyle: 'grouped', dutyAllWeeks: true, dutyStrip: true, dutyStripSec: 7 },
@@ -295,6 +295,8 @@ function loadConfig() {
   // وضع مشاركة الشاشة مفعّل افتراضياً (المدرسة تعرض عبر ميراكاست) — لمرة واحدة
   if (!CFG.display.v6) { CFG.display.v6 = 1; CFG.display.cast = true; }
   if (!CFG.display.castTicker) CFG.display.castTicker = 'scroll';
+  // كل مشهد يبقى دقيقتين قبل أن يتغير (بطلب المدرسة) — لمرة واحدة
+  if (!CFG.display.v7) { CFG.display.v7 = 1; const A = CFG.autoSlides; A.duration = 120; A.nowDuration = 120; A.durs = A.durs || {}; for (const k of ['now', 'classday', 'welcome', 'schedule', 'duty', 'subs', 'absent', 'phrase']) A.durs[k] = 120; }
   // إلغاء مشهد "توقيت اليوم" (بطلب المدرسة) — لمرة واحدة
   if (!CFG.display.v3) { CFG.display.v3 = 1; CFG.autoSlides.schedule = false; }
   // ترقية لمرة واحدة: جدول كل الصفوف + حركة هادئة
@@ -2952,7 +2954,7 @@ const TABS = {
     const DN = [['now', '📚 الحصة الآن'], ['classday', '🗓️ جدول اليوم'], ['welcome', '🏫 الترحيب'], ['schedule', '⏰ التوقيت'], ['duty', '🛡️ المناوبة'], ['subs', '🔁 الاحتياط'], ['absent', '📋 الغياب'], ['phrase', '🤲 الأذكار']];
     sec.append(panel('⏱️ مدة العرض وسرعة الحركة',
       h('p', { class: 'hint' }, 'كم ثانية يبقى كل مشهد على الشاشة قبل الانتقال للتالي. (مدة الصور والفيديو والـ PDF تُضبط لكل عنصر في القائمة أعلاه.)'),
-      h('div', { class: 'row' }, DN.map(([k, n]) => field(n + ' (ث)', bindInput(A.durs, k, { type: 'number', min: 3, style: 'width:90px', value: durOf(k) })))),
+      h('div', { class: 'row' }, DN.map(([k, n]) => field(n + ' (ثانية — 60 = دقيقة)', bindInput(A.durs, k, { type: 'number', min: 3, style: 'width:90px', value: durOf(k) })))),
       h('div', { class: 'row' },
         field('سرعة الانتقال بين المشاهد', bindSelect(A, 'trDur', [['0.6', 'سريعة'], ['1.6', 'عادية هادئة'], ['2.5', 'بطيئة'], ['4', 'بطيئة جداً']])),
         field('نوع الحركة', bindSelect(CFG.display, 'transition', [['fade', 'تلاشي ناعم (الأهدأ)'], ['random', 'متنوعة'], ['up', 'صعود'], ['zoom', 'تكبير'], ['side', 'انزلاق'], ['flip', 'دوران']])),

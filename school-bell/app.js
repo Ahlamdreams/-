@@ -3,7 +3,7 @@
    الإعدادات تُحفظ في localStorage والملفات (PDF/صوت/فيديو/صور) في IndexedDB.
    ===================================================================== */
 'use strict';
-const APP_VERSION = '2026.11.23';
+const APP_VERSION = '2026.11.24';
 
 /* ------------------------------ أدوات ------------------------------ */
 const $ = (s, r = document) => r.querySelector(s);
@@ -387,12 +387,24 @@ const Audio_ = {
   async playFile(id, vol) {
     const url = await fileURL(id);
     if (!url || this.stopFlag) return;
-    const a = new Audio(url); a.volume = Math.min(1, vol ?? CFG.general.volume); this.current = a;
-    await new Promise(res => {
-      a.onended = a.onerror = res; a.play().catch(res);
-      setTimeout(res, 5 * 60 * 1000);
-    });
-    this.current = null;
+    await mediaPlay(url, vol, 5 * 60 * 1000);
+  },
+  /* عنصر صوت واحد يُفتح بلمسة "بدء التشغيل" — الآيباد/الآيفون لا يسمح بتشغيل صوت جديد بدون لمسة،
+     لكنه يسمح بإعادة استخدام عنصر سبق تشغيله. وعلى الآيباد يُتحكم بمستواه عبر Web Audio لأن volume لا يعمل هناك */
+  el: null, elGain: null,
+  media() {
+    if (!this.el) { this.el = new Audio(); this.el.preload = 'auto'; this.el.setAttribute('playsinline', ''); }
+    if (!this.elGain && /^https?:/.test(location.protocol) && this.ctx) {
+      try { const src = this.ctx.createMediaElementSource(this.el); this.elGain = this.ctx.createGain(); src.connect(this.elGain); this.elGain.connect(this.ctx.destination); } catch (e) { console.warn(e); }
+    }
+    return this.el;
+  },
+  unlock() {
+    this.ensure();
+    const a = this.media();
+    a.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+    a.play().catch(() => { });
+    try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch { }
   },
   voices() { return (window.speechSynthesis?.getVoices() || []); },
   arabicVoices() { return this.voices().filter(v => /^ar/i.test(v.lang)); },
@@ -439,14 +451,19 @@ function clipsFor(text) {
   const list = segs.map(clipFor);
   return list.every(Boolean) ? list : null;
 }
-function playURL(url, vol) {
+function mediaPlay(url, vol, max = 60000) {
   return new Promise(res => {
     if (Audio_.stopFlag) return res();
-    const a = new Audio(url); a.volume = Math.min(1, vol ?? CFG.general.volume); Audio_.current = a;
-    a.onended = a.onerror = () => { Audio_.current = null; res(); };
-    a.play().catch(res); setTimeout(res, 60000);
+    const a = Audio_.media(), v = Math.min(1, vol ?? CFG.general.volume);
+    if (Audio_.elGain) { Audio_.ensure(); Audio_.elGain.gain.value = v; a.volume = 1; } else a.volume = v;
+    let tm;
+    const fin = () => { clearTimeout(tm); a.onended = a.onerror = null; Audio_.current = null; res(); };
+    a.onended = a.onerror = fin; tm = setTimeout(fin, max);
+    a.src = url; Audio_.current = a;
+    a.play().catch(fin);
   });
 }
+const playURL = (url, vol) => mediaPlay(url, vol);
 /* طابور الإعلانات: كل عنصر = {sound, parts:[{text, audio}], banner} */
 const Queue = {
   items: [], busy: false,
@@ -3280,11 +3297,23 @@ async function importBackup() {
     const data = JSON.parse(await f.text());
     if (data.app !== 'school-bell') throw new Error('الملف ليس نسخة احتياطية للجرس');
     if (!confirm('سيتم استبدال الإعدادات الحالية بالنسخة. متابعة؟')) return;
-    for (const [id, du] of Object.entries(data.files || {})) await DB.put(id, await (await fetch(du)).blob());
-    CFG = mergeDefaults(defaultConfig(), data.config);
-    localStorage.setItem(LS_KEY, JSON.stringify(CFG));
+    await applyBackup(data);
     location.reload();
   } catch (e) { toast('فشل الاسترجاع: ' + e.message, true); }
+}
+async function applyBackup(data) {
+  for (const [id, du] of Object.entries(data.files || {})) await DB.put(id, await (await fetch(du)).blob());
+  CFG = mergeDefaults(defaultConfig(), data.config);
+  localStorage.setItem(LS_KEY, JSON.stringify(CFG));
+}
+/* عند النشر على رابط: إن وُضع ملف config.json بجانب البرنامج يُحمَّل تلقائياً في أول فتح لجهاز جديد */
+async function autoConfig() {
+  if (!/^https?:/.test(location.protocol)) return false;
+  try {
+    const r = await fetch('config.json', { cache: 'no-store' }); if (!r.ok) return false;
+    const data = await r.json(); if (data.app !== 'school-bell') return false;
+    await applyBackup(data); return true;
+  } catch { return false; }
 }
 
 /* ------------------------------ التشغيل ------------------------------ */
@@ -3292,16 +3321,27 @@ let started = false;
 function start() {
   started = true;
   $('#startOverlay').hidden = true;
-  Audio_.ensure();
+  Audio_.unlock();
+  keepAwake();
 }
+/* إبقاء الشاشة مضاءة (الآيباد والأجهزة اللوحية) */
+let wakeLock = null;
+async function keepAwake() {
+  try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => wakeLock = null); } } catch { }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && started) { keepAwake(); Audio_.ensure(); } });
 function toggleFull() {
-  if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => { });
+  const d = document, el = d.documentElement;
+  if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+  else { const r = (el.requestFullscreen || el.webkitRequestFullscreen)?.call(el); r?.catch?.(() => { }); }
 }
 function toggleBell() { CFG.general.bellEnabled = !CFG.general.bellEnabled; save(); toast(CFG.general.bellEnabled ? 'تم تشغيل الجرس التلقائي' : 'تم إيقاف الجرس التلقائي'); }
 
 async function init() {
+  const fresh = !localStorage.getItem(LS_KEY);
   loadConfig();
   try { await DB.open(); } catch (e) { toast('تعذر فتح قاعدة البيانات المحلية: ' + e.message, true); }
+  if (fresh && await autoConfig()) { location.reload(); return; }
   try { navigator.storage?.persist?.(); } catch { }
   if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.min.js';
   if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => { if (curTab === 'sounds' && !$('#settings').hidden) rerender(); };

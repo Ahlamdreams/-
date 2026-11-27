@@ -352,25 +352,56 @@ def bookpage(x,cx,cy,s,a,rot=0,dense=1):
         y=-160+j*26; w=[280,250,270,230,260][j%5]
         rrect(x,140-w,y,w,10,5,(0.72,0.76,0.86),a)
     x.restore()
+
+BENDS=[(1,-1),(-1,-1),(-1,1),(1,1)]
+def bez(p0,p1,p2,p3,u):
+    v=1-u; return (v**3*p0[0]+3*v*v*u*p1[0]+3*v*u*u*p2[0]+u**3*p3[0], v**3*p0[1]+3*v*v*u*p1[1]+3*v*u*u*p2[1]+u**3*p3[1])
+def taper(x,pts,w0,w1,col,a,k=1):
+    n=len(pts); m=max(2,int(n*cl(k)))
+    if m<2 or a<=0: return
+    L=[];R=[]
+    for i in range(m):
+        p0=pts[max(0,i-1)]; p1=pts[min(n-1,i+1)]; dx,dy=p1[0]-p0[0],p1[1]-p0[1]; d=math.hypot(dx,dy) or 1
+        nx,ny=-dy/d,dx/d; w=lerp(w0,w1,i/(n-1))/2
+        L.append((pts[i][0]+nx*w,pts[i][1]+ny*w)); R.append((pts[i][0]-nx*w,pts[i][1]-ny*w))
+    poly(x,L+R[::-1],col,a); circle(x,pts[m-1][0],pts[m-1][1],lerp(w0,w1,(m-1)/(n-1))/2,col,a)
 def mindmap(x,cx,cy,t,a,kc,kb,kl,sc=1):
     x.save(); x.translate(cx,cy); x.scale(S_(sc),S_(sc))
     for i,(lab,ic,col,leaf,(bx,by)) in enumerate(BR):
         k=kb[i]
         if k<=0: continue
-        ex,ey=bx*eo(k),by*eo(k)
-        x.new_path(); x.move_to(0,0); x.curve_to(bx*0.2,by*0.7,bx*0.6,by*0.3,ex,ey); x.set_line_width(10); rgba(col,a,x); x.set_line_cap(cairo.LINE_CAP_ROUND); x.stroke()
-        if k>=0.95:
-            e=back(cl((k-0.95)*20))
-            x.save(); x.translate(bx,by); x.scale(S_(e),S_(e))
-            rrect(x,-95,-42,190,84,42,col,a); blit(x,sprite(lab,32,(14,32,80),b'Black'),18,-3,1,a); blit(x,mi(ic,36,(14,32,80)),-58,0,1,a); x.restore()
+        sx,sy=BENDS[i]; sw=0.05*math.sin(t*1.3+i*1.7)
+        ex,ey=sx*330,sy*235
+        x.save(); x.rotate(sw)
+        P0=(0,0); P1=(sx*120,sy*10); P2=(sx*200,sy*200); P3=(ex,ey)
+        pts=[bez(P0,P1,P2,P3,u) for u in np.linspace(0,1,40)]
+        taper(x,pts,46,12,col,a*0.95,k)
+        if k>0.55:
+            ka=eo(cl((k-0.55)/0.45)); mx,my=bez(P0,P1,P2,P3,0.55); tx,ty=bez(P0,P1,P2,P3,0.6)
+            ang=math.atan2(ty-my,tx-mx)
+            if ang>math.pi/2: ang-=math.pi
+            if ang<-math.pi/2: ang+=math.pi
+            x.save(); x.translate(mx,my); x.rotate(ang); x.translate(0,-36)
+            blit(x,sprite(lab,36,(255,255,255),b'Black'),0,0,ka,a); x.restore()
+        if k>=0.98:
+            e=back(cl((k-0.98)*50)); circle(x,ex,ey,46*e,col,a); circle(x,ex,ey,46*e,WHITE,a,fill=False,lw=4)
+            blit(x,mi(ic,46,(255,255,255)),ex,ey,e,a)
             kk=kl[i]
             if kk>0:
-                lx,ly=bx*1.0,by+(90 if by>0 else -90)
-                poly(x,[(bx,by+(42 if by>0 else -42)),(lx,ly+(-26 if by>0 else 26))],col,a*0.7,fill=False,lw=4,close=False)
-                rrect(x,lx-110*kk,ly-26,220*kk,52,26,WHITE,a); blit(x,sprite(leaf,24,(14,32,80),b'Bold'),lx,ly-2,kk,a)
+                Q0=(ex+sx*30,ey+sy*30); Q3=(ex+sx*10,ey+sy*120); Q1=(ex+sx*70,ey+sy*40); Q2=(ex+sx*60,ey+sy*100)
+                lp=[bez(Q0,Q1,Q2,Q3,u) for u in np.linspace(0,1,20)]
+                taper(x,lp,10,4,col,a*0.9,kk)
+                if kk>0.6:
+                    lx,ly=Q3; circle(x,lx,ly,7,col,a)
+                    blit(x,sprite(leaf,26,(255,255,255),b'Bold'),lx-sx*0,ly+sy*30,eo(cl((kk-0.6)/0.4)),a)
+        x.restore()
     if kc>0:
-        e=back(kc); x.save(); x.scale(S_(e),S_(e)); radial(x,0,0,200,GOLD,0.5*a)
-        circle(x,0,0,92,GOLD,a); circle(x,0,0,92,WHITE,a,fill=False,lw=5); blit(x,sprite("دورة الماء",32,(14,32,80),b'Black'),0,-3,1,a); x.restore()
+        e=back(kc); x.save(); x.scale(S_(e),S_(e)); radial(x,0,0,230,GOLD,0.55*a)
+        x.new_path()
+        for (px,py,r) in ((-60,10,62),(0,-28,72),(62,6,60),(0,30,66),(-90,-10,40),(92,-14,40)): x.arc(px,py,r,0,2*math.pi); x.new_sub_path()
+        g=cairo.LinearGradient(0,-100,0,100); g.add_color_stop_rgba(0,1,0.88,0.5,a); g.add_color_stop_rgba(1,0.96,0.72,0.2,a); x.set_source(g); x.fill()
+        blit(x,mi(0xe798,44,(14,32,80)),0,-48,1,a); blit(x,sprite("دورة الماء",34,(14,32,80),b'Black'),0,14,1,a)
+        x.restore()
     x.restore()
 def scene_1(x,t):
     s0,s1=ph(0)['start'],ph(1)['start']
@@ -497,33 +528,38 @@ TEXT_Y=1330
 def kinetic(x,t):
     for i,p in enumerate(P):
         nxt=P[i+1]['start']-0.12 if i+1<len(P) else VEND+0.15
-        if t<p['start']-0.3 or t>nxt+0.45: continue
+        if t<p['start']-0.3 or t>nxt+0.05: continue
         words=p['words']; sps=[]
         for w in words:
-            if w['key']: sps.append(sprite(w['word'],112,(246,196,72),b'Black',glow=(245,180,40)))
+            if w['key']: sps.append(sprite(w['word'],98,(14,32,80),b'Black'))
             else: sps.append(sprite(w['word'],90,(255,255,255),b'Bold'))
-        gap=34; lines=[[]]; lw=[0]
+        gap=30; lines=[[]]; lw=[0]
         for w,sp in zip(words,sps):
-            if lines[-1] and lw[-1]+gap+sp['adv']+(16 if w['key'] else 0)>960: lines.append([]); lw.append(0)
-            lw[-1]+=(gap if lines[-1] else 0)+sp['adv']+(16 if w['key'] else 0); lines[-1].append((w,sp))
+            ex=40 if w['key'] else 0
+            if lines[-1] and lw[-1]+gap+sp['adv']+ex>960: lines.append([]); lw.append(0)
+            lw[-1]+=(gap if lines[-1] else 0)+sp['adv']+ex; lines[-1].append((w,sp))
         lh=150; y0=TEXT_Y-(len(lines)-1)*lh/2
-        out=seg(t,nxt,nxt+0.35)
+        out=seg(t,nxt-0.38,nxt+0.02)
         for li,ln in enumerate(lines):
+            cyl=y0+li*lh
+            x.save(); x.new_path(); x.rectangle(0,cyl-74,W,150); x.clip()
             xr=W/2+lw[li]/2
             for j,(w,sp) in enumerate(ln):
-                ex=16 if w['key'] else 0; cx=xr-(sp['adv']+ex)/2; xr-=sp['adv']+ex+gap
-                k=seg(t,w['start']-0.12,w['start']+0.3); 
+                ex=40 if w['key'] else 0; cx=xr-(sp['adv']+ex)/2; xr-=sp['adv']+ex+gap
+                k=seg(t,w['start']-0.15,w['start']+0.28)
                 if k<=0: continue
-                sc=back(k,2.2)*0.4+0.6 if k<1 else 1
-                if w['key']: sc*= 1+0.05*math.sin(seg(t,w['start'],w['start']+0.6)*math.pi)
-                ko=eo(cl(out*1.6-j*0.12))
-                cy=y0+li*lh+lerp(40,0,eo(k))-ko*70
-                blit(x,sp,cx,cy,sc*(1-0.25*ko),eo(k)*(1-ko))
+                ko=eio(cl(out*1.5-j*0.05-li*0.08))
+                dy=lerp(115,0,eo(k))-ko*120
                 if w['key']:
-                    ku=eo(seg(t,w['start']+0.15,w['start']+0.55))*(1-ko)
-                    if ku>0:
-                        half=sp['adv']/2; pts=[(cx+half-2*half*u,cy+58+8*math.sin(u*math.pi)) for u in np.linspace(0,1,24)]
-                        glowline(x,partial(pts,ku),GOLD,1-ko,6)
+                    kp=eo(seg(t,w['start']-0.05,w['start']+0.35)); dyp=lerp(115,0,eo(k))*0.3-ko*120
+                    if kp>0:
+                        half=sp['adv']/2+20; wpx=2*half*kp
+                        rrect(x,cx+half-wpx,cyl-60+dyp,wpx,104,26,GOLD,1); rrect(x,cx+half-wpx,cyl-60+dyp,wpx,104,26,GOLD2,0.9,fill=False,lw=3)
+                    blit(x,sp,cx,cyl-6+dy,1,1)
+                else:
+                    blit(x,sp,cx,cyl-6+dy,1,1)
+            x.restore()
+
 # ---------------- chrome: background, logo, progress, waveform ----------------
 G={}
 def init():

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Supervision Journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Aref+Ruqaa:wght@700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:transparent}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Cairo',sans-serif;color:#fff;
+  background:transparent}
+.abs{position:absolute}
+.scene{position:absolute;inset:0;opacity:0}
+.gold{background:linear-gradient(100deg,#b8862f 0%,#f6dc8e 22%,#fff6d2 30%,#e9c46a 40%,#b8862f 60%,#f3d27a 80%,#b8862f 100%);
+  background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.ruqaa{font-family:'Aref Ruqaa',serif}
+.amiri{font-family:'Amiri',serif}
+.w{display:inline-block;padding:0 .04em}
+.line{position:absolute;left:50px;right:50px;text-align:center;text-shadow:0 4px 18px rgba(0,0,0,.5)}
+.gold.w{text-shadow:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+.glass{background:linear-gradient(135deg,rgba(12,32,70,.82),rgba(8,20,46,.82));border:2px solid rgba(233,196,106,.65);box-shadow:0 14px 40px rgba(0,0,0,.4)}
+.nc{position:absolute;left:60px;right:60px;height:124px;border-radius:26px;display:flex;align-items:center;gap:26px;padding:0 26px}
+.nc .n{width:84px;height:84px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900;color:#3a2600;
+  background:radial-gradient(circle at 35% 30%,#fff1c2,#e2b04f 60%,#a8781f);box-shadow:0 0 18px rgba(246,220,142,.5)}
+.nc .nm{font-size:46px;font-weight:900;line-height:1.15;white-space:nowrap}
+.nc .rl{font-size:28px;font-weight:700;color:#f3cf7a;white-space:nowrap}
+.cap{position:absolute;left:70px;right:70px;padding:22px 30px;border-radius:30px;text-align:center}
+svg .draw{fill:none;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="stars" class="abs" width="1080" height="1920" style="left:0;top:0;display:none"></svg>
+  <div id="vig" class="abs" style="inset:0;background:radial-gradient(120% 80% at 50% 50%,rgba(0,0,0,0) 45%,rgba(0,0,0,.6) 100%)"></div>
+  <div id="dimL" class="abs" style="inset:0;background:#030a1c;opacity:0"></div>
+  <div id="cutf" class="abs" style="inset:0;background:#fff;opacity:0"></div>
+
+  <!-- S1 opening -->
+  <div id="s1" class="scene">
+    <div id="o_halo" class="abs" style="left:240px;top:120px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(246,220,142,.35),rgba(246,220,142,0) 65%)"></div>
+    <img id="o_emb" class="abs" src="emblem_gold.png" style="left:390px;top:230px;width:300px">
+    <div id="o_m1" class="line amiri" style="top:560px;font-size:70px;color:#f6dc8e">وزارة التعليم</div>
+    <div id="o_m2" class="line amiri" style="top:660px;font-size:40px;color:#dfe8ff">المديرية العامة للتعليم بمحافظة شمال الباطنة</div>
+    <div id="o_m3" class="line amiri" style="top:720px;font-size:40px;color:#dfe8ff">دائرة تطوير الأداء المدرسي</div>
+    <div id="o_bar" class="abs" style="left:260px;right:260px;top:820px;height:3px;background:linear-gradient(90deg,transparent,#e9c46a,transparent)"></div>
+    <div id="t1" class="line ruqaa gold" style="top:890px;font-size:118px;line-height:1.45"></div>
+    <div id="t2" class="line ruqaa gold" style="top:1080px;font-size:118px;line-height:1.45"></div>
+  </div>
+
+  <!-- S2 journey -->
+  <div id="s2" class="scene">
+    <svg id="world" class="abs" width="1080" height="1920" viewBox="0 3280 1080 1920" style="left:0;top:0;display:none"></svg>
+    <div id="route" class="abs" style="left:90px;right:90px;top:250px;height:90px;opacity:0">
+      <div class="abs" style="right:0;top:0;font-size:30px;font-weight:900;color:#ffb0b0;text-shadow:0 2px 10px #000">شمال الباطنة</div>
+      <div class="abs" style="left:0;top:0;font-size:30px;font-weight:900;color:#a8f5c8;text-shadow:0 2px 10px #000">الداخلية</div>
+      <div class="abs" style="left:10px;right:10px;top:62px;height:6px;border-radius:3px;background:rgba(255,255,255,.35)"></div>
+      <div id="rfill" class="abs" style="right:10px;top:62px;height:6px;border-radius:3px;background:linear-gradient(270deg,#ff5a5a,#ffd36b,#3ddc84);box-shadow:0 0 14px #ffd36b;width:0"></div>
+      <div id="rdot" class="abs" style="top:52px;width:26px;height:26px;border-radius:50%;background:#fff4c9;box-shadow:0 0 18px #ffd36b;right:0"></div>
+    </div>
+    <div id="LA" class="abs glass" style="left:200px;right:200px;top:1380px;height:170px;border-radius:40px;border-color:#ff5a5a;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0">
+      <div style="font-size:62px;font-weight:900;line-height:1.2">شمال الباطنة</div><div style="font-size:36px;font-weight:800;color:#ff8a8a">نقطة الانطلاق</div></div>
+    <div id="LB" class="abs glass" style="left:160px;right:160px;top:1380px;height:170px;border-radius:40px;border-color:#3ddc84;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0">
+      <div style="font-size:62px;font-weight:900;line-height:1.2">محافظة الداخلية</div><div style="font-size:36px;font-weight:800;color:#8af0b4">نقطة الوصول</div></div>
+    <div id="hdr" class="abs" style="left:0;right:0;top:0;height:260px;background:linear-gradient(180deg,rgba(6,15,36,.85),rgba(6,15,36,0));display:flex;flex-direction:column;align-items:center;padding-top:30px">
+      <img src="emblem_gold.png" style="width:86px"><div class="amiri" style="font-size:32px;color:#f6dc8e;margin-top:4px">وزارة التعليم</div></div>
+    <div id="c1" class="cap glass" style="top:380px"><div id="c1t" class="ruqaa gold" style="font-size:84px;line-height:1.4"></div>
+      <div id="c1b" style="font-size:46px;font-weight:800"></div></div>
+  </div>
+
+  <!-- S3 team -->
+  <div id="s3" class="scene">
+    <div id="tm0" class="line" style="top:90px;font-size:38px;font-weight:800;color:#bcd3ff;line-height:1.35">قسم إشراف الإدارة المدرسية والشراكة المجتمعية</div>
+    <div id="tm1" class="line ruqaa gold" style="top:150px;font-size:92px;line-height:1.45">الوفد التربوي الزائر</div><div id="cntb" class="abs" style="left:60px;top:200px;padding:6px 22px;border-radius:30px;border:2px solid #e9c46a;background:rgba(8,20,46,.85);font-size:30px;font-weight:800;color:#f6dc8e">١٨ عضواً</div><div id="pg" class="abs" style="right:60px;top:210px;font-size:30px;font-weight:800;color:#bcd3ff"></div>
+    <div id="names"></div>
+    <div id="tm2" class="line" style="top:1600px;font-size:52px;font-weight:900"></div>
+  </div>
+
+  <!-- S4 bridge + date -->
+  <div id="s4" class="scene">
+    <div id="b1" class="line ruqaa gold" style="top:130px;font-size:128px;line-height:1.45"></div>
+    <div id="b2" class="line ruqaa gold" style="top:300px;font-size:116px;line-height:1.45"></div>
+    <svg id="bridge" class="abs" width="1080" height="640" viewBox="0 0 1080 640" style="left:0;top:500px"></svg>
+    <div id="date" class="abs glass" style="left:110px;right:110px;top:1190px;height:200px;border-radius:100px;display:flex;align-items:center;justify-content:center;gap:28px">
+      <svg width="96" height="96" viewBox="0 0 64 64" id="calic"><g class="draw" stroke="#f6dc8e" stroke-width="3.4"><rect pathLength="1" x="8" y="12" width="48" height="44" rx="8"/><path pathLength="1" d="M8 26 H56 M20 6 V16 M44 6 V16"/></g></svg>
+      <div id="dtxt" style="font-size:84px;font-weight:900;white-space:nowrap"><span class="dg gold">٧</span> <span class="dg" style="color:#f6dc8e">–</span> <span class="dg gold">٩</span> <span class="dg">ديسمبر</span> <span class="dg gold">٢٠٢٦م</span></div>
+    </div>
+  </div>
+
+  <!-- S5 closing -->
+  <div id="s5" class="scene">
+    <div id="e_halo" class="abs" style="left:290px;top:80px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(246,220,142,.35),rgba(246,220,142,0) 65%)"></div>
+    <img id="e_emb" class="abs" src="emblem_gold.png" style="left:420px;top:170px;width:240px">
+    <div class="line amiri" style="top:440px;font-size:62px;color:#f6dc8e">وزارة التعليم</div>
+    <div class="line amiri" style="top:530px;font-size:38px;color:#dfe8ff">المديرية العامة للتعليم بمحافظة شمال الباطنة</div>
+    <div class="line amiri" style="top:585px;font-size:38px;color:#dfe8ff">دائرة تطوير الأداء المدرسي</div>
+    <div id="f1" class="line ruqaa gold" style="top:760px;font-size:150px;line-height:1.4"></div>
+    <div id="f2" class="line ruqaa gold" style="top:960px;font-size:150px;line-height:1.4"></div>
+    <div id="f3" class="abs glass" style="left:120px;right:120px;top:1290px;padding:26px 20px;border-radius:30px;text-align:center">
+      <div style="font-size:44px;font-weight:900">قسم إشراف</div>
+      <div style="font-size:40px;font-weight:800;color:#f3cf7a">الإدارة المدرسية والشراكة المجتمعية</div>
+      <div style="font-size:38px;font-weight:800;color:#bcd3ff">تعليمية شمال الباطنة</div></div>
+  </div>
+
+  <!-- persistent footer -->
+  <div id="foot" class="abs glass" style="left:80px;right:80px;top:1730px;height:140px;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.3">
+    <div style="font-size:34px;font-weight:900;white-space:nowrap">قسم إشراف الإدارة المدرسية والشراكة المجتمعية</div>
+    <div style="font-size:30px;font-weight:800;color:#f3cf7a">تعليمية شمال الباطنة</div>
+  </div>
+  <div id="flash" class="abs" style="inset:0;background:#fff;opacity:0"></div>
+</div>
+<script>
+const V=1.5, DURATION=44;
+const $=id=>document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const P=(t,a,b)=>clamp((t-a)/(b-a));
+const eOut=x=>1-Math.pow(1-x,3), eInOut=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eBack=x=>{const c=1.6;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+function rng(s){return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646}}
+function vis(t,a,b,f=.6){return Math.min(P(t,a-f/2,a+f/2),1-P(t,b-f/2,b+f/2))}
+function words(id,text){const el=$(id),g=el.classList.contains('gold');if(g)el.classList.remove('gold');el.innerHTML=text.split(' ').map(w=>`<span class="w${g?' gold':''}">${w}</span>`).join(' ')}
+function kin(id,t,a,step=.16,d=.6,mode='rise'){[...$(id).querySelectorAll('.w')].forEach((w,i)=>{const x=P(t,a+i*step,a+i*step+d),e=eOut(x);
+  w.style.opacity=clamp(x*1.6);w.style.transform=mode==='rise'?`translateY(${(1-e)*60}px)`:`scale(${lerp(1.7,1,e)})`;if(!w.classList.contains('gold'))w.style.filter=`blur(${(1-e)*10}px)`})}
+function fadeUp(el,t,a,d=.7,dy=60){const x=eOut(P(t,a,a+d));el.style.opacity=x;el.style.transform=`translateY(${(1-x)*dy}px)`}
+function popIn(el,t,a,d=.7){const x=P(t,a,a+d);el.style.opacity=clamp(x*2);el.style.transform=`scale(${eBack(x)})`}
+function drawIcons(root,t,a,d=1){root.querySelectorAll('[pathLength]').forEach((p,i)=>{const x=eInOut(P(t,a+i*.12,a+i*.12+d));p.style.strokeDasharray='1';p.style.strokeDashoffset=1-x})}
+
+// stars
+(function(){const r=rng(4);let s='';for(let i=0;i<120;i++)s+=`<circle class="st" data-p="${r()*6.3}" cx="${r()*1080}" cy="${r()*1920}" r="${.8+r()*2.4}" fill="${i%6?'#fff':'#f6dc8e'}"/>`;$('stars').innerHTML=s})();
+const STS=[...document.querySelectorAll('.st')];
+
+// ---------- WORLD ----------
+const palm=(x,y,s,c='#2f6b3a',tr='#7a5230')=>`<g transform="translate(${x},${y}) scale(${s})"><path d="M-6 0 Q0 -90 8 -170 L16 -170 Q8 -90 8 0Z" fill="${tr}"/><g class="fr" transform="translate(12,-172)">${[-160,-125,-85,-45,-10,25].map(a=>`<path d="M0 0 Q55 -28 110 18 Q55 -6 0 6Z" fill="${c}" transform="rotate(${a})"/>`).join('')}</g></g>`;
+const crenel=(x,y,w,c)=>Array.from({length:Math.floor(w/26)},(_,i)=>`<rect x="${x+5+i*26}" y="${y-18}" width="15" height="20" fill="${c}"/>`).join('');
+function world(){const r=rng(13);let h='';
+ h+=`<defs><linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d4c8f"/><stop offset=".55" stop-color="#7fb3e0"/><stop offset="1" stop-color="#ffd9a0"/></linearGradient>
+ <linearGradient id="seag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2bb3c8"/><stop offset="1" stop-color="#0a4f86"/></linearGradient>
+ <linearGradient id="mtg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9774a"/><stop offset="1" stop-color="#7a4528"/></linearGradient>
+ <radialGradient id="sun"><stop offset="0" stop-color="#fff6cf"/><stop offset=".4" stop-color="#ffd36b"/><stop offset="1" stop-color="#ffd36b" stop-opacity="0"/></radialGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+ <rect width="1080" height="1000" fill="url(#skyg)"/><circle cx="820" cy="360" r="240" fill="url(#sun)"/>
+ <g id="clouds">${[[200,250],[700,520],[350,640]].map(([x,y])=>`<g transform="translate(${x},${y})"><ellipse rx="110" ry="38" fill="#fff" opacity=".85"/><ellipse cx="-60" cy="12" rx="70" ry="28" fill="#fff" opacity=".85"/><ellipse cx="60" cy="10" rx="80" ry="30" fill="#fff" opacity=".85"/></g>`).join('')}</g>
+ <path d="M0 900 L120 740 L230 820 L380 660 L520 800 L660 690 L800 820 L950 700 L1080 780 V1100 H0Z" fill="#b98a6a" opacity=".7"/>`;
+ // Nizwa ground 900-1750
+ h+=`<rect y="880" width="1080" height="900" fill="#e8c393"/>`;
+ // palm groves
+ for(let i=0;i<10;i++)h+=palm(40+i*110+(r()-.5)*40,1240+(r()-.5)*40,.9+r()*.3);
+ // mosque
+ h+=`<g transform="translate(220,1260)"><rect x="-120" y="-130" width="240" height="130" fill="#f4e6cc"/><path d="M-80 -130 A80 80 0 0 1 80 -130Z" fill="#2f6fb0"/><rect x="-6" y="-235" width="12" height="30" fill="#c99a3e"/>
+  <rect x="140" y="-300" width="34" height="300" fill="#f4e6cc"/><path d="M136 -300 h42 l-21 -40z" fill="#2f6fb0"/>${[-90,-45,0,45,90].map(x=>`<path d="M${x-12} 0 v-50 a12 12 0 0 1 24 0 v50z" fill="#c9a77a"/>`).join('')}</g>`;
+ // Nizwa fort round tower
+ // falaj
+ h+=`<path d="M0 1480 Q300 1440 540 1500 T1080 1470" stroke="#3aa0c8" stroke-width="12" fill="none"/>`;
+ // mountains 1700-2950
+ h+=`<path d="M0 1700 L90 1600 L200 1680 L330 1560 L470 1700 L600 1580 L760 1720 L900 1600 L1080 1690 V3000 H0Z" fill="url(#mtg)"/>
+  <path d="M0 2050 L150 1900 L300 2020 L470 1880 L640 2040 L820 1900 L1080 2050 V3000 H0Z" fill="#9a5c37"/>
+  <path d="M0 2450 L180 2280 L360 2420 L520 2300 L700 2460 L880 2320 L1080 2440 V3000 H0Z" fill="#8a5232"/>`;
+ for(let k=0;k<7;k++){const y=1980+k*42;h+=`<path d="M${40+k*6} ${y} q140 -14 280 0" stroke="#5f9a43" stroke-width="10" fill="none" opacity=".9"/><path d="M${720-k*6} ${y+20} q140 -14 280 0" stroke="#5f9a43" stroke-width="10" fill="none" opacity=".9"/>`}
+ h+=`<path d="M560 2600 Q500 2750 600 2950" stroke="#59b7d6" stroke-width="16" fill="none" opacity=".8"/>`;
+ // plains 2950-3950
+ h+=`<rect y="2900" width="1080" height="1100" fill="#d9c08a"/>`;
+ for(let i=0;i<14;i++){h+=`<rect x="${r()*900}" y="${3000+r()*800}" width="${120+r()*120}" height="${60+r()*60}" rx="10" fill="${['#8fbf5a','#a9cf6c','#7aa84b'][i%3]}" opacity=".9"/>`}
+ for(let i=0;i<16;i++)h+=palm(r()*1080,3050+r()*850,.6+r()*.3);
+ // coast 3950-4420 + Sohar fort
+ h+=`<rect y="3950" width="1080" height="470" fill="#e9d3a4"/>`;
+ for(let i=0;i<9;i++)h+=palm(60+i*120+(r()-.5)*30,4380+(r()-.5)*20,.85);
+ h+=`<rect y="4410" width="1080" height="30" fill="#f2e2bb"/><rect y="4440" width="1080" height="760" fill="url(#seag)"/>
+ <g id="waves">${Array.from({length:40},(_,i)=>`<path d="M${(i%10)*120} ${4480+Math.floor(i/10)*170} q30 -12 60 0" stroke="#fff" stroke-width="4" fill="none" opacity=".6"/>`).join('')}</g>
+ <g id="dhow" transform="translate(300,4700)"><path d="M-140 -6 Q-70 30 130 4 L160 -30 L136 -10 L-150 -16Z" fill="#7a4a24"/><path d="M-10 -12 L0 -180 L8 -12Z" fill="#7a4a24"/><path d="M4 -176 Q110 -110 86 -24 L6 -28Z" fill="#fffaf1"/></g>`;
+ // road
+ h+=`<path id="road" d="M600 4250 C520 4100 480 4020 560 3900 S760 3650 620 3500 S380 3250 520 3080 S760 2850 600 2750 S330 2620 420 2500 S760 2380 640 2260 S360 2120 460 2000 S720 1860 640 1720 S520 1520 640 1330" fill="none" stroke="#6d6a66" stroke-width="34" stroke-linecap="round"/>
+ <path d="M600 4250 C520 4100 480 4020 560 3900 S760 3650 620 3500 S380 3250 520 3080 S760 2850 600 2750 S330 2620 420 2500 S760 2380 640 2260 S360 2120 460 2000 S720 1860 640 1720 S520 1520 640 1330" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="24 22" opacity=".8"/>
+ <path id="gold" d="M600 4250 C520 4100 480 4020 560 3900 S760 3650 620 3500 S380 3250 520 3080 S760 2850 600 2750 S330 2620 420 2500 S760 2380 640 2260 S360 2120 460 2000 S720 1860 640 1720 S520 1520 640 1330" fill="none" stroke="#ffd36b" stroke-width="14" stroke-linecap="round" filter="url(#glow)"/>
+ <g id="orb"><circle r="34" fill="#ffd36b" opacity=".35"/><circle r="18" fill="#fff4c9"/></g>`;
+ h+=`<g id="nizwa" transform="translate(640,1330)"><rect x="-330" y="-140" width="200" height="140" fill="#d2a46a"/>${crenel(-330,-140,200,'#d2a46a')}
+  <rect x="-150" y="-330" width="300" height="330" fill="#d9ad73"/><ellipse cy="-330" rx="150" ry="26" fill="#c99a62"/>${crenel(-150,-330,300,'#d9ad73')}
+  <path d="M-150 -330 Q0 -300 150 -330 V0 H-150Z" fill="url(#mtg)" opacity=".12"/>${[-90,-30,30,90].map(x=>`<rect x="${x-7}" y="-250" width="14" height="30" rx="7" fill="#6b4320"/>`).join('')}
+  <rect x="150" y="-170" width="180" height="170" fill="#d2a46a"/>${crenel(150,-170,180,'#d2a46a')}<rect x="-24" y="-80" width="48" height="80" rx="24" fill="#6b4320"/>
+  <g transform="translate(0,-400)"><rect x="-3" y="0" width="6" height="70" fill="#8a6a3a"/><path d="M3 0 h60 v12 h-60z" fill="#fff"/><path d="M3 12 h60 v12 h-60z" fill="#db161b"/><path d="M3 24 h60 v12 h-60z" fill="#008000"/><rect x="3" y="0" width="16" height="36" fill="#db161b"/></g></g>`;
+ h+=`<g id="sohar" transform="translate(600,4290)"><rect x="-250" y="-150" width="500" height="150" fill="#f7f1e6"/>${crenel(-250,-150,500,'#f7f1e6')}
+  <rect x="-60" y="-330" width="120" height="330" fill="#fbf7ef"/>${crenel(-60,-330,120,'#fbf7ef')}<rect x="-260" y="-210" width="80" height="210" fill="#fbf7ef"/>${crenel(-260,-210,80,'#fbf7ef')}
+  <rect x="180" y="-210" width="80" height="210" fill="#fbf7ef"/>${crenel(180,-210,80,'#fbf7ef')}${[-30,0,30].map(x=>`<rect x="${x-6}" y="-280" width="12" height="26" rx="6" fill="#b48b5a"/>`).join('')}
+  <rect x="-24" y="-80" width="48" height="80" rx="24" fill="#b48b5a"/></g>`;
+ // labels
+ const label=(id,x,y,a,b,col)=>`<g id="${id}" transform="translate(${x},${y})"><g class="lb"><rect x="-230" y="-70" width="460" height="140" rx="34" fill="rgba(8,20,46,.88)" stroke="${col}" stroke-width="5"/>
+  <text x="0" y="-8" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="52" fill="#fff">${a}</text><text x="0" y="46" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="34" fill="${col}">${b}</text></g></g>`;
+ h+=label('lbA',600,3800,'شمال الباطنة','نقطة الانطلاق','#ff5a5a');
+ h+=label('lbB',600,880,'محافظة الداخلية','نقطة الوصول','#3ddc84');
+ h+=`<g id="pinA" transform="translate(600,4250)"><circle r="22" fill="#ff5a5a" stroke="#fff" stroke-width="6"/><circle class="ring" r="22" fill="none" stroke="#ff5a5a" stroke-width="4"/></g>
+ <g id="pinB" transform="translate(640,1330)"><circle r="22" fill="#3ddc84" stroke="#fff" stroke-width="6"/><circle class="ring" r="22" fill="none" stroke="#3ddc84" stroke-width="4"/></g>`;
+ $('world').innerHTML=h;}
+world();
+const GOLD=$('gold'),GL=GOLD.getTotalLength();GOLD.style.strokeDasharray=GL;
+const LUT=[];for(let i=0;i<=400;i++){const p=GOLD.getPointAtLength(GL*i/400);LUT.push(p)}
+function lenAtY(y){for(let i=0;i<=400;i++){if(LUT[i].y<=y)return GL*i/400}return GL}
+
+// ---------- names ----------
+const MS='مشرف إدارة مدرسية',FS='مشرفة إدارة مدرسية';
+const NAMES=[['د. أحمد بن عبدالله بن علي الغفيلي','رئيس قسم إشراف الإدارة المدرسية والشراكة المجتمعية'],['سعيد بن عبدالله بن علي الجابري','مشرف أول إدارة مدرسية'],
+ ['جمعة بن علي بن جمعة الكعبي',MS],['محمد بن حسن بن إبراهيم البلوشي',MS],['د. أحمد سعيد عبدالله المرزوقي',MS],['سالم بن ناصر بن سرحان الريسي',MS],
+ ['سعيد بن سليمان بن سعيد البادي',MS],['عبدالله بن حمد بن حميد البوسعيدي',MS],['سالم بن حميد بن راشد البداعي',MS],
+ ['خالد بن محمد بن بطي القاسمي',MS],['خالد بن سالم بن محمد الخروصي',MS],['د. ظافر بن محمد بن حبيب المعمري',MS],
+ ['علي بن حمد بن سالم البريكي','مشرف تنمية علاقات مجتمعية'],['د. فاطمة بنت صقر جمعة المسلمية',FS],['شيخة بنت سالم بن حمدان العلوية','مشرفة تنمية علاقات مجتمعية'],
+ ['د. نعيمة بنت حميد بن سالم العلوية',FS],['نجلاء بنت موسى بن محمد البلوشي',FS],['نوره بنت حمد بن ناصر الغداني',FS]];
+const AR='٠١٢٣٤٥٦٧٨٩';const toAr=n=>String(n).replace(/[0-9]/g,d=>AR[d]);
+$('names').innerHTML=NAMES.map((n,i)=>`<div class="nc glass" id="nc${i}" style="top:${340+(i%9)*138}px"><div class="n">${toAr(i+1)}</div><div><div class="nm">${n[0]}</div><div class="rl">${n[1]}</div></div></div>`).join('');
+
+// ---------- bridge ----------
+(function(){let h=`<defs><filter id="bg"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+ const cx=540,cy=470,R=330;
+ h+=`<path d="M60 520 H1020" stroke="rgba(246,220,142,.25)" stroke-width="3"/>`;
+ // pillars / medallions
+ h+=`<g id="pA" transform="translate(${cx+R+60},460)"><circle r="95" fill="rgba(255,90,90,.15)" stroke="#ff5a5a" stroke-width="5"/>
+   <g class="draw" stroke="#fff" stroke-width="5"><path pathLength="1" d="M-55 25 q14 -12 28 0 t28 0 t28 0 t28 0"/><path pathLength="1" d="M-5 10 Q0 -30 10 -60 M10 -60 q-30 -6 -45 10 M10 -60 q30 -6 45 10 M10 -60 q-14 -22 -30 -26 M10 -60 q14 -22 30 -26"/></g>
+   <text y="150" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="44" fill="#fff">شمال الباطنة</text></g>`;
+ h+=`<g id="pB" transform="translate(${cx-R-60},460)"><circle r="95" fill="rgba(61,220,132,.15)" stroke="#3ddc84" stroke-width="5"/>
+   <g class="draw" stroke="#fff" stroke-width="5"><path pathLength="1" d="M-60 40 L-20 -30 L5 5 L25 -20 L60 40 Z"/><path pathLength="1" d="M-14 40 V10 H14 V40 M-14 10 v-6 h7 v4 h7 v-4 h7 v4 h7 v-4 h0"/></g>
+   <text y="150" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="44" fill="#fff">الداخلية</text></g>`;
+ // arch blocks
+ const N=16;for(let i=0;i<N;i++){const a0=Math.PI*i/N,a1=Math.PI*(i+1)/N;const p=(a,r)=>[cx+Math.cos(a)*r,cy-Math.sin(a)*r*.62];
+   const [x1,y1]=p(a0,R),[x2,y2]=p(a1,R),[x3,y3]=p(a1,R-46),[x4,y4]=p(a0,R-46);
+   h+=`<path class="blk" data-i="${i}" d="M${x1} ${y1} L${x2} ${y2} L${x3} ${y3} L${x4} ${y4}Z" fill="#e9c46a" stroke="#fff3c4" stroke-width="2" filter="url(#bg)"/>`;}
+ h+=`<path id="deck" pathLength="1" d="M${cx+R} ${cy} H${cx-R}" stroke="#f6dc8e" stroke-width="10" stroke-dasharray="1" filter="url(#bg)"/>`;
+ for(let i=1;i<10;i++){const x=cx+R-i*(2*R)/10;const yy=cy-Math.sqrt(Math.max(0,1-Math.pow((x-cx)/(R-23),2)))*(R-23)*.62;h+=`<line class="cab" x1="${x}" y1="${cy}" x2="${x}" y2="${yy}" stroke="#f6dc8e" stroke-width="3"/>`}
+ h+=`<circle id="trav" r="14" fill="#fff4c9" filter="url(#bg)"/>`;
+ $('bridge').innerHTML=h})();
+const BLK=[...document.querySelectorAll('.blk')],CAB=[...document.querySelectorAll('.cab')];
+
+words('t1','من سهول الباطنة…');words('t2','إلى جبال الداخلية');
+words('c1t','رحلةٌ تربويّة');words('tm2','ليمدَّ جسور التعاون… ويصنع أثراً يبقى');
+words('b1','جسورٌ إشرافيّة…');words('b2','وأثرٌ يمتد');words('f1','من الخبرة…');words('f2','تبدأ الحكاية');
+
+const C={t1:0+V,t2:1.84+V,c1:4.04+V,c1b:5.85+V,c1c:7.65+V,A:9.89+V,B:13.16+V,team:17.0+V,tm2:24.02+V,b1:28.5+V,b2:30.32+V,d:32.06+V,f1:36.44+V,f2:37.69+V};
+const S=[[0,C.c1-.6],[C.c1-.6,C.team-.4],[C.team-.4,C.b1-.4],[C.b1-.4,C.f1-.4],[C.f1-.4,DURATION+1]];
+
+const CUTS=[11.6,12.9,14.5,18.1,22.5,29.6];
+function seek(t){
+  $('cutf').style.opacity=Math.max(0,...CUTS.map(c=>.5*(1-Math.abs(t-c)/.12)));
+  {let d=.5*(1-P(t,C.c1-.8,C.c1-.2));d=Math.max(d,.12);d=Math.max(d,.5*Math.min(P(t,C.team-.6,C.team),1-P(t,C.b1-.6,C.b1-.2)));
+   d=Math.max(d,.32*Math.min(P(t,C.b1-.4,C.b1),1));d=Math.max(d,.72*P(t,C.f1-.6,C.f1+.2));$('dimL').style.opacity=d;}
+  { const rv=Math.min(eOut(P(t,C.A-.3,C.A+.3)),1-P(t,C.team-.7,C.team-.3));$('route').style.opacity=rv;const rp=eInOut(P(t,C.A+.4,C.B+.2));
+    $('rfill').style.width=(rp*880)+'px';$('rdot').style.right=(rp*874-3)+'px';
+    const la=P(t,C.A-.1,C.A+.45),lo=1-P(t,C.B-.5,C.B-.2);$('LA').style.opacity=Math.min(clamp(la*2),lo);$('LA').style.transform=`scale(${eBack(la)})`;
+    const lb=P(t,C.B,C.B+.55),lbo=1-P(t,C.team-.7,C.team-.3);$('LB').style.opacity=Math.min(clamp(lb*2),lbo);$('LB').style.transform=`scale(${eBack(lb)})`; }
+  STS.forEach(s=>s.setAttribute('opacity',.25+.6*Math.pow(Math.sin(t*1.4+ +s.dataset.p),2)));
+  S.forEach(([a,b],i)=>$('s'+(i+1)).style.opacity=i===0?1-P(t,b-.3,b+.3):vis(t,a,b));
+  $('flash').style.opacity=Math.max(0,...S.slice(1).map(([a])=>.15*(1-Math.abs(t-a)/.35)));
+  document.querySelectorAll('.gold').forEach(g=>g.style.backgroundPosition=`${(t*22)%300}% 0`);
+  const fv=Math.min(eOut(P(t,C.c1-.3,C.c1+.5)),1-P(t,C.f1-.7,C.f1-.2));const ft=$('foot');ft.style.opacity=fv;ft.style.transform=`translateY(${(1-fv)*120}px)`;
+
+  if(t<C.c1+.5){
+    const hp=eOut(P(t,.1,1.2));$('o_emb').style.opacity=hp;$('o_emb').style.transform=`scale(${lerp(.6,1,hp)})`;$('o_halo').style.opacity=hp*(.7+.3*Math.sin(t*2));
+    fadeUp($('o_m1'),t,.4,.6,30);fadeUp($('o_m2'),t,.6,.6,30);fadeUp($('o_m3'),t,.75,.6,30);$('o_bar').style.transform=`scaleX(${eOut(P(t,.8,1.5))})`;
+    kin('t1',t,C.t1,.25,.8,'zoom');kin('t2',t,C.t2,.25,.8,'zoom');
+  }
+  if(t>C.c1-1.2&&t<C.team+.5){
+    // camera
+    let cam;
+    if(t<C.A+.6) cam=lerp(3280,3150,eInOut(P(t,C.c1-.6,C.A+.6)));
+    else if(t<C.B-.6) cam=lerp(3150,3050,eInOut(P(t,C.A+.6,C.A+1.6)));
+    else cam=3050;
+    const climb=eInOut(P(t,C.A+1.6,C.B+.9));cam=lerp(cam,260,climb);cam-=P(t,C.B+.9,C.team)*60;
+    $('world').setAttribute('viewBox',`0 ${cam} 1080 1920`);
+    const tipY=Math.max(1330,cam+1150);const len=t<C.A+.6?0:Math.max(lenAtY(tipY),GL*0.04*eOut(P(t,C.A+.6,C.A+1.4)));
+    GOLD.style.strokeDashoffset=GL-len;const pt=GOLD.getPointAtLength(len);$('orb').setAttribute('transform',`translate(${pt.x},${pt.y}) scale(${t<C.A+.8?0:1+.15*Math.sin(t*8)})`);
+    $('dhow').setAttribute('transform',`translate(${300+t*8},${4700+Math.sin(t*1.6)*6}) rotate(${Math.sin(t*1.6)*2})`);
+    $('waves').setAttribute('transform',`translate(${(t*25)%120-120},0)`);
+    document.querySelectorAll('#world .fr').forEach((f,i)=>f.setAttribute('transform',`translate(12,-172) rotate(${Math.sin(t*1.4+i)*4})`));
+    document.querySelectorAll('#world .ring').forEach(r=>{const k=(t*.8)%1;r.setAttribute('r',22+k*50);r.setAttribute('opacity',1-k)});
+    const la=eBack(P(t,C.A-.1,C.A+.5));$('lbA').querySelector('.lb').setAttribute('transform',`scale(${la})`);$('lbA').setAttribute('opacity',clamp(la*2));
+    const lb=eBack(P(t,C.B+.9,C.B+1.5));$('lbB').querySelector('.lb').setAttribute('transform',`scale(${lb})`);$('lbB').setAttribute('opacity',clamp(lb*2));
+    // caption
+    const c1=$('c1');const cv=Math.min(eOut(P(t,C.c1-.2,C.c1+.4)),1-P(t,C.A-.5,C.A));c1.style.opacity=cv;c1.style.transform=`translateY(${(1-cv)*-40}px)`;
+    kin('c1t',t,C.c1,.25,.7,'zoom');
+    $('c1b').textContent=t<C.c1c-.1?'تمتدُّ فيها الجسور':'ويتّسعُ فيها الأثر';$('c1b').style.opacity=clamp(P(t,C.c1b-.1,C.c1b+.3))*(t>C.c1c-.1&&t<C.c1c+.2?P(t,C.c1c-.1,C.c1c+.2):1);
+  }
+  if(t>C.team-1&&t<C.b1+.5){
+    fadeUp($('tm0'),t,C.team-.2,.6,-30);kin('tm1',t,C.team+.2,.25,.7,'zoom');
+    const SW=C.team+5.6;popIn($('cntb'),t,C.team+.6,.6);$('pg').textContent=t<SW+.3?'١ / ٢':'٢ / ٢';$('pg').style.opacity=clamp(P(t,C.team+.6,C.team+1));
+    NAMES.forEach((_,i)=>{const el=$('nc'+i),k=i%9;let x,out=0;
+      if(i<9){const a=C.team+.9+k*.38;x=eOut(P(t,a,a+.45));out=eInOut(P(t,SW+k*.04,SW+.45+k*.04))}
+      else{const a=SW+.35+k*.36;x=eOut(P(t,a,a+.45))}
+      el.style.opacity=x*(1-out);el.style.transform=`translateX(${(1-x)*-260+out*700}px)`;
+      el.querySelector('.n').style.transform=`rotate(${(1-x)*-180}deg)`});
+    kin('tm2',t,C.tm2,.18,.6);
+  }
+  if(t>C.b1-1&&t<C.f1+.5){
+    kin('b1',t,C.b1,.25,.8,'zoom');kin('b2',t,C.b2,.3,.8,'zoom');
+    
+    ['pA','pB'].forEach((id,i)=>{const g=$(id);const x=eBack(P(t,C.b1-.3+i*.2,C.b1+.3+i*.2));const tx=g.getAttribute('transform').split(' scale')[0];g.setAttribute('transform',`${tx} scale(${Math.max(.01,x)})`);drawIcons(g,t,C.b1+.1+i*.2,.9)});
+    BLK.forEach((b,i)=>{const a=C.b1+.4+i*.12,x=eOut(P(t,a,a+.35));b.setAttribute('opacity',x);b.setAttribute('transform',`translate(0,${(1-x)*-80})`)});
+    $('deck').style.strokeDashoffset=1-eInOut(P(t,C.b2-.3,C.b2+.6));
+    CAB.forEach((c,i)=>c.setAttribute('opacity',clamp(P(t,C.b2+i*.06,C.b2+.3+i*.06))));
+    const tp=((t-C.b2-.8)/2.2)%1;const on=t>C.b2+.8;const tr=$('trav');tr.setAttribute('opacity',on?1:0);if(on){tr.setAttribute('cx',lerp(540+330,540-330,tp));tr.setAttribute('cy',470)}
+    const dp=P(t,C.d-.3,C.d+.4);const dd=$('date');dd.style.opacity=eOut(dp);dd.style.transform=`scale(${lerp(.7,1,eBack(dp))})`;drawIcons($('calic'),t,C.d,.9);
+    document.querySelectorAll('.dg').forEach((g,i)=>{const x=P(t,C.d+.2+i*.25,C.d+.6+i*.25);g.style.display='inline-block';g.style.opacity=x;g.style.transform=`rotateX(${(1-eOut(x))*90}deg)`});
+  }
+  if(t>C.f1-1){
+    const ep=eOut(P(t,C.f1-.4,C.f1+.6));$('e_emb').style.opacity=ep;$('e_emb').style.transform=`scale(${lerp(.7,1,ep)})`;$('e_halo').style.opacity=ep*(.7+.3*Math.sin(t*2));
+    kin('f1',t,C.f1,.3,.8,'zoom');kin('f2',t,C.f2,.3,.8,'zoom');fadeUp($('f3'),t,C.f2+1.3,.7,60);
+  }
+}
+window.seek=seek;window.DURATION=DURATION;
+document.fonts.ready.then(()=>{window.READY=true});
+</script>
+</body>
+</html>

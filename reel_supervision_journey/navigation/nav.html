@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Navigation Reel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#07111f}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Cairo',sans-serif;color:#eaf2ff;background:radial-gradient(120% 70% at 50% 30%,#0f2440,#08142a 60%,#050c1a)}
+.abs{position:absolute}
+#viewport{position:absolute;left:0;top:0;width:1080px;height:1920px;perspective:1600px;overflow:hidden}
+#map{position:absolute;left:0;top:0;width:1179px;height:1060px;transform-origin:0 0}
+.layer{position:absolute;inset:0;-webkit-mask-size:100% 100%;mask-size:100% 100%}
+#grid{position:absolute;left:-1000px;top:-1000px;width:3200px;height:3100px;background-image:linear-gradient(rgba(120,170,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,.07) 1px,transparent 1px);background-size:60px 60px}
+.glass{background:rgba(18,30,52,.78);border:1.5px solid rgba(255,255,255,.12);box-shadow:0 20px 60px rgba(0,0,0,.45);backdrop-filter:blur(18px)}
+.chip{position:absolute;padding:10px 22px;border-radius:30px;font-weight:800;font-size:30px;white-space:nowrap;transform:translate(50%,-50%)}
+.pin{position:absolute;transform:translate(50%,-50%)}
+.row{display:flex;align-items:center;gap:18px}
+.av{width:62px;height:62px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#fff}
+.pr{height:96px;border-bottom:1px solid rgba(255,255,255,.07);padding:0 6px}
+.pr .nm{font-size:32px;font-weight:800;white-space:nowrap}
+.pr .rl{font-size:22px;color:#8fa9cf;white-space:nowrap}
+.btn{border-radius:28px;font-weight:900;text-align:center}
+.day{width:118px;height:150px;border-radius:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,.06)}
+.day b{font-size:52px;line-height:1.1}.day span{font-size:24px;color:#8fa9cf}
+.on{background:linear-gradient(160deg,#22c56f,#0f8a4a);box-shadow:0 10px 30px rgba(34,197,111,.45)}
+.on span{color:#dfffe9}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="viewport">
+    <div id="grid"></div>
+    <div id="map">
+      <img class="layer" id="Llines" src="c_lines.png" style="width:1179px;height:1060px">
+      <img class="layer" id="Lred" src="c_red.png" style="width:1179px;height:1060px;filter:drop-shadow(0 0 16px rgba(255,70,90,.8))">
+      <img class="layer" id="Lgreen" src="c_green.png" style="width:1179px;height:1060px;filter:drop-shadow(0 0 16px rgba(40,220,120,.7))">
+      <svg class="abs" width="1179" height="1060" style="left:0;top:0;overflow:visible">
+        <path id="routeBg" d="M524 322 C 545 400, 600 470, 649 585" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="22" stroke-linecap="round"/>
+        <path id="route" d="M524 322 C 545 400, 600 470, 649 585" fill="none" stroke="#4da3ff" stroke-width="14" stroke-linecap="round" style="filter:drop-shadow(0 0 10px #4da3ff)"/>
+        <path id="routeDash" d="M524 322 C 545 400, 600 470, 649 585" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="10 14" stroke-linecap="round" opacity=".8"/>
+        <g id="ringA" transform="translate(524,322)"><circle r="16" fill="none" stroke="#ff5b6b" stroke-width="4"/></g>
+        <g id="ringB" transform="translate(649,585)"><circle r="16" fill="none" stroke="#3be38a" stroke-width="4"/></g>
+        <circle cx="524" cy="322" r="12" fill="#fff" stroke="#ff3b4e" stroke-width="6" id="dotA"/>
+        <g id="dotB"><circle cx="649" cy="585" r="12" fill="#fff" stroke="#14b863" stroke-width="6"/></g>
+        <g id="arrow"><circle r="26" fill="#4da3ff" opacity=".3"/><path d="M0 -20 L14 14 L0 6 L-14 14Z" fill="#fff" stroke="#1d6fe0" stroke-width="3" stroke-linejoin="round"/></g>
+      </svg>
+      <div id="wp1" class="chip glass" style="color:#ffd36b;opacity:0">✦ خبراتٌ تُنقَل</div>
+      <div id="wp2" class="chip glass" style="color:#9fe0ff;opacity:0">✦ تجاربُ تُتبادَل</div>
+      <div id="dist" class="chip glass" style="opacity:0"><span id="distT"></span></div>
+      <div id="tagA" class="chip" style="background:#ff3b4e;color:#fff;opacity:0;font-size:28px">شمال الباطنة</div>
+      <div id="tagB" class="chip" style="background:#14b863;color:#fff;opacity:0;font-size:28px">الداخلية</div>
+    </div>
+  </div>
+
+  <!-- status bar -->
+  <div class="abs" style="left:0;right:0;top:0;height:80px;display:flex;align-items:center;justify-content:space-between;padding:0 56px;font-size:30px;font-weight:800;direction:ltr">
+    <span>7:30</span><span style="display:flex;gap:14px;align-items:center"><svg width="40" height="24"><rect x="0" y="14" width="6" height="10" rx="2" fill="#eaf2ff"/><rect x="10" y="9" width="6" height="15" rx="2" fill="#eaf2ff"/><rect x="20" y="4" width="6" height="20" rx="2" fill="#eaf2ff"/><rect x="30" y="0" width="6" height="24" rx="2" fill="#eaf2ff" opacity=".4"/></svg>
+    <svg width="54" height="26"><rect x="1" y="1" width="46" height="24" rx="7" fill="none" stroke="#eaf2ff" stroke-width="2"/><rect x="4" y="4" width="34" height="18" rx="4" fill="#3be38a"/><rect x="49" y="8" width="4" height="10" rx="2" fill="#eaf2ff"/></svg></span></div>
+
+  <!-- search / route planner -->
+  <div id="search" class="abs glass" style="left:40px;right:40px;top:100px;border-radius:40px;padding:18px 30px;opacity:0">
+    <div class="row" style="height:80px"><div style="width:22px;height:22px;border-radius:50%;background:#14b863;box-shadow:0 0 0 6px rgba(20,184,99,.25)"></div>
+      <div style="flex:1"><div style="font-size:22px;color:#8fa9cf;font-weight:700">الوجهة</div><div id="destT" style="font-size:40px;font-weight:900;line-height:1.1"></div></div>
+      <svg width="40" height="40" viewBox="0 0 24 24"><circle cx="10" cy="10" r="7" fill="none" stroke="#8fa9cf" stroke-width="2.5"/><path d="M15 15 L21 21" stroke="#8fa9cf" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+    <div id="origRow" style="height:0;overflow:hidden"><div style="height:1px;background:rgba(255,255,255,.1);margin:6px 0 6px 52px"></div>
+      <div class="row" style="height:80px"><div style="width:22px;height:22px;border-radius:50%;background:#ff3b4e;box-shadow:0 0 0 6px rgba(255,59,78,.25)"></div>
+      <div style="flex:1"><div style="font-size:22px;color:#8fa9cf;font-weight:700">نقطة الانطلاق</div><div id="origT" style="font-size:40px;font-weight:900;line-height:1.1"></div></div></div></div>
+  </div>
+
+  <!-- nav banner -->
+  <div id="banner" class="abs" style="left:40px;right:40px;top:100px;height:230px;border-radius:40px;background:linear-gradient(160deg,#16a35a,#0c7a41);box-shadow:0 20px 60px rgba(0,0,0,.45);display:flex;align-items:center;gap:30px;padding:0 40px;opacity:0">
+    <svg width="110" height="110" viewBox="0 0 24 24"><path d="M12 3 L12 21 M5 10 L12 3 L19 10" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div><div id="bn1" style="font-size:40px;font-weight:800;color:#d6ffe6">لا تُبنى وحدَها…</div><div id="bn2" style="font-size:76px;font-weight:900;line-height:1.15">بل تُبنى معاً</div></div>
+  </div>
+
+  <!-- notification -->
+  <div id="notif" class="abs glass" style="left:40px;right:40px;top:100px;border-radius:40px;padding:26px 30px;display:flex;gap:24px;align-items:center;opacity:0">
+    <div style="width:96px;height:96px;border-radius:24px;background:#fff;color:#e8344a;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;flex:none"><div style="font-size:20px;font-weight:800">ديسمبر</div><div style="font-size:50px;font-weight:900;color:#111">٧</div></div>
+    <div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:24px;color:#8fa9cf;font-weight:700"><span>التقويم</span><span>الآن</span></div>
+      <div style="font-size:36px;font-weight:900">الزيارة الإشرافية إلى الداخلية</div><div style="font-size:28px;color:#cfe0ff;font-weight:700">٧ – ٩ ديسمبر ٢٠٢٦م · ثلاثة أيام</div></div>
+  </div>
+
+  <!-- bottom sheet -->
+  <div id="sheet" class="abs glass" style="left:0;right:0;top:1180px;height:900px;border-radius:56px 56px 0 0;padding:22px 50px 0">
+    <div style="width:90px;height:10px;border-radius:5px;background:rgba(255,255,255,.25);margin:0 auto 20px"></div>
+    <div id="pA" class="abs" style="left:50px;right:50px;top:60px">
+      <div style="font-size:26px;color:#8fa9cf;font-weight:700">قسم إشراف الإدارة المدرسية والشراكة المجتمعية</div>
+      <div style="font-size:54px;font-weight:900;line-height:1.3">رحلة إشرافية إلى <span style="color:#3be38a">الداخلية</span></div>
+      <div class="row" style="margin-top:14px;gap:16px;font-size:28px;font-weight:800">
+        <span style="padding:8px 20px;border-radius:20px;background:rgba(77,163,255,.18);color:#9fd0ff">١٨ مسافراً</span>
+        <span style="padding:8px 20px;border-radius:20px;background:rgba(59,227,138,.15);color:#a8f5c8">٣ أيام</span>
+        <span style="padding:8px 20px;border-radius:20px;background:rgba(255,211,107,.15);color:#ffe29a">٧–٩ ديسمبر</span></div>
+      <div id="goBtn" class="btn" style="margin-top:34px;height:110px;line-height:110px;font-size:42px;background:linear-gradient(160deg,#4da3ff,#1d6fe0);box-shadow:0 14px 40px rgba(77,163,255,.45)">ابدأ الرحلة</div>
+    </div>
+    <div id="pB" class="abs" style="left:50px;right:50px;top:60px;opacity:0">
+      <div class="row" style="justify-content:space-between"><div style="font-size:48px;font-weight:900">ركّاب الرحلة</div><div style="font-size:34px;font-weight:900;padding:6px 24px;border-radius:24px;background:rgba(77,163,255,.2);color:#9fd0ff">١٨</div></div>
+      <div id="tagline" style="font-size:28px;color:#ffe29a;font-weight:800;height:44px"></div>
+      <div style="position:absolute;left:0;right:0;top:130px;height:960px;overflow:hidden"><div id="plist"></div></div>
+    </div>
+    <div id="pC" class="abs" style="left:50px;right:50px;top:60px;opacity:0">
+      <div style="font-size:48px;font-weight:900">ديسمبر ٢٠٢٦</div>
+      <div class="row" style="margin-top:24px;justify-content:space-between;direction:rtl" id="days"></div>
+      <div style="margin-top:30px;font-size:40px;font-weight:900;color:#a8f5c8">ثلاثة أيام… من السابع إلى التاسع</div>
+    </div>
+    <div id="pD" class="abs" style="left:50px;right:50px;top:60px;opacity:0">
+      <div class="row" style="justify-content:space-between"><div><div style="font-size:26px;color:#8fa9cf;font-weight:700">الوصول المتوقع</div><div style="font-size:58px;font-weight:900">٧ ديسمبر</div></div>
+        <div style="text-align:left"><div style="font-size:26px;color:#8fa9cf;font-weight:700">الرفقة</div><div style="font-size:58px;font-weight:900">١٨ خبرة</div></div></div>
+      <div style="margin-top:20px;height:12px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden"><div id="prog" style="height:100%;width:0;background:linear-gradient(270deg,#ff3b4e,#ffd36b,#3be38a)"></div></div>
+      <div style="margin-top:26px;font-size:36px;font-weight:800;color:#cfe0ff">لأن المدرسة الناجحة لا تُبنى وحدها…</div>
+    </div>
+    <div id="pE" class="abs" style="left:50px;right:50px;top:60px;opacity:0;text-align:center">
+      <img src="emblem_gold.png" style="width:110px">
+      <div style="font-size:30px;font-weight:800;color:#ffe29a">وزارة التعليم · المديرية العامة للتعليم بمحافظة شمال الباطنة</div>
+      <div style="font-size:42px;font-weight:900;margin-top:10px">قسم إشراف الإدارة المدرسية والشراكة المجتمعية</div>
+      <div style="font-size:30px;color:#8fa9cf;font-weight:700">دائرة تطوير الأداء المدرسي</div>
+    </div>
+  </div>
+
+  <!-- arrival -->
+  <div id="arr" class="abs glass" style="left:110px;right:110px;top:560px;border-radius:50px;padding:46px 30px;text-align:center;opacity:0">
+    <div id="chk" style="width:150px;height:150px;border-radius:50%;margin:0 auto;background:linear-gradient(160deg,#3be38a,#119650);display:flex;align-items:center;justify-content:center;box-shadow:0 0 50px rgba(59,227,138,.6)">
+      <svg width="90" height="90" viewBox="0 0 24 24"><path id="chkp" d="M5 12.5 L10 17 L19 7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1"/></svg></div>
+    <div style="font-size:60px;font-weight:900;margin-top:24px">وصلتَ إلى وجهتك</div>
+    <div style="font-size:38px;font-weight:800;color:#a8f5c8">محافظة الداخلية</div>
+    <div id="arr2" style="font-size:52px;font-weight:900;color:#ffd36b;margin-top:22px;opacity:0">والأثرُ بدأ للتّو ✦</div>
+  </div>
+  <!-- splash -->
+  <div id="splash" class="abs" style="inset:0;background:#06101f;display:flex;flex-direction:column;align-items:center;justify-content:center">
+    <div id="logo" style="width:200px;height:200px;border-radius:56px;background:linear-gradient(160deg,#4da3ff,#1d6fe0);display:flex;align-items:center;justify-content:center;box-shadow:0 20px 60px rgba(77,163,255,.5)">
+      <svg width="120" height="120" viewBox="0 0 24 24"><path d="M12 2 C8 2 5 5 5 9 C5 14 12 22 12 22 C12 22 19 14 19 9 C19 5 16 2 12 2Z" fill="#fff"/><circle cx="12" cy="9" r="3" fill="#1d6fe0"/></svg></div>
+    <div style="font-size:46px;font-weight:900;margin-top:30px">جسور إشرافية</div><div style="font-size:28px;color:#8fa9cf;font-weight:700">رحلة الخبرة</div>
+  </div>
+</div>
+<script>
+const V=1.2,DURATION=42;
+const $=id=>document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const P=(t,a,b)=>clamp((t-a)/(b-a));
+const eOut=x=>1-Math.pow(1-x,3),eInOut=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eBack=x=>{const c=1.6;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+const C={dst:0+V,dstT:1.13+V,org:3.25+V,orgT:4.79+V,dist:6.53+V,km:7.77+V,w1:9.89+V,w2:11.74+V,ppl:13.87+V,p2:16.53+V,p3:19.23+V,days:22.24+V,dates:23.67+V,
+ nav:26.49+V,nav2:29.92+V,arr:31.62+V,arr2:33.46+V,end:35.4+V};
+// names
+const MS='مشرف إدارة مدرسية',FS='مشرفة إدارة مدرسية';
+const NAMES=[['د. أحمد بن عبدالله بن علي الغفيلي','رئيس قسم إشراف الإدارة المدرسية والشراكة المجتمعية'],['سعيد بن عبدالله بن علي الجابري','مشرف أول إدارة مدرسية'],
+ ['جمعة بن علي بن جمعة الكعبي',MS],['محمد بن حسن بن إبراهيم البلوشي',MS],['د. أحمد سعيد عبدالله المرزوقي',MS],['سالم بن ناصر بن سرحان الريسي',MS],
+ ['سعيد بن سليمان بن سعيد البادي',MS],['عبدالله بن حمد بن حميد البوسعيدي',MS],['سالم بن حميد بن راشد البداعي',MS],
+ ['خالد بن محمد بن بطي القاسمي',MS],['خالد بن سالم بن محمد الخروصي',MS],['د. ظافر بن محمد بن حبيب المعمري',MS],
+ ['علي بن حمد بن سالم البريكي','مشرف تنمية علاقات مجتمعية'],['د. فاطمة بنت صقر جمعة المسلمية',FS],['شيخة بنت سالم بن حمدان العلوية','مشرفة تنمية علاقات مجتمعية'],
+ ['د. نعيمة بنت حميد بن سالم العلوية',FS],['نجلاء بنت موسى بن محمد البلوشي',FS],['نوره بنت حمد بن ناصر الغداني',FS]];
+const COLS=['#4da3ff','#3be38a','#ff6b7d','#ffb340','#a78bfa','#2dd4bf'];
+$('plist').innerHTML=NAMES.map((n,i)=>{const nm=n[0].replace('د. ','');return `<div class="row pr" id="pr${i}"><div class="av" style="background:${COLS[i%6]}">${nm[0]}</div><div style="flex:1"><div class="nm">${n[0]}</div><div class="rl">${n[1]}</div></div><svg width="34" height="34" viewBox="0 0 24 24"><path d="M5 12.5 L10 17 L19 7" fill="none" stroke="#3be38a" stroke-width="3" stroke-linecap="round"/></svg></div>`}).join('');
+$('days').innerHTML=[['٦','الأحد'],['٧','الإثنين'],['٨','الثلاثاء'],['٩','الأربعاء'],['١٠','الخميس']].map((d,i)=>`<div class="day" id="d${i}"><b>${d[0]}</b><span>${d[1]}</span></div>`).join('');
+// route geometry
+const RT=$('route'),RL=RT.getTotalLength();
+function rpt(u){const p=RT.getPointAtLength(RL*clamp(u)),q=RT.getPointAtLength(RL*clamp(u+.01));return {x:p.x,y:p.y,a:Math.atan2(q.y-p.y,q.x-p.x)*180/Math.PI+90}}
+function place(el,x,y){el.style.left=(x)+'px';el.style.top=y+'px';el.style.right='auto';el.style.transform='translate(-50%,-50%)'}
+function type(el,t,a,s){const n=Math.floor(clamp((t-a)*16,0,s.length));el.textContent=s.slice(0,n)+(t>a&&n<s.length?'|':'')}
+// camera keyframes [t, cx, cy, scale, tilt, screenY]
+const CAM=[[0,600,560,1.0,0,760],[C.org-.2,600,560,1.0,0,760],[C.org+.6,520,350,1.7,0,760],[C.dist-.3,520,350,1.7,0,760],[C.dist+.6,585,455,1.35,0,760],
+ [C.ppl-.3,585,455,1.35,0,760],[C.ppl+.6,585,455,.95,0,560],[C.days-.3,585,455,.95,0,560],[C.days+.5,585,455,1.15,0,700],[C.nav-.4,585,455,1.15,0,700],
+ [C.nav+.6,'R',0,2.3,42,900],[C.arr-.2,'R',0,2.3,42,900],[C.arr+.8,649,585,1.9,0,820],[99,649,585,1.9,0,820]];
+let navU=0;
+function cam(t){let i=0;while(i<CAM.length-2&&t>CAM[i+1][0])i++;const A=CAM[i],B=CAM[i+1];const x=eInOut(P(t,A[0],B[0]));
+ const g=(k)=>{let a=A[k],b=B[k];if(k<=2){const rp=rpt(navU);if(a==='R'){a=k==1?rp.x:rp.y}if(b==='R'){b=k==1?rp.x:rp.y}if(A[1]==='R'&&k==2)a=rpt(navU).y;if(B[1]==='R'&&k==2)b=rpt(navU).y}return lerp(a,b,x)};
+ return {cx:g(1),cy:g(2),s:g(3),tilt:g(4),sy:g(5)}}
+function seek(t){
+  // splash
+  const sp=P(t,.5,1.1);$('splash').style.opacity=1-eOut(sp);$('logo').style.transform=`scale(${lerp(.6,1,eBack(P(t,0,.5)))*(1+sp*.4)})`;
+  // nav progress
+  navU=eInOut(P(t,C.nav,C.arr-.1));
+  const c=cam(t);$('map').style.transform=`translate(${540}px,${c.sy}px) rotateX(${c.tilt}deg) scale(${c.s}) translate(${-c.cx}px,${-c.cy}px)`;
+  $('grid').style.transform=`translate(${-(c.cx*c.s)%60}px,${-(c.cy*c.s)%60}px)`;
+  // map layers reveal
+  $('Llines').style.opacity=.75*eOut(P(t,.6,1.6));
+  const gr=P(t,C.dstT,C.dstT+.8);$('Lgreen').style.opacity=lerp(.25,1,eOut(gr))*(1+.0*Math.sin(t));
+  const rr=P(t,C.orgT-.2,C.orgT+.6);$('Lred').style.opacity=lerp(.25,1,eOut(rr));
+  ['ringA','ringB'].forEach((id,i)=>{const k=((t*.9)+i*.5)%1;$(id).querySelector('circle').setAttribute('r',16+k*40);$(id).setAttribute('opacity',(1-k)*(i?gr:rr))});
+  $('tagA').style.opacity=eOut(rr);place($('tagA'),524,270);$('tagB').style.opacity=eOut(gr);place($('tagB'),700,640);
+  // route draw
+  const rd=eInOut(P(t,C.dist-.1,C.km+.5));RT.style.strokeDasharray=RL;RT.style.strokeDashoffset=RL*(1-rd);$('routeBg').style.strokeDasharray=RL;$('routeBg').style.strokeDashoffset=RL*(1-rd);
+  $('routeDash').style.opacity=rd>=1?.8:0;$('routeDash').style.strokeDashoffset=-t*40;
+  // distance chip
+  const dc=$('dist');const dv=Math.min(eOut(P(t,C.dist,C.dist+.4)),1-P(t,C.w1-.3,C.w1));dc.style.opacity=dv;const mp=rpt(.3);place(dc,mp.x-130,mp.y);
+  if(t<C.km){$('distT').innerHTML='المسافة: '+(['…','٨٧','١٤٢','٢٠٣','٢٥٦'][Math.floor((t*8)%5)])+' كم'}
+  else{$('distT').innerHTML='<span style="text-decoration:line-through;text-decoration-color:#ff5b6b;text-decoration-thickness:4px;color:#8fa9cf">كيلومتراتٌ تُقطَع</span>'}
+  const w1=$('wp1'),w2=$('wp2');const a1=P(t,C.w1-.1,C.w1+.4),a2=P(t,C.w2-.1,C.w2+.4);const o2=1-P(t,C.ppl-.5,C.ppl-.1);
+  w1.style.opacity=Math.min(eOut(a1),o2);w2.style.opacity=Math.min(eOut(a2),o2);const q1=rpt(.42),q2=rpt(.72);place(w1,q1.x-150,q1.y-10);place(w2,q2.x+150,q2.y+10);
+  w1.style.transform+=` scale(${eBack(a1)})`;w2.style.transform+=` scale(${eBack(a2)})`;
+  // arrow
+  const ap=rpt(navU);$('arrow').setAttribute('transform',`translate(${ap.x},${ap.y}) rotate(${ap.a}) scale(${t>C.nav-.3&&t<C.arr+.5?1:0})`);
+  $('dotB').setAttribute('transform',`translate(649,585) scale(${1+.4*Math.max(0,1-Math.abs(t-C.arr-.3)/.5)}) translate(-649,-585)`);
+  // search panel
+  const sv=Math.min(eOut(P(t,.9,1.4)),1-P(t,C.days-.5,C.days-.2));$('search').style.opacity=sv;$('search').style.transform=`translateY(${(1-eOut(P(t,.9,1.4)))*-60}px)`;
+  type($('destT'),t,C.dstT,'محافظة الداخلية');if(t<C.dstT)$('destT').innerHTML='<span style="color:#5d7699">إلى أين؟</span>';
+  $('origRow').style.height=(eInOut(P(t,C.org-.2,C.org+.3))*92)+'px';type($('origT'),t,C.orgT-.3,'شمال الباطنة');
+  // notification
+  const nv=Math.min(eOut(P(t,C.days-.2,C.days+.3)),1-P(t,C.nav-.6,C.nav-.3));$('notif').style.opacity=nv;$('notif').style.transform=`translateY(${(1-eOut(P(t,C.days-.2,C.days+.3)))*-200}px)`;
+  // banner
+  const bv=Math.min(eOut(P(t,C.nav-.2,C.nav+.3)),1-P(t,C.arr-.4,C.arr-.1));$('banner').style.opacity=bv;$('banner').style.transform=`translateY(${(1-eOut(P(t,C.nav-.2,C.nav+.3)))*-200}px)`;
+  $('bn2').style.opacity=eOut(P(t,C.nav2-.1,C.nav2+.3));$('bn2').style.transform=`scale(${lerp(.8,1,eBack(P(t,C.nav2-.1,C.nav2+.4)))})`;$('bn2').style.transformOrigin='right center';
+  // sheet
+  let top=1180;top=lerp(top,860,eInOut(P(t,C.ppl-.3,C.ppl+.5)));top=lerp(top,1180,eInOut(P(t,C.days-.4,C.days+.3)));top=lerp(top,1330,eInOut(P(t,C.nav-.4,C.nav+.3)));
+  top=lerp(top,1180,eInOut(P(t,C.end-.6,C.end+.2)));top+= (1-eOut(P(t,1.0,1.7)))*800;$('sheet').style.top=top+'px';
+  const ph=(a,b)=>Math.min(eOut(P(t,a,a+.4)),1-P(t,b-.35,b));
+  $('pA').style.opacity=ph(-1,C.ppl);$('pB').style.opacity=ph(C.ppl,C.days);$('pC').style.opacity=ph(C.days,C.nav);$('pD').style.opacity=ph(C.nav,C.arr+1.0);$('pE').style.opacity=ph(C.end-.4,99);
+  $('goBtn').style.transform=`scale(${1+.04*Math.sin(t*5)*P(t,C.dist,C.dist+.3)})`;$('goBtn').style.filter=`brightness(${1+.4*Math.max(0,1-Math.abs(t-C.ppl+.6)/.25)})`;
+  // passengers scroll
+  const sc=eInOut(P(t,C.ppl+.5,C.days-.6));$('plist').style.transform=`translateY(${-sc*(18*96-860)}px)`;
+  NAMES.forEach((_,i)=>{const a=C.ppl+.3+Math.max(0,i*.04);const el=$('pr'+i);const x=eOut(P(t,a,a+.4));el.style.opacity=x;el.style.transform=`translateX(${(1-x)*-80}px)`});
+  $('tagline').textContent=t<C.p2?'':t<C.p3?'يحملون في حقائبهم رؤية':'وفي قلوبهم شغفاً بالتعليم';$('tagline').style.opacity=t<C.p3?P(t,C.p2,C.p2+.3):P(t,C.p3,C.p3+.3);
+  // days
+  [0,1,2,3,4].forEach(i=>{const el=$('d'+i);const on=(i>=1&&i<=3)&&t>C.dates+.3+(i-1)*.35;el.classList.toggle('on',on);el.style.transform=`scale(${on?1+.06*Math.max(0,1-Math.abs(t-(C.dates+.3+(i-1)*.35))/.3):1})`});
+  $('prog').style.width=(navU*100)+'%';
+  // arrival
+  const av=Math.min(eOut(P(t,C.arr,C.arr+.5)),1-P(t,C.end-.6,C.end-.2));$('arr').style.opacity=av;$('arr').style.transform=`scale(${lerp(.7,1,eBack(P(t,C.arr,C.arr+.6)))})`;
+  $('chkp').style.strokeDashoffset=1-eOut(P(t,C.arr+.3,C.arr+.9));const a2v=P(t,C.arr2,C.arr2+.5);$('arr2').style.opacity=eOut(a2v);$('arr2').style.transform=`translateY(${(1-eOut(a2v))*20}px)`;
+}
+window.seek=seek;window.DURATION=DURATION;
+document.fonts.ready.then(()=>{window.READY=true});
+</script>
+</body>
+</html>

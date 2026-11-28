@@ -55,8 +55,8 @@ svg .draw{fill:none;stroke-linecap:round;stroke-linejoin:round}
 
   <!-- S3 team -->
   <div id="s3" class="scene">
-    <div id="tm0" class="line" style="top:90px;font-size:38px;font-weight:800;color:#bcd3ff;line-height:1.35">فريق قسم إشراف الإدارة المدرسية والشراكة المجتمعية</div>
-    <div id="tm1" class="line ruqaa gold" style="top:150px;font-size:96px;line-height:1.45">يشارك في الزيارة</div>
+    <div id="tm0" class="line" style="top:90px;font-size:38px;font-weight:800;color:#bcd3ff;line-height:1.35">قسم إشراف الإدارة المدرسية والشراكة المجتمعية</div>
+    <div id="tm1" class="line ruqaa gold" style="top:150px;font-size:92px;line-height:1.45">الوفد التربوي الزائر</div><div id="cntb" class="abs" style="left:60px;top:200px;padding:6px 22px;border-radius:30px;border:2px solid #e9c46a;background:rgba(8,20,46,.85);font-size:30px;font-weight:800;color:#f6dc8e">١٨ عضواً</div><div id="pg" class="abs" style="right:60px;top:210px;font-size:30px;font-weight:800;color:#bcd3ff"></div>
     <div id="names"></div>
     <div id="tm2" class="line" style="top:1600px;font-size:52px;font-weight:900"></div>
   </div>
@@ -181,11 +181,15 @@ const LUT=[];for(let i=0;i<=400;i++){const p=GOLD.getPointAtLength(GL*i/400);LUT
 function lenAtY(y){for(let i=0;i<=400;i++){if(LUT[i].y<=y)return GL*i/400}return GL}
 
 // ---------- names ----------
+const MS='مشرف إدارة مدرسية',FS='مشرفة إدارة مدرسية';
 const NAMES=[['د. أحمد بن عبدالله بن علي الغفيلي','رئيس قسم إشراف الإدارة المدرسية والشراكة المجتمعية'],['سعيد بن عبدالله بن علي الجابري','مشرف أول إدارة مدرسية'],
- ['د. ظافر بن محمد بن حبيب المعمري','مشرف إدارة مدرسية'],['د. أحمد سعيد عبدالله المرزوقي','مشرف إدارة مدرسية'],['سالم بن حميد بن راشد البداعي','مشرف إدارة مدرسية'],
- ['خالد بن سالم بن محمد الخروصي','مشرف إدارة مدرسية'],['جمعة بن علي بن جمعة الكعبي','مشرف إدارة مدرسية'],['خالد بن محمد بن بطي القاسمي','مشرف إدارة مدرسية'],['عبدالله بن حمد بن حميد البوسعيدي','مشرف إدارة مدرسية']];
-const AR='٠١٢٣٤٥٦٧٨٩';
-$('names').innerHTML=NAMES.map((n,i)=>`<div class="nc glass" id="nc${i}" style="top:${340+i*138}px"><div class="n">${AR[i+1]}</div><div><div class="nm">${n[0]}</div><div class="rl">${n[1]}</div></div></div>`).join('');
+ ['جمعة بن علي بن جمعة الكعبي',MS],['محمد بن حسن بن إبراهيم البلوشي',MS],['د. أحمد سعيد عبدالله المرزوقي',MS],['سالم بن ناصر بن سرحان الريسي',MS],
+ ['سعيد بن سليمان بن سعيد البادي',MS],['عبدالله بن حمد بن حميد البوسعيدي',MS],['سالم بن حميد بن راشد البداعي',MS],
+ ['خالد بن محمد بن بطي القاسمي',MS],['خالد بن سالم بن محمد الخروصي',MS],['د. ظافر بن محمد بن حبيب المعمري',MS],
+ ['علي بن حمد بن سالم البريكي','مشرف تنمية علاقات مجتمعية'],['د. فاطمة بنت صقر جمعة المسلمية',FS],['شيخة بنت سالم بن حمدان العلوية','مشرفة تنمية علاقات مجتمعية'],
+ ['د. نعيمة بنت حميد بن سالم العلوية',FS],['نجلاء بنت موسى بن محمد البلوشي',FS],['نوره بنت حمد بن ناصر الغداني',FS]];
+const AR='٠١٢٣٤٥٦٧٨٩';const toAr=n=>String(n).replace(/[0-9]/g,d=>AR[d]);
+$('names').innerHTML=NAMES.map((n,i)=>`<div class="nc glass" id="nc${i}" style="top:${340+(i%9)*138}px"><div class="n">${toAr(i+1)}</div><div><div class="nm">${n[0]}</div><div class="rl">${n[1]}</div></div></div>`).join('');
 
 // ---------- bridge ----------
 (function(){let h=`<defs><filter id="bg"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
@@ -250,8 +254,12 @@ function seek(t){
   }
   if(t>C.team-1&&t<C.b1+.5){
     fadeUp($('tm0'),t,C.team-.2,.6,-30);kin('tm1',t,C.team+.2,.25,.7,'zoom');
-    NAMES.forEach((_,i)=>{const a=C.team+.9+i*.55,el=$('nc'+i),x=eOut(P(t,a,a+.5));el.style.opacity=x;el.style.transform=`translateX(${(1-x)*-260}px)`;
-      el.querySelector('.n').style.transform=`rotate(${(1-x)*-180}deg)`;el.style.borderColor=`rgba(233,196,106,${.4+.6*Math.max(0,1-Math.abs(t-a-.4)/.6)})`});
+    const SW=C.team+5.6;popIn($('cntb'),t,C.team+.6,.6);$('pg').textContent=t<SW+.3?'١ / ٢':'٢ / ٢';$('pg').style.opacity=clamp(P(t,C.team+.6,C.team+1));
+    NAMES.forEach((_,i)=>{const el=$('nc'+i),k=i%9;let x,out=0;
+      if(i<9){const a=C.team+.9+k*.38;x=eOut(P(t,a,a+.45));out=eInOut(P(t,SW+k*.04,SW+.45+k*.04))}
+      else{const a=SW+.35+k*.36;x=eOut(P(t,a,a+.45))}
+      el.style.opacity=x*(1-out);el.style.transform=`translateX(${(1-x)*-260+out*700}px)`;
+      el.querySelector('.n').style.transform=`rotate(${(1-x)*-180}deg)`});
     kin('tm2',t,C.tm2,.18,.6);
   }
   if(t>C.b1-1&&t<C.f1+.5){

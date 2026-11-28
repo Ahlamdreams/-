@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Trailer Overlay</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Aref+Ruqaa:wght@700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:transparent}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Cairo',sans-serif;color:#fff}
+.abs{position:absolute}
+.line{position:absolute;left:40px;right:40px;text-align:center;opacity:0}
+.sh{text-shadow:0 4px 24px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.8)}
+.gold{background:linear-gradient(100deg,#b8862f 0%,#f6dc8e 22%,#fff6d2 30%,#e9c46a 40%,#b8862f 60%,#f3d27a 80%,#b8862f 100%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 18px rgba(0,0,0,.85))}
+.ruqaa{font-family:'Aref Ruqaa',serif}.amiri{font-family:'Amiri',serif}
+.bar{position:absolute;left:0;right:0;height:150px;background:#000}
+.loc{position:absolute;right:70px;opacity:0;display:flex;align-items:center;gap:22px}
+.loc .tx{border-right:6px solid #e9c46a;padding-right:22px}
+.credit{position:absolute;left:60px;right:60px;text-align:center;opacity:0}
+.credit .nm{font-size:54px;font-weight:900;line-height:1.25}
+.credit .rl{font-size:30px;font-weight:700;color:#f3cf7a;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="vig" class="abs" style="inset:0;background:radial-gradient(120% 80% at 50% 50%,rgba(0,0,0,0) 45%,rgba(0,0,0,.55) 100%)"></div>
+  <div id="cutf" class="abs" style="inset:0;background:#fff;opacity:0"></div><div id="dim" class="abs" style="inset:0;background:#000;opacity:0"></div>
+  <div id="barT" class="bar" style="top:0"></div><div id="barB" class="bar" style="bottom:0"></div>
+
+  <!-- intro credits -->
+  <div id="i0" class="abs" style="left:0;right:0;top:250px;text-align:center;opacity:0"><img src="emblem_gold.png" style="width:110px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.8))"></div>
+  <div id="i1" class="line amiri sh" style="top:380px;font-size:40px;font-weight:700;color:#f6dc8e">وزارة التعليم • المديرية العامة للتعليم بمحافظة شمال الباطنة</div>
+  <div id="i2" class="line sh" style="top:450px;font-size:36px;font-weight:800;letter-spacing:2px">قسم إشراف الإدارة المدرسية والشراكة المجتمعية <span style="color:#f6dc8e">يقدّم</span></div>
+  <div id="h1" class="line ruqaa gold" style="top:760px;font-size:128px;line-height:1.45">من سهول الباطنة…</div>
+  <div id="h2" class="line ruqaa gold" style="top:930px;font-size:128px;line-height:1.45">إلى جبال الداخلية</div>
+
+  <div id="r1" class="line sh" style="top:1430px;font-size:70px;font-weight:900">رحلةٌ تربويّة</div>
+  <div id="r2" class="line sh" style="top:1540px;font-size:52px;font-weight:800;color:#f6dc8e">تمتدُّ فيها الجسور</div>
+  <div id="r3" class="line sh" style="top:1540px;font-size:52px;font-weight:800;color:#f6dc8e">ويتّسعُ فيها الأثر</div>
+
+  <div id="locA" class="loc" style="top:1420px"><div class="tx sh"><div style="font-size:30px;font-weight:800;color:#ff8a8a;letter-spacing:3px">نقطة الانطلاق</div><div style="font-size:72px;font-weight:900;line-height:1.2">شمال الباطنة</div><div id="cA" dir="ltr" style="font-size:28px;font-weight:700;color:#f6dc8e;text-align:right;font-family:monospace"></div></div></div>
+  <div id="locB" class="loc" style="top:1420px"><div class="tx sh"><div style="font-size:30px;font-weight:800;color:#8af0b4;letter-spacing:3px">نقطة الوصول</div><div style="font-size:72px;font-weight:900;line-height:1.2">محافظة الداخلية</div><div id="cB" dir="ltr" style="font-size:28px;font-weight:700;color:#f6dc8e;text-align:right;font-family:monospace"></div></div></div>
+
+  <div id="tmH" class="line sh" style="top:200px;font-size:34px;font-weight:800;letter-spacing:4px;color:#f6dc8e">الوفد التربوي الزائر • ١٨ عضواً</div>
+  <div id="credits"></div>
+  <div id="tm2" class="line sh" style="top:1500px;font-size:50px;font-weight:900">ليمدَّ جسور التعاون… ويصنع أثراً يبقى</div>
+
+  <div id="T1" class="line ruqaa gold" style="top:640px;font-size:170px;line-height:1.4">جسورٌ إشرافيّة</div>
+  <div id="T2" class="line ruqaa gold" style="top:860px;font-size:120px;line-height:1.4">وأثرٌ يمتد</div>
+  <div id="D0" class="line sh" style="top:1230px;font-size:40px;font-weight:800;letter-spacing:10px;color:#f6dc8e">قريباً</div>
+  <div id="D1" class="line sh" style="top:1290px;font-size:92px;font-weight:900">٧ – ٩ ديسمبر ٢٠٢٦م</div>
+
+  <div id="E0" class="abs" style="left:0;right:0;top:420px;text-align:center;opacity:0"><img src="emblem_gold.png" style="width:170px"></div>
+  <div id="E1" class="line ruqaa gold" style="top:660px;font-size:150px;line-height:1.4">من الخبرة…</div>
+  <div id="E2" class="line ruqaa gold" style="top:860px;font-size:150px;line-height:1.4">تبدأ الحكاية</div>
+  <div id="E3" class="line sh" style="top:1180px;line-height:1.5"><div style="font-size:42px;font-weight:900">قسم إشراف الإدارة المدرسية والشراكة المجتمعية</div><div style="font-size:36px;font-weight:800;color:#f6dc8e">تعليمية شمال الباطنة</div>
+    <div class="amiri" style="font-size:32px;color:#ddd;margin-top:10px">وزارة التعليم • المديرية العامة للتعليم بمحافظة شمال الباطنة • دائرة تطوير الأداء المدرسي</div></div>
+</div>
+<script>
+const V=1.5, DURATION=44;
+const $=id=>document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const P=(t,a,b)=>clamp((t-a)/(b-a));
+const eOut=x=>1-Math.pow(1-x,3), eInOut=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const lerp=(a,b,x)=>a+(b-a)*x;
+// show between a and b with fade f; style: rise/zoom/track
+function show(el,t,a,b,mode='rise',f=.45){const i=P(t,a,a+f),o=1-P(t,b-f,b);const v=Math.min(eOut(i),o);el.style.opacity=v;
+  if(mode==='rise')el.style.transform=`translateY(${(1-eOut(i))*40}px)`;
+  if(mode==='zoom')el.style.transform=`scale(${lerp(1.25,1,eOut(i))+ (t-a)*.012})`;
+  if(mode==='track')el.style.letterSpacing=`${lerp(18,0,eOut(i))}px`;
+  if(mode!=='zoom'&&mode!=='rise'&&mode!=='track')el.style.transform='';
+  el.style.filter=(el.classList.contains('gold')?'drop-shadow(0 6px 18px rgba(0,0,0,.85)) ':'')+`blur(${(1-eOut(i))*10}px)`}
+const MS='مشرف إدارة مدرسية',FS='مشرفة إدارة مدرسية';
+const NAMES=[['د. أحمد بن عبدالله بن علي الغفيلي','رئيس قسم إشراف الإدارة المدرسية والشراكة المجتمعية'],['سعيد بن عبدالله بن علي الجابري','مشرف أول إدارة مدرسية'],
+ ['جمعة بن علي بن جمعة الكعبي',MS],['محمد بن حسن بن إبراهيم البلوشي',MS],['د. أحمد سعيد عبدالله المرزوقي',MS],['سالم بن ناصر بن سرحان الريسي',MS],
+ ['سعيد بن سليمان بن سعيد البادي',MS],['عبدالله بن حمد بن حميد البوسعيدي',MS],['سالم بن حميد بن راشد البداعي',MS],
+ ['خالد بن محمد بن بطي القاسمي',MS],['خالد بن سالم بن محمد الخروصي',MS],['د. ظافر بن محمد بن حبيب المعمري',MS],
+ ['علي بن حمد بن سالم البريكي','مشرف تنمية علاقات مجتمعية'],['د. فاطمة بنت صقر جمعة المسلمية',FS],['شيخة بنت سالم بن حمدان العلوية','مشرفة تنمية علاقات مجتمعية'],
+ ['د. نعيمة بنت حميد بن سالم العلوية',FS],['نجلاء بنت موسى بن محمد البلوشي',FS],['نوره بنت حمد بن ناصر الغداني',FS]];
+// groups of 3
+$('credits').innerHTML=NAMES.map((n,i)=>`<div class="credit sh" id="cr${i}" style="top:${560+(i%3)*250}px"><div class="nm">${n[0]}</div><div class="rl">${n[1]}</div></div>`).join('');
+const C={t1:0+V,t2:1.84+V,c1:4.04+V,c1b:5.85+V,c1c:7.65+V,A:9.89+V,B:13.16+V,team:17.0+V,tm2:24.02+V,b1:28.5+V,b2:30.32+V,d:32.06+V,f1:36.44+V,f2:37.69+V};
+function typer(el,t,a,s){const n=Math.floor(clamp((t-a)*22,0,s.length));el.textContent=s.slice(0,n)+(n<s.length&&t>a?'▌':'')}
+const CUTS=[9.7,14.3,18.3,24.2,29.8];
+function seek(t){
+  $('cutf').style.opacity=Math.max(0,...CUTS.map(c=>.55*(1-Math.abs(t-c)/.12)));
+  document.querySelectorAll('.gold').forEach(g=>g.style.backgroundPosition=`${(t*22)%300}% 0`);
+  // letterbox: in from 0, thinner in middle, thick at end
+  const bh=lerp(0,150,eOut(P(t,0,.8)));$('barT').style.height=bh+'px';$('barB').style.height=bh+'px';
+  // dims for readability
+  let dim=0;dim=Math.max(dim,.35*(1-P(t,5,5.6)));dim=Math.max(dim,.45*Math.min(P(t,C.team-.3,C.team+.3),1-P(t,C.b1-.6,C.b1-.2)));
+  dim=Math.max(dim,.25*Math.min(P(t,C.b1-.2,C.b1+.3),1));dim=Math.max(dim,.75*P(t,C.f1-.6,C.f1+.2));$('dim').style.opacity=dim;
+  // intro
+  show($('i0'),t,.2,5.3,'rise');show($('i1'),t,.4,5.3,'rise');show($('i2'),t,.7,5.3,'track');
+  show($('h1'),t,C.t1,5.4,'zoom');show($('h2'),t,C.t2,5.4,'zoom');
+  show($('r1'),t,C.c1,C.A-.4,'track');show($('r2'),t,C.c1b,C.c1c-.05,'rise',.3);show($('r3'),t,C.c1c,C.A-.4,'rise',.3);
+  // locations
+  [['locA','cA',C.A,C.B-.2,'24.35°N  56.71°E'],['locB','cB',C.B+.1,C.team-.4,'22.93°N  57.53°E']].forEach(([id,cid,a,b,s])=>{const el=$(id);const i=P(t,a,a+.5),o=1-P(t,b-.4,b);el.style.opacity=Math.min(eOut(i),o);el.style.transform=`translateX(${(1-eOut(i))*-120}px)`;typer($(cid),t,a+.4,s)});
+  // credits
+  show($('tmH'),t,C.team,C.b1-.4,'track');
+  NAMES.forEach((_,i)=>{const g=Math.floor(i/3),a=C.team+.5+g*1.62+(i%3)*.12,b=C.team+.5+(g+1)*1.62+.05;show($('cr'+i),t,a,b,'rise',.3)});
+  show($('tm2'),t,C.tm2,C.b1-.4,'rise');
+  // title
+  show($('T1'),t,C.b1,C.f1-.5,'zoom',.6);show($('T2'),t,C.b2,C.f1-.5,'zoom',.6);show($('D0'),t,C.d,C.f1-.5,'track');show($('D1'),t,C.d+.2,C.f1-.5,'rise');
+  // end
+  show($('E0'),t,C.f1-.4,99,'rise');show($('E1'),t,C.f1,99,'zoom');show($('E2'),t,C.f2,99,'zoom');show($('E3'),t,C.f2+1.2,99,'rise');
+}
+window.seek=seek;window.DURATION=DURATION;
+document.fonts.ready.then(()=>{window.READY=true});
+</script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Mission HUD</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#02070d}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Cairo',sans-serif;color:#dff7ff;background:radial-gradient(100% 60% at 50% 40%,#06202a,#02090f 70%)}
+.abs{position:absolute}
+.mono{font-family:'JetBrains Mono',monospace;direction:ltr}
+.cy{color:#3cf0dc}.am{color:#ffb040}
+.panel{position:absolute;border:1.5px solid rgba(60,240,220,.35);background:linear-gradient(180deg,rgba(10,40,50,.55),rgba(3,14,20,.6));border-radius:10px}
+.panel:before,.panel:after{content:"";position:absolute;width:26px;height:26px;border:3px solid #3cf0dc}
+.panel:before{top:-3px;right:-3px;border-left:none;border-bottom:none}.panel:after{bottom:-3px;left:-3px;border-right:none;border-top:none}
+.ptitle{position:absolute;top:-22px;right:24px;padding:2px 14px;background:#02090f;font-size:26px;font-weight:800;color:#3cf0dc;letter-spacing:1px}
+.scene{position:absolute;inset:0;opacity:0}
+.big{position:absolute;left:40px;right:40px;text-align:center;font-weight:900}
+.glow{text-shadow:0 0 18px rgba(60,240,220,.55)}
+.aglow{text-shadow:0 0 18px rgba(255,176,64,.6)}
+.tile{position:absolute;width:478px;height:88px;border-radius:8px;padding:6px 16px;display:flex;flex-direction:column;justify-content:center;background:rgba(10,40,50,.65);border-right:6px solid #3cf0dc}
+.tile .n{font-size:26px;font-weight:800;white-space:nowrap;line-height:1.2}.tile .r{font-size:17px;color:#8ab8c4;white-space:nowrap}
+.mod{position:absolute;left:60px;right:60px;height:300px}
+.bar{height:14px;border-radius:7px;background:rgba(60,240,220,.12);overflow:hidden}.bar>div{height:100%;width:0;background:linear-gradient(270deg,#3cf0dc,#1a9fb0);box-shadow:0 0 12px #3cf0dc}
+svg .draw{fill:none;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="grid" class="abs" style="inset:0;background-image:linear-gradient(rgba(60,240,220,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(60,240,220,.06) 1px,transparent 1px);background-size:54px 54px"></div>
+  <div id="scan" class="abs" style="left:0;right:0;height:180px;background:linear-gradient(180deg,rgba(60,240,220,0),rgba(60,240,220,.07),rgba(60,240,220,0))"></div>
+
+  <!-- top bar -->
+  <div id="top" class="abs" style="left:40px;right:40px;top:40px;height:110px;display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid rgba(60,240,220,.35)">
+    <div style="display:flex;align-items:center;gap:18px"><img src="emblem_gold.png" style="width:70px"><div><div style="font-size:30px;font-weight:900">مركز متابعة المهمة</div><div style="font-size:20px;color:#8ab8c4;font-weight:700">دائرة تطوير الأداء المدرسي · تعليمية شمال الباطنة</div></div></div>
+    <div class="mono" style="text-align:left"><div style="font-size:22px;color:#ff5b5b;font-weight:700"><span id="rec">●</span> LIVE</div><div id="clk" style="font-size:24px;color:#3cf0dc;font-weight:700"></div></div>
+  </div>
+  <!-- bottom ticker -->
+  <div class="abs" style="left:0;right:0;bottom:0;height:90px;border-top:1.5px solid rgba(60,240,220,.35);background:rgba(2,10,15,.85);overflow:hidden">
+    <div id="tick" style="position:absolute;left:0;right:0;top:20px;text-align:center;white-space:nowrap;font-size:30px;font-weight:800;color:#8ab8c4">قسم إشراف الإدارة المدرسية والشراكة المجتمعية <span style="color:#3cf0dc">◆</span> تعليمية شمال الباطنة</div></div>
+
+  <!-- S1 mission -->
+  <div id="s1" class="scene">
+    <div id="boot" class="abs mono" style="left:60px;top:200px;font-size:24px;color:#3cf0dc;line-height:1.6;text-align:left"></div>
+    <div id="t1" class="big glow" style="top:200px;font-size:96px">مهمّةٌ إشرافيّة</div>
+    <div id="mpanel" class="panel" style="left:40px;right:40px;top:400px;height:1000px;overflow:hidden">
+      <div id="map" class="abs" style="left:0;top:0;width:1179px;height:1060px;transform-origin:0 0">
+        <img src="h_lines.png" class="abs" style="left:0;top:0;width:1179px;height:1060px;opacity:.8">
+        <img id="mR" src="h_red.png" class="abs" style="left:0;top:0;width:1179px;height:1060px;filter:drop-shadow(0 0 10px #ffb040)">
+        <img id="mG" src="h_green.png" class="abs" style="left:0;top:0;width:1179px;height:1060px;filter:drop-shadow(0 0 10px #3cf0dc)">
+        <div id="radar" class="abs" style="left:374px;top:172px;width:300px;height:300px;border-radius:50%;background:conic-gradient(from 0deg,rgba(255,176,64,.45),rgba(255,176,64,0) 70deg,rgba(255,176,64,0));border:1.5px solid rgba(255,176,64,.4)"></div>
+        <svg class="abs" width="1179" height="1060" style="left:0;top:0;overflow:visible">
+          <path id="rt" d="M524 322 C 545 400, 600 470, 649 585" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="14 12"/>
+          <circle id="pk" r="9" fill="#fff" style="filter:drop-shadow(0 0 8px #fff)"/>
+          <g transform="translate(524,322)"><circle r="10" fill="#ffb040"/><circle id="rgA" r="10" fill="none" stroke="#ffb040" stroke-width="3"/></g>
+          <g transform="translate(649,585)"><circle r="10" fill="#3cf0dc"/><circle id="rgB" r="10" fill="none" stroke="#3cf0dc" stroke-width="3"/></g>
+        </svg>
+      </div>
+      <div class="ptitle">خريطة المهمة</div>
+      <div id="lA" class="abs" style="right:30px;top:40px;padding:12px 20px;border:1.5px solid #ffb040;background:rgba(40,25,5,.8);border-radius:8px;opacity:0"><div style="font-size:22px;color:#ffb040;font-weight:800">نقطة الانطلاق</div><div style="font-size:42px;font-weight:900">شمال الباطنة</div></div>
+      <div id="lB" class="abs" style="left:30px;bottom:150px;padding:12px 20px;border:1.5px solid #3cf0dc;background:rgba(5,35,40,.85);border-radius:8px;opacity:0"><div style="font-size:22px;color:#3cf0dc;font-weight:800">الوجهة</div><div style="font-size:42px;font-weight:900">محافظة الداخلية</div></div>
+      <div id="st" class="abs mono" style="left:30px;bottom:30px;font-size:22px;color:#8ab8c4;text-align:left;line-height:1.5"></div>
+    </div>
+    <div id="s1b" class="abs" style="left:60px;right:60px;top:1450px;display:flex;justify-content:space-between;opacity:0">
+      <div><div style="font-size:24px;color:#8ab8c4;font-weight:700">حالة المهمة</div><div style="font-size:40px;font-weight:900" class="am aglow">قيد الانطلاق</div></div>
+      <div><div style="font-size:24px;color:#8ab8c4;font-weight:700">الفريق</div><div style="font-size:40px;font-weight:900" class="cy glow">١٨ عضواً</div></div>
+      <div><div style="font-size:24px;color:#8ab8c4;font-weight:700">المدة</div><div style="font-size:40px;font-weight:900" class="cy glow">٣ أيام</div></div></div>
+  </div>
+
+  <!-- S2 team composition -->
+  <div id="s2" class="scene">
+    <div id="u1" class="big glow" style="top:200px;font-size:90px">فريقٌ واحد</div>
+    <div id="u2" class="big am aglow" style="top:330px;font-size:56px">بخبراتٍ متكاملة</div>
+    <svg id="donut" class="abs" width="620" height="620" viewBox="-310 -310 620 620" style="left:230px;top:450px"></svg>
+    <div id="dc" class="abs" style="left:230px;top:450px;width:620px;height:620px;display:flex;flex-direction:column;align-items:center;justify-content:center"><div id="dcn" class="glow" style="font-size:150px;font-weight:900;line-height:1"></div><div style="font-size:34px;font-weight:800;color:#8ab8c4">عضواً</div></div>
+    <div id="legend" class="abs" style="left:70px;right:70px;top:1130px"></div>
+  </div>
+  <!-- S2b roster -->
+  <div id="s2b" class="scene">
+    <div class="big glow" style="top:190px;font-size:60px">فريق المهمة</div>
+    <div id="roster"></div>
+  </div>
+
+  <!-- S3 tools -->
+  <div id="s3" class="scene">
+    <div id="v0" class="big glow" style="top:200px;font-size:84px">أدواتُ التطوير</div>
+    <div id="m1" class="mod panel" style="top:400px"><div class="ptitle">وحدة ٠١</div></div>
+    <div id="m2" class="mod panel" style="top:760px"><div class="ptitle">وحدة ٠٢</div></div>
+    <div id="m3" class="mod panel" style="top:1120px"><div class="ptitle">وحدة ٠٣</div></div>
+  </div>
+
+  <!-- S4 exchange -->
+  <div id="s4" class="scene">
+    <div id="x1" class="big glow" style="top:200px;font-size:70px">يتبادلون الممارساتِ الناجحة</div>
+    <svg id="net" class="abs" width="1080" height="900" viewBox="0 0 1080 900" style="left:0;top:380px"></svg>
+    <div id="x2" class="big am aglow" style="top:1300px;font-size:58px">ويصنعون حواراً مهنيّاً</div>
+    <div id="x3" class="big glow" style="top:1400px;font-size:72px">يرتقي بالمدرسة ↑</div>
+  </div>
+
+  <!-- S5 window -->
+  <div id="s5" class="scene">
+    <div id="w1" class="big glow" style="top:220px;font-size:88px">نافذة المهمة</div>
+    <div id="w2" class="big am aglow" style="top:360px;font-size:54px">ثلاثةُ أيّام</div>
+    <div id="days" class="abs" style="left:60px;right:60px;top:520px;display:flex;gap:30px;justify-content:center"></div>
+    <div class="abs" style="left:100px;right:100px;top:1060px"><div class="bar" style="height:18px"><div id="wbar"></div></div>
+      <div class="mono" style="display:flex;justify-content:space-between;margin-top:14px;font-size:26px;color:#8ab8c4"><span>09·DEC</span><span>08·DEC</span><span>07·DEC</span></div></div>
+    <div id="w3" class="big" style="top:1220px;font-size:76px">ديسمبر <span class="cy glow">٢٠٢٦م</span></div>
+  </div>
+
+  <!-- S6 closing -->
+  <div id="s6" class="scene">
+    <div id="z1" class="big glow" style="top:560px;font-size:110px">الإشرافُ شراكة…</div>
+    <div id="z2" class="big am aglow" style="top:760px;font-size:84px">والأثرُ مسؤوليّةٌ مشتركة</div>
+    <div id="rost2" style="position:absolute;inset:0"></div><div id="z3" class="abs" style="left:0;right:0;top:1360px;text-align:center;opacity:0">
+      <div style="font-size:40px;font-weight:900">قسم إشراف الإدارة المدرسية والشراكة المجتمعية</div>
+      <div style="font-size:30px;font-weight:800;color:#8ab8c4">تعليمية شمال الباطنة · وزارة التعليم</div>
+      <div class="mono cy" style="font-size:28px;margin-top:20px;letter-spacing:4px">MISSION ✓ 07–09 · 12 · 2026</div></div>
+  </div>
+  <div id="flash" class="abs" style="inset:0;background:#3cf0dc;opacity:0"></div>
+</div>
+<script>
+const V=1.0,DURATION=54;
+const $=id=>document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const P=(t,a,b)=>clamp((t-a)/(b-a));
+const eOut=x=>1-Math.pow(1-x,3),eInOut=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eBack=x=>{const c=1.6;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+const AR='٠١٢٣٤٥٦٧٨٩';const toAr=n=>String(n).replace(/[0-9]/g,d=>AR[d]);
+const C={m:0+V,a:2.01+V,b:4.22+V,team:7.55+V,ex:9.01+V,head:11.23+V,sen:12.36+V,sa:13.5+V,cr:18.13+V,tools:22.71+V,k1:24.86+V,k2:26.15+V,k3:28.35+V,
+ x1:30.8+V,x2:33.35+V,x3:35.52+V,w:37.5+V,wd:38.93+V,z1:43.58+V,z2:45.68+V,end:48.4+V};
+const S=[['s1',0,C.team-.3],['s2',C.team-.3,20.6+V],['s2b',20.6+V,C.k1-.5],['s3',C.k1-.5,C.x1-.3],['s4',C.x1-.3,C.w-.3],['s5',C.w-.3,C.z1-.3],['s6',C.z1-.3,99]];
+function vis(t,a,b,f=.4){return Math.min(P(t,a-f/2,a+f/2),1-P(t,b-f/2,b+f/2))}
+function fade(el,t,a,dy=30,d=.5){const x=eOut(P(t,a,a+d));el.style.opacity=x;el.style.transform=`translateY(${(1-x)*dy}px)`}
+function glitch(el,t,a){const x=P(t,a,a+.45);el.style.opacity=x>0?(x<1&&Math.floor(t*30)%3==0?.35:1)*clamp(x*3):0;el.style.transform=`translateX(${x<1?(Math.sin(t*90)*14*(1-x)):0}px)`;el.style.filter=x<1?`blur(${(1-x)*3}px)`:''}
+function type(el,t,a,s,cps=26){const n=Math.floor(clamp((t-a)*cps,0,s.length));el.textContent=s.slice(0,n)}
+// ticker
+
+// names
+const MS='مشرف إدارة مدرسية',FS='مشرفة إدارة مدرسية',CR1='مشرف تنمية علاقات مجتمعية',CR2='مشرفة تنمية علاقات مجتمعية';
+const NAMES=[['د. أحمد بن عبدالله بن علي الغفيلي','رئيس القسم',0],['سعيد بن عبدالله بن علي الجابري','مشرف أول إدارة مدرسية',1],
+ ['جمعة بن علي بن جمعة الكعبي',MS,2],['محمد بن حسن بن إبراهيم البلوشي',MS,2],['د. أحمد سعيد عبدالله المرزوقي',MS,2],['سالم بن ناصر بن سرحان الريسي',MS,2],
+ ['سعيد بن سليمان بن سعيد البادي',MS,2],['عبدالله بن حمد بن حميد البوسعيدي',MS,2],['سالم بن حميد بن راشد البداعي',MS,2],
+ ['خالد بن محمد بن بطي القاسمي',MS,2],['خالد بن سالم بن محمد الخروصي',MS,2],['د. ظافر بن محمد بن حبيب المعمري',MS,2],
+ ['علي بن حمد بن سالم البريكي',CR1,3],['د. فاطمة بنت صقر جمعة المسلمية',FS,2],['شيخة بنت سالم بن حمدان العلوية',CR2,3],
+ ['د. نعيمة بنت حميد بن سالم العلوية',FS,2],['نجلاء بنت موسى بن محمد البلوشي',FS,2],['نوره بنت حمد بن ناصر الغداني',FS,2]];
+const RC=['#ffd36b','#ffb040','#3cf0dc','#b48cff'];
+function roster(id,top,pf){$(id).innerHTML=NAMES.map((n,i)=>`<div class="tile" id="${pf}${i}" style="top:${top+Math.floor(i/2)*100}px;${i%2?'left:52px':'right:52px'};border-right-color:${RC[n[2]]}"><div class="n">${n[0]}</div><div class="r">${n[1]}</div></div>`).join('')}
+roster('roster',300,'ra_');roster('rost2',420,'rb_');
+// donut
+const SEG=[['رئيس قسم',1,'#ffd36b','head'],['مشرف أول',1,'#ffb040','sen'],['مشرفو ومشرفات الإدارة المدرسية',14,'#3cf0dc','sa'],['تنمية العلاقات المجتمعية',2,'#b48cff','cr']];
+(function(){let h='<circle r="250" fill="none" stroke="rgba(60,240,220,.1)" stroke-width="56"/>';let acc=0;
+ SEG.forEach((s,i)=>{const a0=acc/18,a1=(acc+s[1])/18;acc+=s[1];h+=`<circle id="sg${i}" r="250" fill="none" stroke="${s[2]}" stroke-width="56" pathLength="1" stroke-dasharray="0 1" transform="rotate(${-90+a0*360})" style="filter:drop-shadow(0 0 10px ${s[2]})"/>`;
+ h+=`<g id="sgl${i}" opacity="0"><text x="${Math.cos(((a0+a1)/2*360-90)*Math.PI/180)*250}" y="${Math.sin(((a0+a1)/2*360-90)*Math.PI/180)*250+12}" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="36" fill="#02070d">${toAr(s[1])}</text></g>`});
+ h+='<circle r="300" fill="none" stroke="rgba(60,240,220,.3)" stroke-width="2" stroke-dasharray="6 10" id="dring"/>';$('donut').innerHTML=h;
+ $('legend').innerHTML=SEG.map((s,i)=>`<div id="lg${i}" style="display:flex;align-items:center;gap:20px;height:96px;border-bottom:1px solid rgba(60,240,220,.15);opacity:0"><div style="width:26px;height:26px;border-radius:6px;background:${s[2]};box-shadow:0 0 12px ${s[2]}"></div><div style="flex:1;font-size:38px;font-weight:800">${s[0]}</div><div style="font-size:54px;font-weight:900;color:${s[2]}">${toAr(s[1])}</div></div>`).join('')})();
+// modules
+const MOD=[['قراءةُ الأداء','تحليل المؤشرات · تقييم الواقع · خطط التحسين','<path pathLength="1" d="M8 52 H58"/><path pathLength="1" d="M10 44 L22 32 L32 38 L44 20 L56 12"/><path pathLength="1" d="M48 12 H56 V20"/>'],
+ ['دعمُ القيادات المدرسية','تمكين · توجيه · تطوير مهني','<circle pathLength="1" cx="32" cy="20" r="10"/><path pathLength="1" d="M12 56 C12 40 52 40 52 56"/><path pathLength="1" d="M44 30 L52 22 L60 30"/>'],
+ ['بناءُ الشراكة مع المجتمع','أولياء الأمور · المؤسسات · المجتمع المحلي','<circle pathLength="1" cx="16" cy="22" r="7"/><circle pathLength="1" cx="48" cy="22" r="7"/><circle pathLength="1" cx="32" cy="44" r="7"/><path pathLength="1" d="M22 26 L28 38 M42 26 L36 38 M23 22 H41"/>']];
+MOD.forEach((m,i)=>{$('m'+(i+1)).innerHTML+=`<div style="display:flex;align-items:center;gap:30px;padding:40px 40px 0"><svg width="130" height="130" viewBox="0 0 64 64" style="flex:none;border:2px solid rgba(60,240,220,.4);border-radius:16px;padding:10px"><g class="draw" stroke="#3cf0dc" stroke-width="3.2">${m[2]}</g></svg>
+ <div style="flex:1"><div style="font-size:52px;font-weight:900" class="glow">${m[0]}</div><div style="font-size:26px;color:#8ab8c4;font-weight:700">${m[1]}</div></div><div class="mono" id="pc${i}" style="font-size:40px;color:#3cf0dc;font-weight:700"></div></div>
+ <div style="padding:26px 40px 0"><div class="bar"><div id="br${i}"></div></div></div>`});
+// network
+(function(){let h='';const r=(s=>()=>{s=(s*16807)%2147483647;return(s-1)/2147483646})(5);
+ const A=[],B=[];for(let i=0;i<9;i++){A.push([820+(r()-.5)*260,450+(r()-.5)*560]);B.push([260+(r()-.5)*260,450+(r()-.5)*560])}
+ window.NA=A;window.NB=B;
+ h+=`<text x="820" y="80" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="38" fill="#ffb040">شمال الباطنة</text><text x="260" y="80" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="38" fill="#3cf0dc">الداخلية</text>`;
+ const E=[];for(let i=0;i<9;i++){E.push([A[i],B[(i*4)%9]]);E.push([A[i],B[(i*7+2)%9]])}window.NE=E;
+ E.forEach((e,i)=>h+=`<path class="ne" id="ne${i}" d="M${e[0][0]} ${e[0][1]} Q540 ${450+(i%2?-1:1)*120} ${e[1][0]} ${e[1][1]}" fill="none" stroke="rgba(60,240,220,.35)" stroke-width="2" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>`);
+ E.forEach((e,i)=>h+=`<circle class="pkt" id="pk${i}" r="6" fill="${i%2?'#ffb040':'#3cf0dc'}" opacity="0"/>`);
+ A.forEach((p,i)=>h+=`<circle class="na" cx="${p[0]}" cy="${p[1]}" r="14" fill="#ffb040" opacity="0" style="filter:drop-shadow(0 0 8px #ffb040)"/>`);
+ B.forEach((p,i)=>h+=`<circle class="nb" cx="${p[0]}" cy="${p[1]}" r="14" fill="#3cf0dc" opacity="0" style="filter:drop-shadow(0 0 8px #3cf0dc)"/>`);
+ h+=`<g id="school" transform="translate(540,450)" opacity="0"><circle r="90" fill="rgba(2,7,13,.9)" stroke="#fff" stroke-width="3"/><g class="draw" stroke="#fff" stroke-width="5"><path d="M-50 40 H50 M-40 40 V0 H40 V40 M-50 0 L0 -36 L50 0 M-10 40 V18 H10 V40"/></g></g>`;
+ $('net').innerHTML=h})();
+// days
+$('days').innerHTML=[['٧','الإثنين','اليوم ٠١'],['٨','الثلاثاء','اليوم ٠٢'],['٩','الأربعاء','اليوم ٠٣']].reverse().reverse().map((d,i)=>`<div class="panel" id="dy${i}" style="position:relative;width:290px;height:440px;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0">
+ <div class="mono cy" style="font-size:24px;letter-spacing:2px">${['DAY 01','DAY 02','DAY 03'][i]}</div><div class="glow" style="font-size:170px;font-weight:900;line-height:1.1">${d[0]}</div><div style="font-size:34px;font-weight:800;color:#8ab8c4">${d[1]}</div><div style="font-size:28px;font-weight:800" class="am">${d[2]}</div></div>`).join('');
+function seek(t){
+  $('scan').style.top=((t*260)%2200-200)+'px';
+  $('rec').style.opacity=Math.floor(t*2)%2?1:.2;
+  const sec=Math.floor(t);$('clk').textContent=`T+00:${String(sec).padStart(2,'0')}:${String(Math.floor((t%1)*100)).padStart(2,'0')}`;
+  S.forEach(([id,a,b])=>$(id).style.opacity=id==='s1'?1-P(t,b-.2,b+.2):vis(t,a,b));
+  $('flash').style.opacity=Math.max(0,...S.slice(1).map(([,a])=>.12*(1-Math.abs(t-a)/.15)));
+  // S1
+  if(t<C.team+.5){
+    const bl=['> تهيئة نظام المتابعة…  OK','> تحميل خريطة المحافظات…  OK','> تحديد الفريق: ١٨ عضواً…  OK'];
+    $('boot').innerHTML=bl.map((s,i)=>{const a=i*.3;const n=Math.floor(clamp((t-a)*60,0,s.length));return s.slice(0,n)}).join('<br>');$('boot').style.opacity=1-P(t,.9,1.1);
+    glitch($('t1'),t,C.m);
+    const mp=eOut(P(t,.7,1.5));$('mpanel').style.opacity=mp;$('mpanel').style.transform=`scaleY(${lerp(.02,1,mp)})`;
+    const z=eInOut(P(t,C.a-.3,C.b+1.5));const s=lerp(1.25,1.45,z),cx=lerp(600,590,z),cy=lerp(560,470,z);
+    $('map').style.transform=`translate(${500}px,${500}px) scale(${s}) translate(${-cx}px,${-cy}px)`;
+    $('radar').style.transform=`rotate(${t*140}deg)`;$('radar').style.opacity=.9;
+    $('mR').style.opacity=.25+.75*eOut(P(t,C.a,C.a+.5))*(.8+.2*Math.sin(t*6));$('mG').style.opacity=.25+.75*eOut(P(t,C.b,C.b+.5))*(.8+.2*Math.sin(t*6+1));
+    const rt=$('rt'),L=rt.getTotalLength();const rp=eInOut(P(t,C.a+.6,C.b+1.2));rt.style.strokeDashoffset=-t*30;rt.style.opacity=rp>0?1:0;
+    rt.setAttribute('stroke-dasharray',`14 12`);rt.style.clipPath='';const pp=rt.getPointAtLength(L*((t*.45)%1)*rp);$('pk').setAttribute('cx',pp.x);$('pk').setAttribute('cy',pp.y);$('pk').style.opacity=rp>0?1:0;
+    ['rgA','rgB'].forEach((id,i)=>{const k=(t*.8+i*.5)%1;$(id).setAttribute('r',10+k*46);$(id).setAttribute('opacity',1-k)});
+    fade($('lA'),t,C.a,20);fade($('lB'),t,C.b+.2,20);
+    $('st').innerHTML=t<C.b?`STATUS: <span style="color:#ffb040">DEPARTURE</span><br>ORIGIN: NORTH AL BATINAH`:`STATUS: <span style="color:#3cf0dc">EN ROUTE</span><br>DEST: AD DAKHILIYAH`;
+    fade($('s1b'),t,C.b+1.2,30);
+  }
+  // S2
+  if(t>C.team-1&&t<21.5+V){
+    glitch($('u1'),t,C.team);glitch($('u2'),t,C.ex);
+    let total=0;SEG.forEach((s,i)=>{const a=C[s[3]];const x=eOut(P(t,a,a+.8));$('sg'+i).setAttribute('stroke-dasharray',`${x*s[1]/18} 1`);$('sgl'+i).setAttribute('opacity',x>.9?1:0);total+=x*s[1];
+      const lg=$('lg'+i);lg.style.opacity=eOut(P(t,a,a+.4));lg.style.transform=`translateX(${(1-eOut(P(t,a,a+.4)))*-60}px)`});
+    $('dcn').textContent=toAr(Math.round(total));$('dring').setAttribute('transform',`rotate(${t*20})`);
+  }
+  if(t>20+V&&t<C.k1){NAMES.forEach((_,i)=>{const a=20.6+V+.1+i*.05,el=$('ra_'+i),x=eOut(P(t,a,a+.35));el.style.opacity=x;el.style.transform=`translateX(${(i%2?-1:1)*(1-x)*80}px)`})}
+  // S3
+  if(t>C.tools-1&&t<C.x1+.5){
+    glitch($('v0'),t,C.k1-.4);
+    [C.k1,C.k2,C.k3].forEach((a,i)=>{const el=$('m'+(i+1));const x=eOut(P(t,a-.3,a+.2));el.style.opacity=x;el.style.transform=`scaleX(${lerp(.3,1,x)})`;
+      el.querySelectorAll('[pathLength]').forEach((p,j)=>{p.style.strokeDasharray=1;p.style.strokeDashoffset=1-eInOut(P(t,a+j*.12,a+.8+j*.12))});
+      const b=eInOut(P(t,a,a+1.6));$('br'+i).style.width=(b*100)+'%';$('pc'+i).textContent=Math.round(b*100)+'%';
+      el.style.borderColor=`rgba(60,240,220,${.35+.5*Math.max(0,1-Math.abs(t-a-.5)/.8)})`});
+  }
+  // S4
+  if(t>C.x1-1&&t<C.w+.5){
+    glitch($('x1'),t,C.x1);
+    document.querySelectorAll('.na,.nb').forEach((n,i)=>n.setAttribute('opacity',eOut(P(t,C.x1+i*.04,C.x1+.3+i*.04))*(.7+.3*Math.sin(t*4+i))));
+    NE.forEach((e,i)=>{const a=C.x1+.6+i*.08;$('ne'+i).style.strokeDashoffset=1-eInOut(P(t,a,a+.6));
+      const pe=$('ne'+i),L=pe.getTotalLength();const u=((t-a-.6)*.7+i*.13)%1;const on=t>a+.6;const dir=i%2?1-u:u;const p=pe.getPointAtLength(L*dir);
+      $('pk'+i).setAttribute('cx',p.x);$('pk'+i).setAttribute('cy',p.y);$('pk'+i).setAttribute('opacity',on?.9:0)});
+    const sc=P(t,C.x3-.2,C.x3+.6);$('school').setAttribute('opacity',eOut(sc));$('school').setAttribute('transform',`translate(540,${450-sc*20}) scale(${eBack(sc)*(1+.04*Math.sin(t*5))})`);
+    fade($('x2'),t,C.x2,30);fade($('x3'),t,C.x3,30);
+  }
+  // S5
+  if(t>C.w-1&&t<C.z1+.5){
+    glitch($('w1'),t,C.w-.2);fade($('w2'),t,C.w+.2,20);
+    [0,1,2].forEach(i=>{const a=C.wd+.2+i*.55,el=$('dy'+i),x=P(t,a,a+.5);el.style.opacity=eOut(x);el.style.transform=`rotateY(${(1-eOut(x))*90}deg)`});
+    $('wbar').style.width=(eInOut(P(t,C.wd+.2,C.wd+2.2))*100)+'%';fade($('w3'),t,C.wd+1.8,30);
+  }
+  // S6
+  if(t>C.z1-1){
+    glitch($('z1'),t,C.z1);glitch($('z2'),t,C.z2);
+    const up=eInOut(P(t,C.end+.2,C.end+1));$('z1').style.top=lerp(560,175,up)+'px';$('z2').style.top=lerp(760,300,up)+'px';$('z1').style.fontSize=lerp(110,64,up)+'px';$('z2').style.fontSize=lerp(84,48,up)+'px';
+    NAMES.forEach((_,i)=>{const a=C.end+.8+i*.05,el=$('rb_'+i),x=eOut(P(t,a,a+.35));el.style.opacity=x;el.style.transform=`translateY(${(1-x)*30}px)`});
+    fade($('z3'),t,C.end+1.6,40);
+  }
+}
+window.seek=seek;window.DURATION=DURATION;
+document.fonts.ready.then(()=>{window.READY=true});
+</script>
+</body>
+</html>

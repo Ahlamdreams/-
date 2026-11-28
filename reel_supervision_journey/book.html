@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Supervision Book</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Aref+Ruqaa:wght@700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Cairo',sans-serif;color:#fff;background:#050208}
+.abs{position:absolute}
+.gold{background:linear-gradient(100deg,#b8862f 0%,#f6dc8e 22%,#fff6d2 30%,#e9c46a 40%,#b8862f 60%,#f3d27a 80%,#b8862f 100%);
+  background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.ruqaa{font-family:'Aref Ruqaa',serif}.amiri{font-family:'Amiri',serif}
+.w{display:inline-block;padding:0 .04em}
+.line{position:absolute;left:40px;right:40px;text-align:center}
+.gold.w{filter:drop-shadow(0 4px 12px rgba(0,0,0,.7))}
+/* book */
+#bookwrap{position:absolute;left:40px;top:620px;width:1000px;height:740px;transform-origin:50% 60%}
+#book{position:absolute;inset:0}
+.base,.leaf{position:absolute;top:0;width:500px;height:740px}
+.base{background:#f4ecdc;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+#baseR{left:500px;border-radius:0 6px 6px 0}#baseL{left:0;border-radius:6px 0 0 6px}
+.leaf{left:0;transform-origin:100% 50%;transform-style:preserve-3d}
+.face{position:absolute;inset:0;backface-visibility:hidden;overflow:hidden;background:linear-gradient(90deg,#efe5d2,#f7f0e2 85%,#e4d6bc);color:#3a2616}
+.face.back{transform:rotateY(180deg);background:linear-gradient(270deg,#efe5d2,#f7f0e2 85%,#e4d6bc)}
+.shade{position:absolute;inset:0;pointer-events:none}
+.frame{position:absolute;inset:20px;border:2px solid #5a3d22;outline:1px solid #c79b4a;outline-offset:-8px}
+.corner{position:absolute;width:70px;height:70px}
+.pc{position:absolute;left:40px;right:40px;text-align:center}
+.cover{background:radial-gradient(120% 90% at 50% 40%,#5b1d8f,#2a0b47 70%,#16052a)!important;color:#f6dc8e}
+.nm{display:flex;align-items:center;gap:12px;height:62px;padding:0 6px;border-bottom:1px solid rgba(120,80,40,.25)}
+.nm .n{width:40px;height:40px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;background:radial-gradient(circle at 35% 30%,#8f4fd6,#4a1580)}
+.nm .t1{font-size:24px;font-weight:900;line-height:1.1;white-space:nowrap;color:#2c1a0c}
+.nm .t2{font-size:16px;font-weight:700;color:#8a5a1c;white-space:nowrap}
+.pill{position:absolute;left:150px;right:150px;padding:18px 20px;border-radius:26px;text-align:center;
+  background:linear-gradient(135deg,rgba(40,14,70,.8),rgba(15,6,30,.8));border:1.5px solid rgba(233,196,106,.7);box-shadow:0 10px 40px rgba(120,40,200,.35)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="spot" class="abs" style="left:-200px;top:-300px;width:1480px;height:2000px;background:radial-gradient(40% 55% at 50% 30%,rgba(190,140,255,.28),rgba(0,0,0,0) 70%)"></div>
+  <svg id="rib" class="abs" width="1080" height="1920" style="left:0;top:0"></svg>
+  <canvas id="spk" class="abs" width="1080" height="1920" style="left:0;top:0"></canvas>
+
+  <div id="hdr" class="abs" style="left:0;right:0;top:50px;text-align:center;opacity:0">
+    <img src="emblem_gold.png" style="width:80px"><div class="amiri" style="font-size:30px;color:#f6dc8e;font-weight:700">وزارة التعليم</div></div>
+  <div id="t1" class="line ruqaa gold" style="top:200px;font-size:104px;line-height:1.45"></div>
+  <div id="t2" class="line ruqaa gold" style="top:350px;font-size:104px;line-height:1.45"></div>
+  <div id="sub" class="line" style="top:300px;font-size:48px;font-weight:800;color:#e9d7ff"></div>
+
+  <div id="bookwrap"><div id="book">
+    <div class="base" id="baseL"></div><div class="base" id="baseR"><div class="frame"></div></div>
+    <div class="leaf" id="L4"><div class="face front" id="L4f"></div><div class="face back"></div><div class="shade"></div></div>
+    <div class="leaf" id="L3"><div class="face front" id="L3f"></div><div class="face back" id="L3b"></div><div class="shade"></div></div>
+    <div class="leaf" id="L2"><div class="face front" id="L2f"></div><div class="face back" id="L2b"></div><div class="shade"></div></div>
+    <div class="leaf" id="L1"><div class="face front" id="L1f"></div><div class="face back" id="L1b"></div><div class="shade"></div></div>
+    <div class="leaf" id="L0"><div class="face front cover" id="L0f"></div><div class="face back" id="L0b"></div><div class="shade"></div></div>
+    <svg id="trail" class="abs" width="1000" height="740" style="left:0;top:0;pointer-events:none;z-index:50"></svg>
+  </div></div>
+
+  <div id="f0" class="abs" style="left:0;right:0;top:220px;text-align:center;opacity:0"><img src="emblem_gold.png" style="width:170px"></div>
+  <div id="f1" class="line ruqaa gold" style="top:460px;font-size:150px;line-height:1.4"></div>
+  <div id="f2" class="line ruqaa gold" style="top:660px;font-size:150px;line-height:1.4"></div>
+
+  <div id="foot" class="pill" style="top:1690px;opacity:0">
+    <div style="font-size:34px;font-weight:900">قسم إشراف</div>
+    <div style="font-size:32px;font-weight:800;color:#f3cf7a;white-space:nowrap">الإدارة المدرسية والشراكة المجتمعية</div>
+    <div style="font-size:28px;font-weight:800;color:#d9c2ff">تعليمية شمال الباطنة</div></div>
+  <div id="flash" class="abs" style="inset:0;background:#fff;opacity:0"></div>
+</div>
+<script>
+const V=1.5, DURATION=44;
+const $=id=>document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const P=(t,a,b)=>clamp((t-a)/(b-a));
+const eOut=x=>1-Math.pow(1-x,3), eInOut=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eBack=x=>{const c=1.6;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+function rng(s){return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646}}
+function words(id,text){const el=$(id),g=el.classList.contains('gold');if(g)el.classList.remove('gold');el.innerHTML=text.split(' ').map(w=>`<span class="w${g?' gold':''}">${w}</span>`).join(' ')}
+function kin(id,t,a,step=.16,d=.6,mode='rise'){[...$(id).querySelectorAll('.w')].forEach((w,i)=>{const x=P(t,a+i*step,a+i*step+d),e=eOut(x);
+  w.style.opacity=clamp(x*1.6);w.style.transform=mode==='rise'?`translateY(${(1-e)*40}px)`:`scale(${lerp(1.7,1,e)})`;if(!w.classList.contains('gold'))w.style.filter=`blur(${(1-e)*8}px)`})}
+function fadeUp(el,t,a,d=.7,dy=40){const x=eOut(P(t,a,a+d));el.style.opacity=x;el.style.transform=`translateY(${(1-x)*dy}px)`}
+
+// ---------- page building blocks ----------
+const corner=(pos)=>{const r={tl:'',tr:'scale(-1,1)',bl:'scale(1,-1)',br:'scale(-1,-1)'}[pos];const st={tl:'left:26px;top:26px',tr:'right:26px;top:26px',bl:'left:26px;bottom:26px',br:'right:26px;bottom:26px'}[pos];
+ return `<svg class="corner" style="${st}" viewBox="0 0 70 70"><g transform="translate(35,35) ${r} translate(-35,-35)" fill="none" stroke="#7a5228" stroke-width="2"><path d="M4 40 C4 16 16 4 40 4"/><path d="M12 30 C14 18 18 14 30 12"/><circle cx="8" cy="8" r="4" fill="#c79b4a" stroke="none"/><path d="M40 4 q8 6 0 12 q-6 -6 0 -12z" fill="#7a5228"/><path d="M4 40 q6 8 12 0 q-6 -6 -12 0z" fill="#7a5228"/></g></svg>`};
+const deco=()=>`<div class="frame"></div>${corner('tl')}${corner('tr')}${corner('bl')}${corner('br')}`;
+const ARCH='M0 720 L0 250 Q0 120 120 60 Q190 25 210 0 Q230 25 300 60 Q420 120 420 250 L420 720Z';
+function archSvg(id,inner,h=420){return `<svg width="320" height="${h}" viewBox="0 0 420 720" style="display:block;margin:0 auto"><defs><clipPath id="${id}"><path d="${ARCH}"/></clipPath></defs>
+ <g clip-path="url(#${id})">${inner}</g><path d="${ARCH}" fill="none" stroke="#7a5228" stroke-width="7"/><path d="${ARCH}" fill="none" stroke="#d3a95a" stroke-width="3" transform="translate(14,22) scale(.933,.97)"/></svg>`}
+const palm=(x,y,s,c='#2f6b3a')=>`<g transform="translate(${x},${y}) scale(${s})"><path d="M-6 0 Q0 -90 8 -170 L16 -170 Q8 -90 8 0Z" fill="#7a5230"/><g transform="translate(12,-172)">${[-160,-125,-85,-45,-10,25].map(a=>`<path d="M0 0 Q55 -28 110 18 Q55 -6 0 6Z" fill="${c}" transform="rotate(${a})"/>`).join('')}</g></g>`;
+const cren=(x,y,w,c)=>Array.from({length:Math.floor(w/26)},(_,i)=>`<rect x="${x+5+i*26}" y="${y-18}" width="15" height="20" fill="${c}"/>`).join('');
+const BAT=`<rect width="420" height="720" fill="#9fd3f0"/><circle cx="320" cy="170" r="60" fill="#ffe08a"/><rect y="560" width="420" height="160" fill="#1c8fb8"/>
+ ${[0,1,2,3].map(i=>`<path d="M${20+i*100} ${610+(i%2)*40} q25 -10 50 0" stroke="#fff" stroke-width="4" fill="none"/>`).join('')}<rect y="520" width="420" height="44" fill="#ecd7a7"/>
+ <g transform="translate(210,520)"><rect x="-150" y="-110" width="300" height="110" fill="#fbf7ef"/>${cren(-150,-110,300,'#fbf7ef')}<rect x="-45" y="-250" width="90" height="250" fill="#fff"/>${cren(-45,-250,90,'#fff')}
+ <rect x="-170" y="-160" width="60" height="160" fill="#fff"/>${cren(-170,-160,60,'#fff')}<rect x="110" y="-160" width="60" height="160" fill="#fff"/>${cren(110,-160,60,'#fff')}<rect x="-18" y="-60" width="36" height="60" rx="18" fill="#b48b5a"/></g>
+ ${palm(40,560,.8)}${palm(380,560,.85)}<path d="M120 690 Q-10 640 60 600 L200 600 Q260 640 120 690Z" fill="#7a4a24" opacity="0"/>`;
+const DAK=`<rect width="420" height="720" fill="#f6c98d"/><circle cx="110" cy="190" r="56" fill="#fff1c2"/>
+ <path d="M0 420 L90 300 L170 380 L260 270 L340 360 L420 300 V720 H0Z" fill="#b9774a"/><path d="M0 500 L120 420 L230 500 L330 430 L420 480 V720 H0Z" fill="#8a5232"/>
+ <rect y="560" width="420" height="160" fill="#e8c393"/>
+ <g transform="translate(220,600)"><rect x="-90" y="-210" width="180" height="210" fill="#d9ad73"/><ellipse cy="-210" rx="90" ry="16" fill="#c99a62"/>${cren(-90,-210,180,'#d9ad73')}
+ <rect x="-200" y="-90" width="110" height="90" fill="#d2a46a"/>${cren(-200,-90,110,'#d2a46a')}<rect x="90" y="-110" width="110" height="110" fill="#d2a46a"/>${cren(90,-110,110,'#d2a46a')}
+ ${[-45,0,45].map(x=>`<rect x="${x-6}" y="-160" width="12" height="24" rx="6" fill="#6b4320"/>`).join('')}<rect x="-16" y="-54" width="32" height="54" rx="16" fill="#6b4320"/></g>${palm(30,640,.7)}${palm(395,650,.75)}`;
+const BRG=`<rect width="420" height="720" fill="#2a0b47"/>${Array.from({length:30},(_,i)=>`<circle cx="${(i*137)%420}" cy="${(i*89)%420}" r="${1+(i%3)}" fill="#fff" opacity=".7"/>`).join('')}
+ <path d="M30 520 Q210 300 390 520" stroke="#e9c46a" stroke-width="26" fill="none"/><path d="M10 520 H410" stroke="#f6dc8e" stroke-width="10"/>
+ ${[1,2,3,4,5,6,7,8].map(i=>{const x=30+i*40;const y=520-Math.sqrt(Math.max(0,1-Math.pow((x-210)/180,2)))*220*.95;return `<line x1="${x}" y1="520" x2="${x}" y2="${y}" stroke="#f6dc8e" stroke-width="3"/>`}).join('')}
+ <rect y="540" width="420" height="180" fill="#3b1266"/><circle cx="60" cy="510" r="22" fill="#ff5a5a"/><circle cx="360" cy="510" r="22" fill="#3ddc84"/>`;
+
+const MS='مشرف إدارة مدرسية',FS='مشرفة إدارة مدرسية';
+const NAMES=[['د. أحمد بن عبدالله بن علي الغفيلي','رئيس قسم إشراف الإدارة المدرسية والشراكة المجتمعية'],['سعيد بن عبدالله بن علي الجابري','مشرف أول إدارة مدرسية'],
+ ['جمعة بن علي بن جمعة الكعبي',MS],['محمد بن حسن بن إبراهيم البلوشي',MS],['د. أحمد سعيد عبدالله المرزوقي',MS],['سالم بن ناصر بن سرحان الريسي',MS],
+ ['سعيد بن سليمان بن سعيد البادي',MS],['عبدالله بن حمد بن حميد البوسعيدي',MS],['سالم بن حميد بن راشد البداعي',MS],
+ ['خالد بن محمد بن بطي القاسمي',MS],['خالد بن سالم بن محمد الخروصي',MS],['د. ظافر بن محمد بن حبيب المعمري',MS],
+ ['علي بن حمد بن سالم البريكي','مشرف تنمية علاقات مجتمعية'],['د. فاطمة بنت صقر جمعة المسلمية',FS],['شيخة بنت سالم بن حمدان العلوية','مشرفة تنمية علاقات مجتمعية'],
+ ['د. نعيمة بنت حميد بن سالم العلوية',FS],['نجلاء بنت موسى بن محمد البلوشي',FS],['نوره بنت حمد بن ناصر الغداني',FS]];
+const AR='٠١٢٣٤٥٦٧٨٩';const toAr=n=>String(n).replace(/[0-9]/g,d=>AR[d]);
+const nameRows=(a,b)=>NAMES.slice(a,b).map((n,i)=>`<div class="nm" id="nm${a+i}"><div class="n">${toAr(a+i+1)}</div><div><div class="t1">${n[0]}</div><div class="t2">${n[1]}</div></div></div>`).join('');
+
+// cover
+$('L0f').innerHTML=`<div class="frame" style="border-color:#e9c46a;outline-color:#f6dc8e"></div>
+ <div class="pc" style="top:90px"><img src="emblem_gold.png" style="width:120px"></div>
+ <div class="pc amiri" style="top:240px;font-size:30px;font-weight:700">وزارة التعليم</div>
+ <div class="pc ruqaa gold" style="top:330px;font-size:62px;line-height:1.5">من سهول الباطنة</div>
+ <div class="pc ruqaa gold" style="top:420px;font-size:62px;line-height:1.5">إلى جبال الداخلية</div>
+ <div class="pc" style="top:560px;font-size:26px;font-weight:800;color:#e9d7ff">جسورٌ إشرافيّة… وأثرٌ يمتد</div>`;
+// spread 1
+$('L0b').innerHTML=deco()+`<div class="pc" style="top:80px">${archSvg('a1',`<rect width="420" height="720" fill="#3b1266"/><image href="emblem_gold.png" x="110" y="200" width="200" height="200"/><rect y="460" width="420" height="260" fill="#2a0b47"/>`,330)}</div>
+ <div class="pc ruqaa" id="p1a" style="top:430px;font-size:70px;color:#4a1580;line-height:1.4">رحلةٌ تربويّة</div>
+ <div class="pc amiri" style="top:560px;font-size:28px;color:#7a5228">٧ – ٩ ديسمبر ٢٠٢٦م</div>`;
+$('L1f').innerHTML=deco()+`<div class="pc" style="top:150px"><svg width="120" height="40" viewBox="0 0 120 40"><path d="M0 20 H45 M75 20 H120" stroke="#c79b4a" stroke-width="2"/><path d="M60 6 L72 20 L60 34 L48 20Z" fill="#7a5228"/></svg></div>
+ <div class="pc ruqaa" id="p1b" style="top:230px;font-size:62px;color:#3a2616;line-height:1.5">تمتدُّ فيها الجسور</div>
+ <div class="pc ruqaa" id="p1c" style="top:380px;font-size:62px;color:#4a1580;line-height:1.5">ويتّسعُ فيها الأثر</div>
+ <div class="pc" style="top:560px"><svg width="120" height="40" viewBox="0 0 120 40"><path d="M0 20 H45 M75 20 H120" stroke="#c79b4a" stroke-width="2"/><path d="M60 6 L72 20 L60 34 L48 20Z" fill="#7a5228"/></svg></div>`;
+// spread 2
+$('L1b').innerHTML=deco()+`<div class="pc" style="top:70px" id="arA">${archSvg('a2',BAT)}</div>
+ <div class="pc" id="capA" style="top:520px"><div style="font-size:44px;font-weight:900;color:#3a2616">شمال الباطنة</div><div style="font-size:28px;font-weight:800;color:#c0392b">نقطة الانطلاق</div></div>`;
+$('L2f').innerHTML=deco()+`<div class="pc" style="top:70px" id="arB">${archSvg('a3',DAK)}</div>
+ <div class="pc" id="capB" style="top:520px"><div style="font-size:44px;font-weight:900;color:#3a2616">محافظة الداخلية</div><div style="font-size:28px;font-weight:800;color:#1e8a4c">نقطة الوصول</div></div>`;
+// spread 3 names
+$('L2b').innerHTML=deco()+`<div class="pc ruqaa" style="top:44px;font-size:40px;color:#4a1580;line-height:1.4">الوفد التربوي الزائر</div><div class="abs" style="left:44px;right:44px;top:118px">${nameRows(0,9)}</div>`;
+$('L3f').innerHTML=deco()+`<div class="pc" style="top:52px;font-size:30px;font-weight:900;color:#7a5228">إجمالي أعضاء الوفد: ١٨ عضواً</div><div class="abs" style="left:44px;right:44px;top:118px">${nameRows(9,18)}</div>`;
+// spread 4
+$('L3b').innerHTML=deco()+`<div class="pc" style="top:70px">${archSvg('a4',BRG)}</div><div class="pc ruqaa" id="p4a" style="top:510px;font-size:58px;color:#4a1580;line-height:1.5">جسورٌ إشرافيّة…</div>`;
+$('L4f').innerHTML=deco()+`<div class="pc ruqaa" id="p4b" style="top:170px;font-size:76px;color:#3a2616;line-height:1.5">وأثرٌ يمتد</div>
+ <div class="pc" style="top:340px"><svg width="120" height="40" viewBox="0 0 120 40"><path d="M0 20 H45 M75 20 H120" stroke="#c79b4a" stroke-width="2"/><path d="M60 6 L72 20 L60 34 L48 20Z" fill="#7a5228"/></svg></div>
+ <div class="pc" id="p4c" style="top:420px"><div style="display:inline-block;padding:16px 26px;border-radius:40px;background:linear-gradient(135deg,#5b1d8f,#2a0b47);border:2px solid #e9c46a">
+   <div style="font-size:26px;font-weight:800;color:#e9d7ff">الفترة</div><div class="gold" style="font-size:40px;font-weight:900;white-space:nowrap">٧ – ٩ ديسمبر ٢٠٢٦م</div></div></div>`;
+
+words('t1','من سهول الباطنة…');words('t2','إلى جبال الداخلية');words('f1','من الخبرة…');words('f2','تبدأ الحكاية');
+
+// ---------- ribbons ----------
+function ribbon(t,cfg){const pts=[],N=70;for(let i=0;i<=N;i++){const u=i/N;const x=lerp(cfg.x0,cfg.x1,u)+Math.sin(u*cfg.f+t*cfg.s+cfg.p)*cfg.ax;
+  const y=lerp(cfg.y0,cfg.y1,u)+Math.cos(u*cfg.f*.8+t*cfg.s*.7+cfg.p)*cfg.ay;const w=cfg.w*(.35+.65*Math.abs(Math.sin(u*cfg.tw+t*.6+cfg.p)));pts.push([x,y,w])}
+ let L='',R='';for(let i=0;i<=N;i++){const [x,y,w]=pts[i];const [x2,y2]=pts[Math.min(N,i+1)],[x0,y0]=pts[Math.max(0,i-1)];let dx=x2-x0,dy=y2-y0;const l=Math.hypot(dx,dy)||1;const nx=-dy/l,ny=dx/l;
+  L+=(i?' L':'M')+(x+nx*w).toFixed(1)+' '+(y+ny*w).toFixed(1);R=' L'+(x-nx*w).toFixed(1)+' '+(y-ny*w).toFixed(1)+R}
+ return L+R+'Z'}
+const RIBS=[{x0:-200,y0:200,x1:1300,y1:900,ax:220,ay:160,f:5,s:.7,p:0,w:70,tw:3,g:'rg1',o:.9},{x0:1300,y0:1100,x1:-200,y1:1700,ax:180,ay:200,f:4,s:.6,p:2,w:90,tw:2.4,g:'rg2',o:.85},
+ {x0:600,y0:-200,x1:300,y1:2100,ax:260,ay:120,f:3.5,s:.5,p:4,w:55,tw:3.3,g:'rg1',o:.6}];
+$('rib').innerHTML=`<defs><linearGradient id="rg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a0433"/><stop offset=".45" stop-color="#7b2cd6"/><stop offset=".55" stop-color="#e2b6ff"/><stop offset=".65" stop-color="#7b2cd6"/><stop offset="1" stop-color="#1a0433"/></linearGradient>
+ <linearGradient id="rg2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14022a"/><stop offset=".5" stop-color="#9b4dff"/><stop offset=".6" stop-color="#f0d6ff"/><stop offset="1" stop-color="#14022a"/></linearGradient>
+ <filter id="rbl"><feGaussianBlur stdDeviation="1.5"/></filter></defs>`+RIBS.map((r,i)=>`<path id="rb${i}" fill="url(#${r.g})" opacity="${r.o}" filter="url(#rbl)"/>`).join('');
+
+// ---------- sparkles ----------
+const SP=[];(function(){const r=rng(31);for(let i=0;i<160;i++)SP.push({x:r()*1080,y:r()*1920,s:10+r()*40,p:r()*6.3,z:.5+r()*2.2})})();
+function sparkles(t,boost){const c=$('spk').getContext('2d');c.clearRect(0,0,1080,1920);c.globalCompositeOperation='lighter';
+ SP.forEach(s=>{const y=((s.y-t*s.s)%1980+1980)%1980-30;const x=s.x+Math.sin(t*.7+s.p)*20;const a=(.25+.75*Math.pow(Math.sin(t*2+s.p),2))*boost;
+  c.fillStyle=`rgba(255,214,120,${a*.9})`;c.beginPath();c.arc(x,y,s.z,0,7);c.fill();if(s.z>2){c.fillStyle=`rgba(255,220,150,${a*.25})`;c.beginPath();c.arc(x,y,s.z*4,0,7);c.fill()}});
+ c.globalCompositeOperation='source-over'}
+
+// ---------- timeline ----------
+const C={t1:0+V,t2:1.84+V,c1:4.04+V,c1b:5.85+V,c1c:7.65+V,A:9.89+V,B:13.16+V,team:17.0+V,tm2:24.02+V,b1:28.5+V,b2:30.32+V,d:32.06+V,f1:36.44+V,f2:37.69+V};
+const FL=[[4.4,5.6],[C.A-.9,C.A+.1],[C.team-.6,C.team+.5],[C.b1-.7,C.b1+.3]];
+function setLeaf(i,ang){const el=$('L'+i);el.style.transform=`perspective(2600px) rotateY(${ang}deg)`;
+ const sh=el.querySelector('.shade');const k=Math.sin(ang/180*Math.PI);sh.style.background=`linear-gradient(${ang<90?270:90}deg,rgba(0,0,0,${.35*k}),rgba(0,0,0,0) 70%)`;
+ el.style.zIndex=ang>90?(20+i):(10-i)}
+function seek(t){
+  RIBS.forEach((r,i)=>$('rb'+i).setAttribute('d',ribbon(t,r)));
+  $('rib').style.opacity=eOut(P(t,0,1.2));
+  sparkles(t,t<.3?P(t,0,.3):1);
+  $('spot').style.opacity=.7+.3*Math.sin(t*.8);
+  // book transforms
+  const intro=eOut(P(t,.2,2.2));const opened=eInOut(P(t,FL[0][0],FL[0][1]));
+  let sc=lerp(.55,.82,intro),ty=lerp(500,120,intro),rx=lerp(40,16,intro),tx=lerp(250,0,opened);
+  sc=lerp(sc,.98,opened);ty=lerp(ty,0,opened);
+  const zoom=eInOut(P(t,C.team+.2,C.team+1.2))*(1-eInOut(P(t,C.b1-.8,C.b1)));sc+=zoom*.06;ty-=zoom*60;rx-=zoom*8;
+  const end=eInOut(P(t,C.f1-.6,C.f1+.6));sc=lerp(sc,.6,end);ty=lerp(ty,520,end);rx=lerp(rx,28,end);
+  $('bookwrap').style.transform=`translate(${tx*sc}px,${ty+Math.sin(t*1.2)*6}px) perspective(2200px) rotateX(${rx}deg) scale(${sc})`;
+  $('bookwrap').style.opacity=lerp(1,.45,end)*eOut(P(t,.1,.9));
+  $('baseR').style.opacity=opened>0?1:0;
+  FL.forEach(([a,b],i)=>setLeaf(i,180*eInOut(P(t,a,b))));setLeaf(4,0);
+  $('flash').style.opacity=Math.max(0,...FL.slice(1).map(([a,b])=>.08*(1-Math.abs(t-(a+b)/2)/.4)));
+  document.querySelectorAll('.gold').forEach(g=>g.style.backgroundPosition=`${(t*22)%300}% 0`);
+  // titles
+  kin('t1',t,C.t1,.25,.8,'zoom');kin('t2',t,C.t2,.25,.8,'zoom');
+  const to=1-P(t,4.0,4.6);$('t1').style.opacity=to;$('t2').style.opacity=to;
+  const hv=Math.min(eOut(P(t,4.4,5.2)),1-P(t,C.f1-.8,C.f1-.3));$('hdr').style.opacity=hv;
+  const fv=Math.min(eOut(P(t,4.6,5.4)),1);$('foot').style.opacity=fv;$('foot').style.transform=`translateY(${(1-fv)*80}px)`;
+  // sub captions above book
+  const sub=$('sub');let st='',so=0;
+  if(t>C.c1-.2&&t<C.A-.8){st='رحلةٌ تربويّة';so=Math.min(P(t,C.c1-.2,C.c1+.3),1-P(t,C.A-1.3,C.A-.8))}
+  else if(t>C.A-.2&&t<C.team-.7){st=t<C.B?'من شمال الباطنة… نقطة الانطلاق':'إلى محافظة الداخلية… نقطة الوصول';so=Math.min(P(t,C.A-.2,C.A+.3),1-P(t,C.team-1.2,C.team-.7))*(t>C.B-.3&&t<C.B+.2?Math.abs(t-C.B)/.3:1)}
+  else if(t>C.team+.3&&t<C.b1-.8){st=t<C.tm2?'الوفد التربوي الزائر':'ليمدَّ جسور التعاون… ويصنع أثراً يبقى';so=Math.min(P(t,C.team+.3,C.team+.8),1-P(t,C.b1-1.3,C.b1-.8))*(t>C.tm2-.3&&t<C.tm2+.2?Math.abs(t-C.tm2)/.3:1)}
+  else if(t>C.b1&&t<C.f1-.7){st=t<C.d?'جسورٌ إشرافيّة… وأثرٌ يمتد':'من السابع إلى التاسع من ديسمبر ٢٠٢٦م';so=Math.min(P(t,C.b1,C.b1+.5),1-P(t,C.f1-1.2,C.f1-.7))*(t>C.d-.3&&t<C.d+.2?Math.abs(t-C.d)/.3:1)}
+  sub.textContent=st;sub.style.opacity=so;sub.style.top=(230)+'px';
+  // in-page reveals
+  fadeUp($('p1a'),t,C.c1,.6,20);fadeUp($('p1b'),t,C.c1b,.6,20);fadeUp($('p1c'),t,C.c1c,.6,20);
+  fadeUp($('capA'),t,C.A,.6,20);fadeUp($('capB'),t,C.B+.2,.6,20);
+  NAMES.forEach((_,i)=>{const a=C.team+.6+i*.42;fadeUp($('nm'+i),t,a,.4,14)});
+  fadeUp($('p4a'),t,C.b1+.1,.6,20);fadeUp($('p4b'),t,C.b2,.6,20);const dp=P(t,C.d,C.d+.6);$('p4c').style.opacity=eOut(dp);$('p4c').style.transform=`scale(${lerp(.7,1,eBack(dp))})`;
+  // gold trail across spread 2 (book coords)
+  const tr=$('trail');const tp=eInOut(P(t,C.A+.6,C.B+.4)),tv=Math.min(P(t,C.A+.5,C.A+.8),1-P(t,C.team-1.0,C.team-.6));
+  if(tv>0){const d='M750 300 C680 120 320 120 250 300';tr.innerHTML=`<path d="${d}" fill="none" stroke="#ffd36b" stroke-width="7" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="${1-tp}" style="filter:drop-shadow(0 0 10px #ffd36b)"/>`+
+    (()=>{const u=tp,x=Math.pow(1-u,3)*750+3*Math.pow(1-u,2)*u*680+3*(1-u)*u*u*320+u*u*u*250,y=Math.pow(1-u,3)*300+3*Math.pow(1-u,2)*u*120+3*(1-u)*u*u*120+u*u*u*300;return `<circle cx="${x}" cy="${y}" r="14" fill="#fff4c9" style="filter:drop-shadow(0 0 14px #ffd36b)"/>`})();tr.style.opacity=tv}else tr.style.opacity=0;
+  // closing
+  const ev=eOut(P(t,C.f1-.4,C.f1+.5));$('f0').style.opacity=ev;$('f0').style.transform=`scale(${lerp(.7,1,ev)})`;
+  kin('f1',t,C.f1,.3,.8,'zoom');kin('f2',t,C.f2,.3,.8,'zoom');
+}
+window.seek=seek;window.DURATION=DURATION;
+document.fonts.ready.then(()=>{window.READY=true});
+</script>
+</body>
+</html>
